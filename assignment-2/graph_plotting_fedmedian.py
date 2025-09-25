@@ -1,8 +1,8 @@
 # graph_plotting_fedmedian.py
 import pandas as pd, matplotlib.pyplot as plt
 if __name__ == "__main__":
-    IID_CSV   = "fl_iid_fedmedian_accuracy.csv"
-    NONIID_CSV= "fl_non_iid_fedmedian_accuracy.csv"
+    IID_CSV   = "assignment-2/fl_iid_fedmedian_accuracy.csv"
+    NONIID_CSV= "assignment-2/fl_non_iid_fedmedian_accuracy.csv"
     CENTRAL_CSV = "central_accuracy.csv"  # optional curve
 
     def acc_col(df): return df["accuracy"] if "accuracy" in df.columns else df["acc"]
