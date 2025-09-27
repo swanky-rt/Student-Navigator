@@ -144,8 +144,6 @@ EduPilot is designed to help job-seekers practice for interviews by generating r
 * FedMedian offers robustness to skew but does not fully recover centralized accuracy.
 * Communication overhead: Each round requires clients to send their full parameter vector (~O(#weights)).
 
-*(Plots comparing accuracy vs. rounds are included in `central_accuracy.csv`, `fl_iid_accuracy.csv`, `fl_non_iid_accuracy.csv`, etc.)*
-
 ---
 
 ## Vulnerabilities & Implications
