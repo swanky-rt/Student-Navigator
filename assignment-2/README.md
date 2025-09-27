@@ -97,6 +97,12 @@ EduPilot is designed to help job-seekers practice for interviews by generating r
 
 * **FedAvg**
   Weighted average of client weight vectors: w^(t+1) = Σ_i [ (n_i / Σ_j n_j) * w_i^(t) ]
+  Meaning:
+   - w^(t+1): the updated value at the next step
+   - w_i^(t): the value of component i at the current step
+   - n_i: a weight or count associated with i
+   - Σ_j n_j: the sum of all n_j values (normalization term)
+   - The formula computes a weighted average of w_i^(t), with weights proportional to n_i
 
 * **FedMedian**
   Coordinate-wise median of client weight vectors. Robust to outliers or poisoned updates.
