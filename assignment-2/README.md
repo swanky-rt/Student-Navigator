@@ -19,6 +19,7 @@
 ## Dataset
 
 * **Use case:** AI-powered job-seeker interview preparation (EduPilot).
+EduPilot is designed to help job-seekers practice for interviews by generating realistic mock questions across different rounds — Online Assessment (OA), Technical, System Design, HR/Behavioral, and ML Case Study. The system takes in a candidate’s role, company, and location to tailor questions, simulating real interview conditions. The idea is to use large language models (LLMs) to provide personalized interview practice at scale, while handling sensitive user queries like resumes, past experiences, and role-specific skills.
 * **#samples:** 2000 total examples.
 * **Label distribution:** 5 interview rounds — balanced across categories.
 
@@ -27,8 +28,7 @@
   * System Design
   * HR / Behavioral
   * ML Case Study
-* **Generation method:** Synthetic dataset with job queries, roles, companies, and generated mock interview questions. A leak cleaner was used to strip round-indicative keywords to prevent trivial classification.
-
+* **Generation method:** Synthetic dataset with job queries, roles, companies, and generated mock interview questions. The questions were referenced from neetcode. Furthermore, a “safe text” field was created by stripping round-indicative keywords to prevent trivial leakage.
 **Example entry:**
 
 ```json
