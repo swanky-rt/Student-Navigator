@@ -96,7 +96,10 @@ EduPilot is designed to help job-seekers practice for interviews by generating r
 ## Aggregation Methods
 
 * **FedAvg**
-  Weighted average of client weight vectors: w^(t+1) = Σ_i [ (n_i / Σ_j n_j) * w_i^(t) ]
+  Weighted average of client weight vectors.
+  
+  Formula : w^(t+1) = Σ_i [ (n_i / Σ_j n_j) * w_i^(t) ]
+  
   Meaning:
    - w^(t+1): the updated value at the next step
    - w_i^(t): the value of component i at the current step
@@ -106,6 +109,14 @@ EduPilot is designed to help job-seekers practice for interviews by generating r
 
 * **FedMedian**
   Coordinate-wise median of client weight vectors. Robust to outliers or poisoned updates.
+
+  Formula: w^(t+1) = median( w_1^(t), w_2^(t), ..., w_k^(t) )
+
+  Meaning:
+   - Each w_i^(t) is a weight vector from client i at time t
+   - For each coordinate (dimension) of the weight vector, take the median value across all clients
+   - This produces a new vector w^(t+1), where each element is the median of that coordinate
+   - The method is robust to outliers or poisoned updates because extreme values do not affect the median as much as they affect the mean
 
 * **Client simulation details:**
 
