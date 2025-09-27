@@ -47,9 +47,9 @@
 ## Design Choices
 
 * **#Clients:** 5
-  A small, fixed number of clients balances realism with compute tractability.
-* **IID simulation:** Stratified 5-fold split ensures each client has roughly the same class proportions.
-* **Non-IID simulation:** Label-skew strategy; each client biased toward ~2 labels, with leftovers distributed randomly.
+  We used 5 clients — enough to feel realistic, but still easy to run on our machines.
+* **IID simulation:** Stratified 5-fold split ensures that each client has the same mix of labels as the full dataset.
+* **Non-IID simulation:** Label-skew strategy; we gave each client mostly 2 types of labels(this makes them biased towards ~2 labels), with the rest spread out randomly.
 * **Local epochs:** Set to **5** — long enough to let local models learn, short enough to avoid divergence.
 * **Rounds:** 100 federated rounds to observe convergence patterns.
 * **Hidden units:** 64 for FL (to reduce comms cost); 128 for centralized baseline.
