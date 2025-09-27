@@ -96,10 +96,7 @@ EduPilot is designed to help job-seekers practice for interviews by generating r
 ## Aggregation Methods
 
 * **FedAvg**
-  Weighted average of client weight vectors:
-
-  <img width="642" height="189" alt="image" src="https://github.com/user-attachments/assets/517de1fd-49ac-4991-a15a-6bc564deac0a" />
-
+  Weighted average of client weight vectors: w^(t+1) = Σ_i [ (n_i / Σ_j n_j) * w_i^(t) ]
 
 * **FedMedian**
   Coordinate-wise median of client weight vectors. Robust to outliers or poisoned updates.
