@@ -150,7 +150,7 @@ EduPilot is designed to help job-seekers practice for interviews by generating r
 
 ## Vulnerabilities & Implications
 
-* **Privacy advantage:** Raw candidate text never leaves clients — only weight updates are shared.
+* **Privacy advantage:** Raw candidate text never leaves clients — only weight updates are shared. This is a major step forward compared to centralized training, because sensitive information such as resumes, personal job queries, or role-specific interview experiences never leave the user’s local device. By restricting communication to model updates, EduPilot avoids exposing plain text data to a central server. In a realistic deployment, this would reduce the risk of data breaches, insider threats, or accidental leaks from a centralized database. In short, FL ensures that user data stays with the user.
 * **But privacy is not guaranteed:**
 
   * Gradient/weight updates can still leak information.
