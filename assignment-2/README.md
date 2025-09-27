@@ -86,10 +86,10 @@ EduPilot is designed to help job-seekers practice for interviews by generating r
 | **IID**     | StratifiedKFold (5 splits)                | Balanced label distribution across clients     |
 | **Non-IID** | Label skew (≈2 labels/client + leftovers) | Creates realistic heterogeneity / client drift |
 
-**Example histograms (per client):**
+**We can add histograms here(per client):**
 
-* *IID*: All clients look like mini-centralized datasets.
-* *Non-IID*: Clients heavily skewed toward a subset of rounds.
+* *IID*: 
+* *Non-IID*: 
 
 ---
 
