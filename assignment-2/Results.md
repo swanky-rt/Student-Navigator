@@ -18,6 +18,8 @@ This behavior is consistent with prior work:
 - Thus, FedAvg is the preferred choice in practical federated learning scenarios without adversaries.
 
 
+Note: We have explored and implemented FedSGD aggregator apart from FedAvg( main aggregator) & FedMedian to get more idea about aggregator performance in FL
+
 ## Justification: FedSGD vs FedAvg
 
 The lower accuracy of **FedSGD** compared to **FedAvg** is expected and aligns with the findings of McMahan et al. (2016) in *“Communication-Efficient Learning of Deep Networks from Decentralized Data”* ([arXiv:1602.05629](https://arxiv.org/pdf/1602.05629)).
@@ -33,3 +35,11 @@ As shown in Section 4.2 of McMahan et al. (2016):
 ### Summary
 - FedSGD is primarily of **theoretical interest** due to its simplicity.  
 - FedAvg is the **practical algorithm of choice** for federated learning because it leverages local computation for significantly better accuracy and efficiency.
+
+Here are the graphs to show the comparison visually:
+
+![img_1.png](img_1.png)
+
+![img_2.png](img_2.png)
+
+![img_3.png](img_3.png)

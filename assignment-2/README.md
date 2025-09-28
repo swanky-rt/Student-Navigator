@@ -21,7 +21,7 @@
 * **Use case:** AI-powered job-seeker interview preparation (EduPilot).
 
 EduPilot is designed to help job-seekers practice for interviews by generating realistic mock questions across different rounds — Online Assessment (OA), Technical, System Design, HR/Behavioral, and ML Case Study. The system takes in a candidate’s role, company, and location to tailor questions, simulating real interview conditions. The idea is to use large language models (LLMs) to provide personalized interview practice at scale, while handling sensitive user queries like resumes, past experiences, and role-specific skills.
-* **#samples:** 2000 total examples.
+* **#samples:** 2000 total synthetic datasets.
 * **Label distribution:** 5 interview rounds — balanced across categories.
 
   * Online Assessment (OA)
@@ -39,7 +39,7 @@ EduPilot is designed to help job-seekers practice for interviews by generating r
   "company": "Google",
   "location": "NYC",
   "interview_round": "Technical",
-  "mock_question": "Implement an LRU cache with O(1) operations."
+  "technical question": "Implement an LRU cache with O(1) operations."
 }
 ```
 
@@ -49,6 +49,7 @@ EduPilot is designed to help job-seekers practice for interviews by generating r
 
 * **#Clients:** 5
   We used 5 clients — enough to feel realistic, but still easy to run on our machines.
+*  **Model:** Neural Network
 * **IID simulation:** Stratified 5-fold split ensures that each client has the same mix of labels as the full dataset.
 * **Non-IID simulation:** Label-skew strategy; we gave each client mostly 2 types of labels(this makes them biased towards ~2 labels), with the rest spread out randomly.
 * **Local epochs:** Set to **5** — long enough to let local models learn, short enough to avoid divergence.
@@ -86,10 +87,12 @@ EduPilot is designed to help job-seekers practice for interviews by generating r
 | **IID**     | StratifiedKFold (5 splits)                | Balanced label distribution across clients     |
 | **Non-IID** | Label skew (≈2 labels/client + leftovers) | Creates realistic heterogeneity / client drift |
 
-**We can add histograms here(per client):**
+**We have added histograms for client 1 to show the distribution:**
 
-* *IID*: 
-* *Non-IID*: 
+![img_4.png](img_4.png)
+
+* *IID*: Here, for client-1 the distributions among 5 classes are normal
+* *non-IID*: But in non-iid, it is biased towards one of classes, shows imbalance and skewed result.
 
 ---
 
@@ -162,43 +165,80 @@ EduPilot is designed to help job-seekers practice for interviews by generating r
 
 ## How to Run the Code
 
-1. **Centralized baseline & artifacts**
+Please follow below instructions to get the comparisons using FedAvg Aggregator.
+
+1. **Step 1: Please execute 'centralize_global_file.py" to generate Centralized baseline & artifacts**
 
    ```bash
    python assignment-2/centralize_global_file.py
    ```
-
    Produces:
 
    * `artifacts_centralized/{tfidf_vectorizer.pkl, label_encoder.pkl, centralized_*_text_labels.csv}`
    * `central_accuracy.csv`
 
-2. **Federated Learning (FedAvg, IID)**
+2. **Step 2: Please execute 'federated_learning_iid.py" to generate Federated Learning (FedAvg, IID) result.**
 
    ```bash
    python assignment-2/federated_learning_iid.py
    # -> fl_iid_accuracy.csv
    ```
 
-3. **Federated Learning (FedAvg, Non-IID)**
+3. **Step 3: Please execute 'federated_learning_non_iid.py to generate Federated Learning (FedAvg, Non-IID) result.**
 
    ```bash
    python assignment-2/federated_learning_non_iid.py
    # -> fl_non_iid_accuracy.csv
    ```
 
-4. **Federated Learning (FedMedian, IID)**
+4. **Step 5:Please execute 'graph_plotting.py to generate graph to see the comparison between IID and non-IID**
+
+   ```bash
+   python assignment-2/graph_plotting.py
+   # -> fl_iid_vs_non_iid_vs_central.png
+   ```
+Please follow below instructions to get the comparisons using FedMedian Aggregator.
+
+1. **Step 1:Please execute 'fedmedian_iid.py to generate Federated Learning (FedMedian, IID) result.**
 
    ```bash
    python assignment-2/fedmedian_iid.py
    # -> fl_iid_fedmedian_accuracy.csv
    ```
-
-5. **Federated Learning (FedMedian, Non-IID)**
+2. **Step 5:Please execute 'fedmedian_non_iid.py to generate Federated Learning (FedMedian, Non-IID) result.**
 
    ```bash
    python assignment-2/fedmedian_non_iid.py
    # -> fl_non_iid_fedmedian_accuracy.csv
+   ```
+
+3. **Step 5:Please execute 'graph_plotting_fedmedian.py to generate graph to see the comparison between IID and non-IID**
+
+   ```bash
+   python assignment-2/graph_plotting_fedmedian.py
+   # -> fedMedianPlot.png
+   ```
+   
+Please follow below instructions to get the comparisons using FedSgd Aggregator.
+
+1. **Step 1:Please execute 'fedmedian_iid.py to generate Federated Learning (FedMedian, IID) result.**
+
+   ```bash
+   python assignment-2/fedsgd_iid.py
+   # -> fedsgd_iid.csv
+   ```
+2. **Step 5:Please execute 'fedsgd_non_iid.py to generate Federated Learning (FedMedian, Non-IID) result.**
+
+   ```bash
+   python assignment-2/fedsgd_non_iid.py
+   # -> fedsgd_non_iid.csv
+   ```
+
+3. **Step 5:Please execute 'graph_plotting_fedsgd.py to generate graph to see the comparison between IID and non-IID**
+
+   ```bash
+   python assignment-2/graph_plotting_fedsgd.py
+   # -> fl_iid_vs_non_iid_vs_central_fedsgd.png
    ```
 
 ---
