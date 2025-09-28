@@ -168,80 +168,68 @@ EduPilot is designed to help job-seekers practice for interviews by generating r
 
 Please follow below instructions to get the comparisons using FedAvg Aggregator.
 
-1. **Step 1: Please execute 'centralize_global_file.py" to generate Centralized baseline & artifacts**
+# from repo root
+cd assignment-2/federated_learning_fedAvg
 
-   ```bash
-   python assignment-2/centralize_global_file.py
-   ```
-   Produces:
+# step 1) Build centralized baseline + shared text/vector artifacts
+python centralize_global_file.py
+# creates: artifacts_centralized/{tfidf_vectorizer.pkl, label_encoder.pkl, ...}
+# and:     artifacts_centralized/central_accuracy.csv
 
-   * `artifacts_centralized/{tfidf_vectorizer.pkl, label_encoder.pkl, centralized_*_text_labels.csv}`
-   * `central_accuracy.csv`
+# step 2) Federated (IID)
+python federated_learning_iid.py
+# -> fl_iid_accuracy.csv
 
-2. **Step 2: Please execute 'federated_learning_iid.py" to generate Federated Learning (FedAvg, IID) result.**
+# step 3) Federated (Non-IID)
+python federated_learning_non_iid.py
+# -> fl_non_iid_accuracy.csv
 
-   ```bash
-   python assignment-2/federated_learning_iid.py
-   # -> fl_iid_accuracy.csv
-   ```
+# step 4) Plot FedAvg vs Centralized
+python graph_plotting.py
+# -> fl_iid_vs_non_iid_vs_central.png
 
-3. **Step 3: Please execute 'federated_learning_non_iid.py to generate Federated Learning (FedAvg, Non-IID) result.**
 
-   ```bash
-   python assignment-2/federated_learning_non_iid.py
-   # -> fl_non_iid_accuracy.csv
-   ```
-
-4. **Step 5:Please execute 'graph_plotting.py to generate graph to see the comparison between IID and non-IID**
-
-   ```bash
-   python assignment-2/graph_plotting.py
-   # -> fl_iid_vs_non_iid_vs_central.png
-   ```
 Please follow below instructions to get the comparisons using FedMedian Aggregator.
 
-1. **Step 1:Please execute 'fedmedian_iid.py to generate Federated Learning (FedMedian, IID) result.**
+# from repo root
+cd assignment-2/federated_learning_fedMedian
 
-   ```bash
-   python assignment-2/fedmedian_iid.py
-   # -> fl_iid_fedmedian_accuracy.csv
-   ```
-2. **Step 5:Please execute 'fedmedian_non_iid.py to generate Federated Learning (FedMedian, Non-IID) result.**
+# step 1) Build centralized baseline for this executor
+python centralize_global_file.py
+# -> artifacts_centralized/central_accuracy.csv  (FedMedian’s own copy)
 
-   ```bash
-   python assignment-2/fedmedian_non_iid.py
-   # -> fl_non_iid_fedmedian_accuracy.csv
-   ```
+# step 2) Federated (IID)
+python fedmedian_iid.py
+# -> fl_iid_fedmedian_accuracy.csv
 
-3. **Step 5:Please execute 'graph_plotting_fedmedian.py to generate graph to see the comparison between IID and non-IID**
+# step 3) Federated (Non-IID)
+python fedmedian_non_iid.py
+# -> fl_non_iid_fedmedian_accuracy.csv
 
-   ```bash
-   python assignment-2/graph_plotting_fedmedian.py
-   # -> fedMedianPlot.png
-   ```
+# step 4) Plot FedMedian vs Centralized
+python graph_plotting_fedmedian.py
+# -> fedMedianPlot.png
    
 Please follow below instructions to get the comparisons using FedSgd Aggregator.
 
-1. **Step 1:Please execute 'fedmedian_iid.py to generate Federated Learning (FedMedian, IID) result.**
+# from repo root
+cd assignment-2/federated_learning_fedSgd
 
-   ```bash
-   python assignment-2/fedsgd_iid.py
-   # -> fedsgd_iid.csv
-   ```
-2. **Step 5:Please execute 'fedsgd_non_iid.py to generate Federated Learning (FedMedian, Non-IID) result.**
+# step 1) Build centralized baseline for this executor
+python centralize_global_file.py
+# -> artifacts_centralized/central_accuracy.csv (FedSGD's own copy)
 
-   ```bash
-   python assignment-2/fedsgd_non_iid.py
-   # -> fedsgd_non_iid.csv
-   ```
+# step 2) Federated (IID)
+python fedsgd_iid.py
+# -> fedsgd_iid.csv
 
-3. **Step 5:Please execute 'graph_plotting_fedsgd.py to generate graph to see the comparison between IID and non-IID**
+# step 3) Federated (Non-IID)
+python fedsgd_non_iid.py
+# -> fedsgd_non_iid.csv
 
-   ```bash
-   python assignment-2/graph_plotting_fedsgd.py
-   # -> fl_iid_vs_non_iid_vs_central_fedsgd.png
-   ```
-
+# step 4) Plot FedSGD vs Centralized
+python graph_plotting_fedsgd.py
+# -> fl_iid_vs_non_iid_vs_central_fedsgd.png
 ---
 
 ## References
