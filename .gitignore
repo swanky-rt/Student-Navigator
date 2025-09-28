@@ -1,0 +1,17 @@
+# IDE & OS
+.idea/
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pkl
+*.npy
+
+# Generated artifacts/results (all executors)
+assignment-2/**/artifacts_centralized/
+assignment-2/**/central_accuracy.csv
+assignment-2/**/fl_*_accuracy.csv
+assignment-2/**/fedsgd_*.csv
+assignment-2/**/fedMedian*.png
+assignment-2/**/fl_iid_vs_non_iid_vs_central*.png
