@@ -173,19 +173,23 @@ cd assignment-2/federated_learning_fedAvg
 
 # step 1) Build centralized baseline + shared text/vector artifacts
 python centralize_global_file.py
+
 # creates: artifacts_centralized/{tfidf_vectorizer.pkl, label_encoder.pkl, ...}
 # and:     artifacts_centralized/central_accuracy.csv
 
 # step 2) Federated (IID)
 python federated_learning_iid.py
+
 # -> fl_iid_accuracy.csv
 
 # step 3) Federated (Non-IID)
 python federated_learning_non_iid.py
+
 # -> fl_non_iid_accuracy.csv
 
 # step 4) Plot FedAvg vs Centralized
 python graph_plotting.py
+
 # -> fl_iid_vs_non_iid_vs_central.png
 
 
