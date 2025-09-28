@@ -1,9 +1,12 @@
 # FedSGD Non-IID implementation (self-contained)
 import os, pickle, numpy as np, pandas as pd
+from pathlib import Path
+
 from sklearn.metrics import accuracy_score
 
 SEED = 42
-ART  = "../federated_learning_fedAvg/artifacts_centralized"
+BASE_DIR = Path(__file__).resolve().parent
+ART = BASE_DIR / "artifacts_centralized"
 NUM_CLIENTS  = 5
 ROUNDS       = 100
 LR_GLOBAL    = 0.05

@@ -1,10 +1,13 @@
 # FedSGD IID implementation (self-contained)
 import os, pickle, numpy as np, pandas as pd
+from pathlib import Path
+
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import StratifiedKFold
 
 SEED = 42
-ART  = "../federated_learning_fedAvg/artifacts_centralized"
+BASE_DIR = Path(__file__).resolve().parent
+ART = BASE_DIR / "artifacts_centralized"
 NUM_CLIENTS  = 5
 ROUNDS       = 100
 LR_GLOBAL    = 0.05
@@ -184,8 +187,10 @@ def make_iid_splits_stratified(y, k=5, seed=42):
 
 def main():
 	np.random.seed(SEED)
-	with open(os.path.join(ART,"tfidf_vectorizer.pkl"),"rb") as f: vec = pickle.load(f)
-	with open(os.path.join(ART,"label_encoder.pkl"),"rb") as f:  le  = pickle.load(f)
+	with open(os.path.join(ART, "tfidf_vectorizer.pkl"), "rb") as f:
+		vec = pickle.load(f)
+	with open(os.path.join(ART, "label_encoder.pkl"), "rb") as f:
+		le = pickle.load(f)
 	tr = pd.read_csv(os.path.join(ART,"centralized_train_text_labels.csv"))
 	te = pd.read_csv(os.path.join(ART,"centralized_test_text_labels.csv"))
 
