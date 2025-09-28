@@ -89,7 +89,8 @@ EduPilot is designed to help job-seekers practice for interviews by generating r
 
 **We have added histograms for client 1 to show the distribution:**
 
-![img_4.png](img_4.png)
+<img width="707" height="292" alt="Screenshot 2025-09-27 at 10 50 27 PM" src="https://github.com/user-attachments/assets/7f0c2501-7e33-4c20-972a-3ecb4546be11" />
+
 
 * *IID*: Here, for client-1 the distributions among 5 classes are normal
 * *non-IID*: But in non-iid, it is biased towards one of classes, shows imbalance and skewed result.
