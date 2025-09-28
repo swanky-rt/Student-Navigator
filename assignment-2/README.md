@@ -171,26 +171,26 @@ Please follow below instructions to get the comparisons using FedAvg Aggregator.
 # from repo root
 cd assignment-2/federated_learning_fedAvg
 
-# step 1) Build centralized baseline + shared text/vector artifacts
+step 1) Build centralized baseline + shared text/vector artifacts
 python centralize_global_file.py
 
-# creates: artifacts_centralized/{tfidf_vectorizer.pkl, label_encoder.pkl, ...}
-# and:     artifacts_centralized/central_accuracy.csv
+creates: artifacts_centralized/{tfidf_vectorizer.pkl, label_encoder.pkl, ...}
+and:     artifacts_centralized/central_accuracy.csv
 
-# step 2) Federated (IID)
+step 2) Federated (IID)
 python federated_learning_iid.py
 
-# -> fl_iid_accuracy.csv
+-> fl_iid_accuracy.csv
 
-# step 3) Federated (Non-IID)
+step 3) Federated (Non-IID)
 python federated_learning_non_iid.py
 
-# -> fl_non_iid_accuracy.csv
+-> fl_non_iid_accuracy.csv
 
-# step 4) Plot FedAvg vs Centralized
+step 4) Plot FedAvg vs Centralized
 python graph_plotting.py
 
-# -> fl_iid_vs_non_iid_vs_central.png
+-> fl_iid_vs_non_iid_vs_central.png
 
 
 Please follow below instructions to get the comparisons using FedMedian Aggregator.
@@ -198,42 +198,47 @@ Please follow below instructions to get the comparisons using FedMedian Aggregat
 # from repo root
 cd assignment-2/federated_learning_fedMedian
 
-# step 1) Build centralized baseline for this executor
+step 1) Build centralized baseline for this executor
 python centralize_global_file.py
-# -> artifacts_centralized/central_accuracy.csv  (FedMedian’s own copy)
+-> artifacts_centralized/central_accuracy.csv  (FedMedian’s own copy)
 
-# step 2) Federated (IID)
+step 2) Federated (IID)
 python fedmedian_iid.py
-# -> fl_iid_fedmedian_accuracy.csv
+-> fl_iid_fedmedian_accuracy.csv
 
-# step 3) Federated (Non-IID)
+step 3) Federated (Non-IID)
 python fedmedian_non_iid.py
-# -> fl_non_iid_fedmedian_accuracy.csv
+-> fl_non_iid_fedmedian_accuracy.csv
 
-# step 4) Plot FedMedian vs Centralized
+step 4) Plot FedMedian vs Centralized
 python graph_plotting_fedmedian.py
-# -> fedMedianPlot.png
+-> fedMedianPlot.png
    
 Please follow below instructions to get the comparisons using FedSgd Aggregator.
 
 # from repo root
 cd assignment-2/federated_learning_fedSgd
 
-# step 1) Build centralized baseline for this executor
+step 1) Build centralized baseline for this executor
 python centralize_global_file.py
-# -> artifacts_centralized/central_accuracy.csv (FedSGD's own copy)
+-> artifacts_centralized/central_accuracy.csv (FedSGD's own copy)
 
-# step 2) Federated (IID)
+step 2) Federated (IID)
 python fedsgd_iid.py
-# -> fedsgd_iid.csv
+-> fedsgd_iid.csv
 
-# step 3) Federated (Non-IID)
+step 3) Federated (Non-IID)
 python fedsgd_non_iid.py
-# -> fedsgd_non_iid.csv
+-> fedsgd_non_iid.csv
 
-# step 4) Plot FedSGD vs Centralized
+step 4) Plot FedSGD vs Centralized
 python graph_plotting_fedsgd.py
-# -> fl_iid_vs_non_iid_vs_central_fedsgd.png
+-> fl_iid_vs_non_iid_vs_central_fedsgd.png
+
+step 4) Plot FedSGD vs Centralized
+python graph_plotting_fedsgd.py
+-> fedsgd.png
+
 ---
 
 ## References
