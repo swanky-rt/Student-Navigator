@@ -4,7 +4,7 @@ from sklearn.model_selection import StratifiedKFold
 from neural_network_model import NeuralNetwork
 
 SEED = 42
-ART  = "artifacts_centralized"
+ART  = "../artifacts_centralized"
 NUM_CLIENTS  = 5
 ROUNDS       = 100
 EPOCHS_LOCAL = 5

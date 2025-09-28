@@ -1,33 +1,21 @@
-# FedSGD Non-IID implementation (self-contained)
+# FedSGD IID implementation (self-contained)
 import os, pickle, numpy as np, pandas as pd
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import StratifiedKFold
 
 SEED = 42
-ART  = "artifacts_centralized"
+ART  = "../federated_learning_fedAvg/artifacts_centralized"
 NUM_CLIENTS  = 5
 ROUNDS       = 100
 LR_GLOBAL    = 0.05
 HIDDEN_UNITS = 64
 LAMBDA       = 1e-4
-MODE = "NON_IID"
+MODE = "IID"
 
-def make_label_skew_splits(y, k=5, seed=42, labels_per_client=2):
-	rng = np.random.default_rng(seed)
-	y = np.asarray(y); classes = np.unique(y)
-	buckets = {c: list(np.where(y==c)[0]) for c in classes}
-	for b in buckets.values(): rng.shuffle(b)
-	splits = [[] for _ in range(k)]
-	for i in range(k):
-		chosen = rng.choice(classes, size=min(labels_per_client, len(classes)), replace=False)
-		for c in chosen:
-			take = max(1, len(buckets[c]) // k)
-			splits[i].extend(buckets[c][:take])
-			buckets[c] = buckets[c][take:]
-	leftovers = [idx for v in buckets.values() for idx in v]
-	rng.shuffle(leftovers)
-	for i, idx in enumerate(leftovers):
-		splits[i % k].append(idx)
-	return [sorted(s) for s in splits]
+def make_iid_splits_stratified(y, k=5, seed=42):
+	y = np.asarray(y); idx = np.arange(len(y))
+	skf = StratifiedKFold(n_splits=k, shuffle=True, random_state=seed)
+	return [idx_test.tolist() for _, idx_test in skf.split(idx, y)]
 
 class NeuralNetwork:
 	def __init__(self, layer_sizes, seed=42, lambd=0.0):
@@ -135,7 +123,7 @@ def main():
 	Xte_T = Xte.T
 	print(f"[{MODE}] data  Ntr={len(Xtr)} Nte={len(Xte)} D={D} C={C}")
 
-	splits = make_label_skew_splits(ytr, k=NUM_CLIENTS, seed=SEED, labels_per_client=2)
+	splits = make_iid_splits_stratified(ytr, k=NUM_CLIENTS, seed=SEED)
 
 	import collections
 	for i, idxs in enumerate(splits,1):
@@ -170,13 +158,14 @@ def main():
 		acc_hist.append(float(acc))
 		print(f"[FedSGD | {MODE} | Round {r:02d}] acc={acc:.4f}")
 
-	pd.DataFrame({"round": np.arange(1, len(acc_hist)+1), "acc": acc_hist}).to_csv("fl_non_iid_fedsgd_accuracy.csv", index=False)
-	print("Saved: fl_non_iid_fedsgd_accuracy.csv")
+	pd.DataFrame({"round": np.arange(1, len(acc_hist)+1), "acc": acc_hist}).to_csv("../fl_iid_fedsgd_accuracy.csv", index=False)
+	print("Saved: fl_iid_fedsgd_accuracy.csv")
 
 if __name__ == "__main__":
 	main()
 import os, pickle, numpy as np, pandas as pd
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import StratifiedKFold
 from neural_network_model import NeuralNetwork
 
 SEED = 42
@@ -186,25 +175,12 @@ ROUNDS       = 100
 LR_GLOBAL    = 0.05
 HIDDEN_UNITS = 64
 LAMBDA       = 1e-4
-MODE = "NON_IID"
+MODE = "IID"
 
-def make_label_skew_splits(y, k=5, seed=42, labels_per_client=2):
-	rng = np.random.default_rng(seed)
-	y = np.asarray(y); classes = np.unique(y)
-	buckets = {c: list(np.where(y==c)[0]) for c in classes}
-	for b in buckets.values(): rng.shuffle(b)
-	splits = [[] for _ in range(k)]
-	for i in range(k):
-		chosen = rng.choice(classes, size=min(labels_per_client, len(classes)), replace=False)
-		for c in chosen:
-			take = max(1, len(buckets[c]) // k)
-			splits[i].extend(buckets[c][:take])
-			buckets[c] = buckets[c][take:]
-	leftovers = [idx for v in buckets.values() for idx in v]
-	rng.shuffle(leftovers)
-	for i, idx in enumerate(leftovers):
-		splits[i % k].append(idx)
-	return [sorted(s) for s in splits]
+def make_iid_splits_stratified(y, k=5, seed=42):
+	y = np.asarray(y); idx = np.arange(len(y))
+	skf = StratifiedKFold(n_splits=k, shuffle=True, random_state=seed)
+	return [idx_test.tolist() for _, idx_test in skf.split(idx, y)]
 
 def main():
 	np.random.seed(SEED)
@@ -221,7 +197,7 @@ def main():
 	Xte_T = Xte.T
 	print(f"[{MODE}] data  Ntr={len(Xtr)} Nte={len(Xte)} D={D} C={C}")
 
-	splits = make_label_skew_splits(ytr, k=NUM_CLIENTS, seed=SEED, labels_per_client=2)
+	splits = make_iid_splits_stratified(ytr, k=NUM_CLIENTS, seed=SEED)
 
 	# sanity: class hist per client
 	import collections
@@ -257,8 +233,8 @@ def main():
 		acc_hist.append(float(acc))
 		print(f"[FedSGD | {MODE} | Round {r:02d}] acc={acc:.4f}")
 
-	pd.DataFrame({"round": np.arange(1, len(acc_hist)+1), "acc": acc_hist}).to_csv("fl_non_iid_fedsgd_accuracy.csv", index=False)
-	print("Saved: fl_non_iid_fedsgd_accuracy.csv")
+	pd.DataFrame({"round": np.arange(1, len(acc_hist)+1), "acc": acc_hist}).to_csv("fl_iid_fedsgd_accuracy.csv", index=False)
+	print("Saved: fl_iid_fedsgd_accuracy.csv")
 
 if __name__ == "__main__":
 	main()
