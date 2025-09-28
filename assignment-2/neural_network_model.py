@@ -26,10 +26,6 @@ class NeuralNetwork:
         return ez / np.clip(ez.sum(axis=0, keepdims=True), 1e-12, None)
 
     def forward_pass(self, X, use_softmax_output=True):
-        """
-        X: shape (D, N)
-        Returns (pre_acts, acts), where acts[-1] is final layer (softmax for multi-class)
-        """
         pre_acts, acts = [], []
         A = X
         # hidden layers (sigmoid)
@@ -50,10 +46,7 @@ class NeuralNetwork:
         return pre_acts, acts
 
     def compute_cost_multiclass(self, AL, Y_onehot):
-        """
-        AL: (C, N) softmax outputs
-        Y_onehot: (C, N)
-        """
+
         N = Y_onehot.shape[1]
         loss = -np.sum(Y_onehot * np.log(np.clip(AL, 1e-12, None))) / N
         if self.lambd > 0:
@@ -64,19 +57,13 @@ class NeuralNetwork:
         return float(loss)
 
     def backward_pass_multiclass(self, acts, X, Y_onehot):
-        """
-        acts: [A1, A2, ..., AL] where AL is softmax output (C, N)
-        X: (D, N), Y_onehot: (C, N)
-        Returns grads matching self.weights shapes.
-        """
+
         N = X.shape[1]
         grads = [np.zeros_like(W) for W in self.weights]
 
-        # Hidden activations only (exclude AL)
         H_list = acts[:-1]  # [A1, A2, ..., A_{L-1}]
         AL = acts[-1]  # (C, N)
 
-        # ----- Output layer -----
         dZ = AL - Y_onehot  # (C, N) for softmax+CE
         A_prev = X if len(H_list) == 0 else H_list[-1]
         Ab_prev = np.vstack([np.ones((1, A_prev.shape[1])), A_prev])
@@ -86,10 +73,8 @@ class NeuralNetwork:
             reg[:, 0] = 0
             grads[-1] += (self.lambd / N) * reg
 
-        # gradient flowing into last hidden
         dA = self.weights[-1][:, 1:].T @ dZ  # (units_{L-1}, N)
 
-        # There are len(H_list) hidden layers, indexed 0..len(H_list)-1
         for l in reversed(range(len(H_list))):
             A_hidden = H_list[l]  # (H_l, N)
             A_prev = X if l == 0 else H_list[l - 1]  # feeding activation
@@ -131,21 +116,15 @@ class NeuralNetwork:
     #         prev = loss
 
     def train_multiclass(self, X, Y_labels, lr=0.1, max_epochs=200, tol=1e-6, verbose=False):
-        """
-        X: (D, N)
-        Y_labels: (N,) integer class ids encoded with the GLOBAL LabelEncoder
-        """
         N = Y_labels.shape[0]
         C = self.layer_sizes[-1]  # <-- GLOBAL number of classes (e.g., 5), not local max
 
-        # If any label id is outside [0, C-1], drop it (shouldn't happen if you used the global LabelEncoder)
         valid = (Y_labels >= 0) & (Y_labels < C)
         if not np.all(valid):
             X = X[:, valid]
             Y_labels = Y_labels[valid]
             N = Y_labels.shape[0]
 
-        # One-hot with global C
         Y_onehot = np.zeros((C, N), dtype=np.float64)
         Y_onehot[Y_labels, np.arange(N)] = 1.0
 
@@ -166,12 +145,10 @@ class NeuralNetwork:
         return np.argmax(acts[-1], axis=0)     # (N,)
 
     def get_params_vector(self):
-        """Flatten weights (list of matrices with bias col) into one vector."""
         flats = [W.reshape(-1) for W in self.weights]
         return np.concatenate(flats, axis=0)
 
     def set_params_vector(self, vec):
-        """Load flattened vector back into weight matrices with correct shapes."""
         offset = 0
         for l in range(len(self.weights)):
             shape = self.weights[l].shape

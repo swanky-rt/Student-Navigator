@@ -44,7 +44,6 @@ if __name__ == "__main__":
 	plt.plot(iid["round"],   acc_col(iid),   label="FedSGD IID",     marker="o", linewidth=2, color="orange")
 	plt.plot(non["round"],   acc_col(non),   label="FedSGD Non-IID", marker="s", linewidth=2, color="brown")
 
-	# Show centralized as a curve (preferred), or as a dashed line using its final acc
 	plt.plot(centr["epoch"], acc_col(centr), label="Centralized (per-epoch)", linestyle="-.", linewidth=2, color="black")
 	plt.axhline(centr["acc"].iloc[-1], linestyle="--", linewidth=1.5,
 				label=f"Centralized final ({centr['acc'].iloc[-1]:.2f})")

@@ -1,4 +1,3 @@
-# federated_learning_iid.py
 import os, pickle, numpy as np, pandas as pd
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import StratifiedKFold
@@ -12,7 +11,7 @@ EPOCHS_LOCAL = 5
 LR_LOCAL     = 0.05
 HIDDEN_UNITS = 64
 LAMBDA       = 1e-4
-WARM_START   = False   # keep off for realistic curves
+WARM_START   = False
 
 MODE = "IID"
 
@@ -36,10 +35,8 @@ def main():
     Xte_T = Xte.T
     print(f"[{MODE}] data  Ntr={len(Xtr)} Nte={len(Xte)} D={D} C={C}")
 
-    # IID client splits (stratified by label)
     splits = make_iid_splits_stratified(ytr, k=NUM_CLIENTS, seed=SEED)
 
-    # sanity: class hist per client
     import collections
     for i, idxs in enumerate(splits,1):
         cnt = collections.Counter(ytr[idxs])
@@ -54,7 +51,6 @@ def main():
     global_vec = global_model.get_params_vector()
 
     print(f"\n=== FL ({MODE}) START === clients={NUM_CLIENTS} rounds={ROUNDS} E_local={EPOCHS_LOCAL} lr={LR_LOCAL}")
-    # baseline (should be ~chance at start)
     base_pred = global_model.predict_multiclass(Xte_T)
     print(f"[{MODE}] pre-round acc={accuracy_score(yte, base_pred):.4f}")
 

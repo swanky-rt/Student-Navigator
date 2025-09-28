@@ -1,10 +1,7 @@
-# fedmedian_non_iid.py
 import os, pickle, numpy as np, pandas as pd
 from sklearn.metrics import accuracy_score
 from neural_network_model import NeuralNetwork
 
-
-# Match federated_learning_non_iid.py setup
 SEED = 42
 ART  = "artifacts_centralized"
 NUM_CLIENTS  = 5
@@ -17,7 +14,6 @@ MODE = "NON_IID"
 WARM_START   = False
 
 def make_label_skew_splits(y, k=5, seed=42, labels_per_client=2):
-    """Create Non-IID label-skew: each client sees a subset of labels."""
     rng = np.random.default_rng(seed)
     y = np.asarray(y); classes = np.unique(y)
     buckets = {c: list(np.where(y==c)[0]) for c in classes}
@@ -67,7 +63,6 @@ def main():
 
     splits = make_label_skew_splits(ytr, k=NUM_CLIENTS, seed=SEED, labels_per_client=2)
 
-    # sanity: class hist per client
     import collections
     for i, idxs in enumerate(splits,1):
         cnt = collections.Counter(ytr[idxs])

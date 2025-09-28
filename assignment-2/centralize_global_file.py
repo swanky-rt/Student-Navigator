@@ -1,4 +1,3 @@
-# centralize_global_file.py
 import os, re, pickle, numpy as np, pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -8,10 +7,10 @@ from neural_network_model import NeuralNetwork
 
 CSV_PATH        = "EduPilot_dataset_2000.csv"
 SEED            = 42
-MAX_FEATURES    = 2000      # moderate feature cap (harder than 2k)
+MAX_FEATURES    = 2000
 HIDDEN_UNITS    = 128
 LAMBDA          = 1e-4
-EPOCHS_CENTRAL  = 100        # we will log accuracy per epoch
+EPOCHS_CENTRAL  = 100
 LR_CENTRAL      = 0.10
 ART             = "artifacts_centralized"
 
@@ -67,7 +66,6 @@ def main():
     pd.DataFrame({"text": Xtr_txt, "label": ytr_raw}).to_csv(os.path.join(ART,"centralized_train_text_labels.csv"), index=False)
     pd.DataFrame({"text": Xte_txt, "label": yte_raw}).to_csv(os.path.join(ART,"centralized_test_text_labels.csv"), index=False)
 
-    # CENTRALIZED training with epoch logging
     nn = NeuralNetwork(layer_sizes=[D, HIDDEN_UNITS, C], lambd=LAMBDA)
     acc_hist = []
     Xtr_T, Xte_T = Xtr.T, Xte.T
@@ -77,7 +75,6 @@ def main():
         acc = (nn.predict_multiclass(Xte_T) == yte).mean()
         acc_hist.append(float(acc))
 
-    # save curve & weights (OPTIONAL: we won’t warm-start in FL, but keeping it is fine)
     pd.DataFrame({"epoch": np.arange(1, EPOCHS_CENTRAL+1), "acc": acc_hist}).to_csv("central_accuracy.csv", index=False)
     flat = np.concatenate([w.ravel() for w in nn.weights])
     np.save(os.path.join(ART,"nn_weights.npy"), flat)

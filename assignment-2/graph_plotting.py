@@ -1,9 +1,8 @@
-# graph_plotting.py
 import pandas as pd, matplotlib.pyplot as plt
 if __name__ == "__main__":
     IID_CSV   = "fl_iid_accuracy.csv"
     NONIID_CSV= "fl_non_iid_accuracy.csv"
-    CENTRAL_CSV = "central_accuracy.csv"  # optional curve
+    CENTRAL_CSV = "central_accuracy.csv"
 
     def acc_col(df): return df["accuracy"] if "accuracy" in df.columns else df["acc"]
 
@@ -15,7 +14,6 @@ if __name__ == "__main__":
     plt.plot(iid["round"],   acc_col(iid),   label="FL IID",     marker="o", linewidth=2, color="red")
     plt.plot(non["round"],   acc_col(non),   label="FL Non-IID", marker="s", linewidth=2, color="green")
 
-    # Show centralized as a curve (preferred), or as a dashed line using its final acc
     plt.plot(centr["epoch"], acc_col(centr), label="Centralized (per-epoch)", linestyle="-.", linewidth=2, color="black")
     plt.axhline(centr["acc"].iloc[-1], linestyle="--", linewidth=1.5,
                 label=f"Centralized final ({centr['acc'].iloc[-1]:.2f})")
