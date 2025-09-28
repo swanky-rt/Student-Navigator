@@ -38,8 +38,11 @@ As shown in Section 4.2 of McMahan et al. (2016):
 
 Here are the graphs to show the comparison visually:
 
-![img_1.png](img_1.png)
+<img width="1084" height="675" alt="Screenshot 2025-09-27 at 11 26 33 PM" src="https://github.com/user-attachments/assets/32a4d04c-a5ab-4d0b-9778-9cae60ccbe1c" />
 
-![img_2.png](img_2.png)
+<img width="808" height="505" alt="Screenshot 2025-09-27 at 11 26 50 PM" src="https://github.com/user-attachments/assets/4f918517-2837-4066-9ee5-600763559179" />
 
-![img_3.png](img_3.png)
+<img width="1084" height="675" alt="Screenshot 2025-09-27 at 11 26 37 PM" src="https://github.com/user-attachments/assets/e8e5b57c-1892-48fd-8f78-becc149afc32" />
+
+
+
