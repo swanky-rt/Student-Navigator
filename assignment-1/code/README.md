@@ -130,15 +130,17 @@
 
 ### Plots
 
-MLP (Simple Threshold MIA and LiRA):
+#### MLP (Simple Threshold MIA and LiRA):
 
 <img width="627" height="562" alt="image" src="https://github.com/user-attachments/assets/9ce89de4-0c6e-4bca-be7a-2649cc546403" />
 
-LogReg (Simple Threshold MIA and LiRA):
+
+#### LogReg (Simple Threshold MIA and LiRA):
 
 <img width="684" height="608" alt="image" src="https://github.com/user-attachments/assets/b2ab6493-80b6-491c-8700-f1da226d5644" />
 
-LogReg vs BERT (Simple Threshold MIA):
+
+#### LogReg vs BERT (Simple Threshold MIA):
 
 <img width="732" height="605" alt="image" src="https://github.com/user-attachments/assets/cc764207-5a62-4c84-bb87-fd877c001aff" />
 
