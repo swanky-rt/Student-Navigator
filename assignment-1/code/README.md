@@ -9,6 +9,7 @@
 
   * [Implementation](#implementation)
   * [Model-wise Results](#model-wise-results)
+  * [Plots](#plots)
   * [Vulnerability Analysis](#vulnerability-analysis)
   * [Implications for EduPilot](#implications-for-edupilot)
 * [How to Run the Code](#how-to-run-the-code)
@@ -84,11 +85,11 @@
   * TPR\@FPR≤0.1 = 0.41
   * TPR\@FPR≤0.01 = 0.08
   * TPR\@FPR≤0.001 = 0.03
-* **LiRA (LogReg):** AUC = 0.609
+* **LiRA (LogReg):** AUC = 0.8761
 
-  * TPR\@FPR≤0.1 = 0.19
-  * TPR\@FPR≤0.01 = 0.046
-  * TPR\@FPR≤0.001 = 0.0
+  * TPR\@FPR≤0.1 = 0.6679
+  * TPR\@FPR≤0.01 = 0.2614
+  * TPR\@FPR≤0.001 = 0.0250
 
 *LogReg leaks membership information because it overfits more. But at very low FPR, LiRA shows its real power is weaker than what AUC suggests.*
 
@@ -124,6 +125,18 @@
   * TPR\@FPR≤0.001 = 0.02
 
 *The MLP is the leakiest of all — it heavily overfits and threshold MIA looks extremely strong. LiRA again shows that once you restrict to very low FPRs, the attack’s effectiveness is lower than AUC suggests.*
+
+---
+
+###Plots
+MLP (Simple Threshold MIA and LiRA):
+<img width="627" height="562" alt="image" src="https://github.com/user-attachments/assets/9ce89de4-0c6e-4bca-be7a-2649cc546403" />
+
+LogReg (Simple Threshold MIA and LiRA):
+<img width="684" height="608" alt="image" src="https://github.com/user-attachments/assets/b2ab6493-80b6-491c-8700-f1da226d5644" />
+
+LogReg vs BERT (Simple Threshold MIA):
+<img width="732" height="605" alt="image" src="https://github.com/user-attachments/assets/cc764207-5a62-4c84-bb87-fd877c001aff" />
 
 ---
 
