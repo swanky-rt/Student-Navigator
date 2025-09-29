@@ -1,11 +1,13 @@
 import os, re, pickle, numpy as np, pandas as pd
+from pathlib import Path
+
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
 from neural_network_model import NeuralNetwork
 
-CSV_PATH        = "../EduPilot_dataset_2000.csv"
+CSV_PATH = Path(__file__).resolve().parents[1] / "EduPilot_dataset_2000.csv"
 SEED            = 42
 MAX_FEATURES    = 2000
 HIDDEN_UNITS    = 128
