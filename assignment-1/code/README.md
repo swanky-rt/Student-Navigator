@@ -12,6 +12,7 @@
   * [Vulnerability Analysis](#vulnerability-analysis)
   * [Implications for EduPilot](#implications-for-edupilot)
 * [How to Run the Code](#how-to-run-the-code)
+* [LLM usage and References](#llm-usage-and-references)
 
 ---
 
@@ -187,3 +188,36 @@ Note: To run this file, dataset is already placed under the same location i.e. "
 1. Open the Colab notebook from this repository (`Adversarial_MIA_demo.ipynb`).
 2. Run the notebook cells in order. The dataset will be loaded with:
 Note: To run this file, dataset is already placed under the same location i.e. "EduPilot_dataset.csv", so no need to make any change.
+
+## LLM Usage and References
+
+### How We Used LLM
+
+* Strongly referenced classifier code templates from previous AI-Core courses — NN (682), Advanced NLP (685), ML (589), and NLP (485). The HW1\_example Colab file provided by June gave us a great starting structure for how to organize our notebooks.
+* We used a Large Language Model (LLM) to tailor classifier code (Logistic Regression, MLP, BERT) to our dataset and startup scenario.The LLM helped us format training loops, per-example loss collection, and dataset splits.
+* When carefully prompted with our requirements, the LLM also generated visualization code (ROC curves, log-loss plots, TPR/FPR metrics). This made it easier for us to debug and interpret the attacks.
+* It was also used to get information from the provided research papers using the Q/A approach taught by the instrcutor. LLM was given the answers to the report questions and the summaries to check/verify from the paper one last time before submission. The small tweaks it suggested were sometimes adopted. It was asked to rewrite some answers and summaries in a better and polished way and sometimes asked to add a few more detailes to them in case they felt really short.
+
+### What We Referenced From Papers
+
+* From *Membership Inference Attacks From First Principles* (Carlini et al., 2022):
+
+  * The importance of evaluating MIAs not just by AUC but by True Positive Rate at very low False Positive Rates (≤0.1%).
+  * The LiRA method: training shadow models, collecting “IN” vs “OUT” loss distributions for each example, and computing likelihood ratio scores.
+    → Link: https://arxiv.org/abs/2112.03570?
+
+### What We Referenced From Public Code Repositories
+
+* **GitHub repo mia\_attacks:** we looked at its structure for shadow model training and loss recording.
+  → Link: [github.com/superdianuj/mia\_attacks](https://github.com/antibloch/mia_attacks?)
+* **GitHub repo lira-pytorch:** we referred to how it computes per-example TPR at low FPR and organizes multiple shadow runs.
+  → Link: [github.com/orientino/lira-pytorch](https://github.com/orientino/lira-pytorch?)
+
+### What We Did Ourselves
+
+* Implemented our own code for Logistic Regression, BERT fine-tuning, and 2-layer MLP models.
+* Collected and processed the synthetic dataset (job-seeker queries), implemented safe text preprocessing, and designed evaluation splits.
+* Implemented threshold MIA and LiRA scoring directly in our own code.
+* Plotted results (ROC curves, TPR/FPR tables), analyzed vulnerabilities.
+* Built the presentation + report.
+* Added detailed explanations directly into the code cells, describing the design choices, the flow of logic between cells, and how each implementation step connects to the overall project.
