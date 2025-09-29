@@ -5,7 +5,7 @@
 ## Table of Contents
 
 * [Dataset](#dataset)
-* [Attack Details (Final)](#attack-details-final)
+* [Attack Details](#attack-details)
 
   * [Implementation](#implementation)
   * [Model-wise Results](#model-wise-results)
