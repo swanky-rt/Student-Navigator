@@ -128,7 +128,8 @@
 
 ---
 
-###Plots
+### Plots
+
 MLP (Simple Threshold MIA and LiRA):
 <img width="627" height="562" alt="image" src="https://github.com/user-attachments/assets/9ce89de4-0c6e-4bca-be7a-2649cc546403" />
 
