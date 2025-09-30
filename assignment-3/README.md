@@ -1,6 +1,32 @@
 # EduPilot - Analysis of Differential Privacy Techniques on Balanced Synthetic Job Data 
 
 ## Model Setting and Dataset Generation
+The model used is a 2-layer feedforward neural network (multilayer perceptron, MLP) with the following structure:
+
+- **Input:** TF-IDF features (`max_features=258`)
+- **Hidden layer:** size is swept (default 128, but can be 64, 128, ..., 1024)
+  - `nn.Linear(input_dim, hidden_units)`
+  - `nn.ReLU()`
+- **Output layer:** number of classes
+  - `nn.Linear(hidden_units, num_classes)`
+
+This architecture is implemented in the `make_model` function in the script.
+
+![Model Architecture](/assignment-3/artifacts/model_architecture.png)
+
+
+For a 2-layer MLP, the number of trainable parameters is:
+
+- **Layer 1:**
+  - Weights: `input_dim × hidden_units`
+  - Biases: `hidden_units`
+  - Total: `input_dim × hidden_units + hidden_units`
+- **Layer 2:**
+  - Weights: `hidden_units × num_classes`
+  - Biases: `num_classes`
+  - Total: `hidden_units × num_classes + num_classes`
+- **Total:**
+  - `params_l1 + params_l2`
 
 ## Setting Up the Conda Environment
 
