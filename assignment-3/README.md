@@ -1,5 +1,6 @@
 # EduPilot - Analysis of Differential Privacy Techniques on Balanced Synthetic Job Data 
 
+## Model Setting and Dataset Generation
 
 ## Setting Up the Conda Environment
 
@@ -120,7 +121,7 @@ python assignment-3/code/analyze_noise.py
 
 ## Module 3: Clipping Norm Sweep — analyze_clip.py
 
-This module evaluates how the **gradient clipping norm (C)** affects the performance of DP-SGD when training a text classification model. It runs multiple DP models with varying clipping values and compares their test accuracy.
+This module evaluates how the **gradient clipping norm (C)** affects the performance of DP-SGD when training a text classification model. It runs multiple DP models with varying clipping values and compares their test accuracy. I ran the hyper param sweep for different parameters, initially I tested the code with the values suggested in Abadi et al., but after tuning the params, I changed it to what graphically worked better for my synthetic dataset.
 
 ---
 
@@ -162,4 +163,59 @@ This module evaluates how the **gradient clipping norm (C)** affects the perform
 
 ```bash
 python assignment-3/code/analyze_clip.py
+```
+
+## Module 4: Other Model based Hyperparam Sweep (LR, Lot Size, Hidden Layers)
+
+
+## Module 5: Baseline vs DP Training — train_dp_model.py
+
+This module compares the training and test accuracy of a non-private (baseline) model and a differentially private (DP-SGD) model on the job role classification task. It supports flexible privacy settings via command-line arguments.
+
+---
+
+### Purpose
+
+- Show the effect of differential privacy (DP-SGD) on model accuracy compared to a non-private baseline.
+- Visualize privacy consumption (epsilon) over epochs when using DP-SGD.
+- Allow experimentation with different privacy budgets and noise multipliers.
+
+---
+
+### Settings (Best Params)
+
+- **Features**: TF-IDF (`max_features=258`, bigrams included).
+- **Model**: 2-layer feedforward NN with hidden size 128.
+- **Lot Size**: 60 (from hyper-param tuning (close to sq root of N); can be changed in code).
+- **Epochs**: N / Lot Size.
+- **Clipping Norm (C)**: 0.17 (from hyper-param tuning; can be changed in code).
+- **Noise Multiplier (σ)**: configurable via `--sigma` argument.
+- **Delta (δ)**: configurable via `--target_delta` argument (default: 1/N).
+- **Epsilon (ε)**: configurable via `--target_eps` argument (optional).
+
+---
+
+### Inputs & Outputs
+
+- **Input**: `dataset.csv` (columns: `job_description`, `job_role`).
+- **Outputs** (saved in `artifacts/`):
+  - `baseline_accuracy.csv` → baseline model train/test accuracy per epoch.
+  - `dp_accuracy.csv` → DP model train/test accuracy and epsilon per epoch.
+  - `baseline_vs_dp_train_test.png` → plot of train/test accuracy for both models.
+  - `epsilon_curve_final.png` → plot of privacy consumption (epsilon) over epochs (if applicable).
+
+You can test this code in 2 different ways:
+1. Mention your budget delta (Accountant will get you the model for best epsilon)
+2. Mention your budget delta and epsilon (Accountant will get you for the model for the optimal noise)
+
+---
+
+### How to Run
+
+```bash
+python assignment-3/code/train_dp_model.py [--target_eps <float>] [--target_delta <float>] [--sigma <float>]
+```
+Example:
+```bash
+python assignment-3/code/train_dp_model.py --target_delta 0.0001
 ```
