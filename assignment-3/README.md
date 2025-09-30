@@ -122,7 +122,7 @@ It helps visualize how the privacy budget **ε (epsilon)** grows across training
 python assignment-3/code/strong_vs_moments_accountant.py
 ```
 
-## Module 2: Noise Sweep — noise_vs_accuracy.py
+## Module 2: Noise Sweep — analyze_noise.py
 
 This module evaluates how the **noise multiplier (σ)** affects the performance of DP-SGD when training a text classification model.  
 It runs multiple DP models with varying σ values and compares their test accuracy against a non-DP baseline.
