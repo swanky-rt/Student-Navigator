@@ -137,8 +137,8 @@ def main():
 
     # ------------------ Median grad norm ------------------
     model_tmp = make_model(D, C, device)
-    MAX_GRAD_NORM = 0.17
-    # estimate_median_grad_norm(model_tmp, base_loader, device)
+    MAX_GRAD_NORM = estimate_median_grad_norm(model_tmp, base_loader, device)
+    # 0.17
     print(f"[clip] Using gradient norm bound C = {MAX_GRAD_NORM:.3f}")
 
     # ------------------ Baseline ------------------
@@ -165,6 +165,7 @@ def main():
         "train_acc": train_hist_base,
         "test_acc": test_hist_base
     }).to_csv(os.path.join(ART,"baseline_accuracy.csv"), index=False)
+
 
     # ------------------ DP Model ------------------
     delta = TARGET_DELTA if TARGET_DELTA else 1.0 / N
@@ -245,6 +246,13 @@ def main():
         "test_acc": test_hist_dp,
         "epsilon": eps_hist if plot_eps else [TARGET_EPS]*EPOCHS
     }).to_csv(os.path.join(ART,"dp_accuracy.csv"), index=False)
+
+    # Print final baseline test accuracy
+    print(f"Final baseline model test accuracy: {test_hist_base[-1]:.4f}")
+
+    # Print final DP test accuracy
+    print(f"Final DP model test accuracy: {test_hist_dp[-1]:.4f}")
+
 
     plt.figure(figsize=(8,5))
     epochs = np.arange(1, EPOCHS+1)
