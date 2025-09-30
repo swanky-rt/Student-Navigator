@@ -117,3 +117,49 @@ It runs multiple DP models with varying σ values and compares their test accura
 ```bash
 python assignment-3/code/analyze_noise.py
 ```
+
+## Module 3: Clipping Norm Sweep — analyze_clip.py
+
+This module evaluates how the **gradient clipping norm (C)** affects the performance of DP-SGD when training a text classification model. It runs multiple DP models with varying clipping values and compares their test accuracy.
+
+---
+
+### Purpose
+
+- Empirically show the **impact of gradient clipping** on DP-SGD accuracy.  
+- Provide intuition for choosing a suitable clipping norm in practice.
+
+---
+
+### Settings
+  
+- **Features**: TF-IDF (`max_features=258`, bigrams included).  
+- **Model**: 2-layer feedforward NN with hidden size 128.  
+- **Lot Size**: √N.  
+  - Following literature (Abadi et al., Opacus examples), using lot size ~√N balances privacy and utility.  
+- **Epochs**: N / Lot Size.  
+- **Noise Multiplier (σ)**: 1.0.  
+- **Clipping Grid**: `[0.5×, ..., 2×]` estimated median grad norm (8 values).  
+  - Median is estimated from the training data and snapped to the nearest tested value for annotation.  
+- **Delta (δ)**: 1/N.  
+  - Widely used setting for DP guarantees.
+
+---
+
+### Inputs & Outputs
+
+- **Input**: `dataset.csv` (columns: `job_description`, `job_role`).  
+- **Outputs** (saved in `artifacts/`):
+  - `clip_vs_acc.png` → accuracy vs clipping norm plot.  
+  - Smoothed accuracy curve (red).  
+  - Observed accuracy points (black).  
+  - Peak accuracy (green dot).  
+  - Median clipping norm (blue dashed line, snapped to nearest tested value).
+
+---
+
+### How to Run
+
+```bash
+python assignment-3/code/analyze_clip.py
+```
