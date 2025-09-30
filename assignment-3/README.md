@@ -1,27 +1,27 @@
+<div align="center">
 
-<div align="center" style="margin-bottom: 2em;">
-  <h1 style="color:#1565c0; font-size:2.4em; font-weight:bold; letter-spacing:1px; margin-bottom:0.2em;">EduPilot</h1>
-  <h3 style="color:#333; font-weight:normal; margin-top:0;">Analysis of Differential Privacy Techniques on Balanced Synthetic Job Data</h3>
-  <div style="font-size:1em; color:#333; max-width:600px; margin:0 auto 1.5em auto;">
-    <em>This project investigates the impact of differential privacy (DP) techniques on neural network models for job role classification, using a synthetic, balanced dataset and a simple yet effective 2-layer MLP architecture.</em>
-  </div>
-  <div style="background:#f5faff; border:1.5px solid #1976d2; border-radius:8px; display:inline-block; padding:18px 32px; margin-bottom:1.5em; box-shadow:0 2px 8px #1976d233;">
-    <b>Quick Navigation</b>
-    <ul style="list-style:none; padding-left:0; margin:0; font-size:1.08em;">
-      <li><a href="#model-setting-and-dataset-generation">Model & Dataset</a></li>
-      <li><a href="#setting-up-the-conda-environment">Environment Setup</a></li>
-      <li><a href="#module-1-privacy-accounting-comparison-strong_vs_moments_accountantpy">Module 1: Privacy Accounting Comparison</a></li>
-      <li><a href="#module-2-noise-sweep--noise_vs_accuracypy">Module 2: Noise Sweep</a></li>
-      <li><a href="#module-3-clipping-norm-sweep--analyze_clippy">Module 3: Clipping Norm Sweep</a></li>
-      <li><a href="#module-4-miscellaneous-hyperparameter-sweep--analyze_miscellanous_paramspy">Module 4: Hyperparameter Sweep</a></li>
-      <li><a href="#module-5-baseline-vs-dp-training--train_dp_modelpy">Module 5: Baseline vs DP Training</a></li>
-    </ul>
-  </div>
+# EduPilot
+
+### Analysis of Differential Privacy Techniques on Balanced Synthetic Job Data
+
+*This project investigates the impact of differential privacy (DP) techniques on neural network models for job role classification, using a synthetic, balanced dataset and a simple yet effective 2-layer MLP architecture.*
+
+**Team Lead:** Swetha Saseendran  
 </div>
 
-<div id="team-lead" style="border: 2px solid #1976d2; border-radius: 8px; background: #e3f2fd; padding: 16px; margin-bottom: 18px; text-align: center; font-size: 1em; font-weight: bold; color: #0d47a1; box-shadow: 0 2px 8px #1976d233;">
-  Team Lead: Swetha Saseendran
-</div>
+---
+
+### Quick Navigation
+- [Model & Dataset](#model-setting-and-dataset-generation)
+- [Environment Setup](#setting-up-the-conda-environment)
+- [Module 1: Privacy Accounting Comparison](#module-1-privacy-accounting-comparison-strong_vs_moments_accountantpy)
+- [Module 2: Noise Sweep](#module-2-noise-sweep--noise_vs_accuracypy)
+- [Module 3: Clipping Norm Sweep](#module-3-clipping-norm-sweep--analyze_clippy)
+- [Module 4: Hyperparameter Sweep](#module-4-miscellaneous-hyperparameter-sweep--analyze_miscellanous_paramspy)
+- [Module 5: Baseline vs DP Training](#module-5-baseline-vs-dp-training--train_dp_modelpy)
+
+---
+
 
 ## Model Setting and Dataset Generation
 The model used is a 2-layer feedforward neural network (multilayer perceptron, MLP) with the following structure:
