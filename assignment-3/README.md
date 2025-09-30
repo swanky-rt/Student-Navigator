@@ -186,7 +186,7 @@ This module compares the training and test accuracy of a non-private (baseline) 
 
 - **Features**: TF-IDF (`max_features=258`, bigrams included).
 - **Model**: 2-layer feedforward NN with hidden size 128.
-- **Lot Size**: 60 (from hyper-param tuning (close to sq root of N); can be changed in code).
+- **Lot Size**: 60 (from hyper-param tuning (close to √N of N i.e 56); can be changed in code).
 - **Epochs**: N / Lot Size.
 - **Clipping Norm (C)**: 0.17 (from hyper-param tuning; can be changed in code).
 - **Noise Multiplier (σ)**: configurable via `--sigma` argument.
