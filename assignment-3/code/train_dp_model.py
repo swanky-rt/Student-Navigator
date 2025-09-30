@@ -9,11 +9,22 @@ from opacus import PrivacyEngine
 import matplotlib.pyplot as plt
 import argparse
 
+'''
+PAPER BEST:
+Final baseline model test accuracy: 0.8313
+Final DP model test accuracy: 0.7925
+
+
+MY BEST
+Final baseline model test accuracy: 0.8350
+Final DP model test accuracy: 0.8150
+'''
+
 # ------------------ Args ------------------
 parser = argparse.ArgumentParser()
 parser.add_argument("--target_eps", type=float, default=None, help="Target privacy budget ε")
 parser.add_argument("--target_delta", type=float, default=None, help="Target δ")
-parser.add_argument("--sigma", type=float, default=1.0, help="Noise multiplier σ (used if eps not fixed)")
+parser.add_argument("--sigma", type=float, default=1.5, help="Noise multiplier σ (used if eps not fixed)")
 args = parser.parse_args()
 
 TARGET_EPS = args.target_eps
@@ -137,8 +148,9 @@ def main():
 
     # ------------------ Median grad norm ------------------
     model_tmp = make_model(D, C, device)
-    MAX_GRAD_NORM = estimate_median_grad_norm(model_tmp, base_loader, device)
-    # 0.17
+    MAX_GRAD_NORM = 0.17
+    # estimate_median_grad_norm(model_tmp, base_loader, device)
+   
     print(f"[clip] Using gradient norm bound C = {MAX_GRAD_NORM:.3f}")
 
     # ------------------ Baseline ------------------
@@ -275,7 +287,7 @@ def main():
               f"DP params: clip={MAX_GRAD_NORM:.2f}, lot size={LOT_SIZE}, δ=1/N, σ={sigma_used}")
     plt.grid(True)
     plt.legend()
-    plt.savefig(os.path.join(ART,"baseline_vs_dp_train_test.png"))
+    # plt.savefig(os.path.join(ART,"baseline_vs_dp_train_test.png"))
     plt.show()
 
 
@@ -287,7 +299,7 @@ def main():
         plt.xlabel("Epoch"); plt.ylabel("Epsilon (ε)")
         plt.title("Privacy consumption over epochs")
         plt.grid(True); plt.legend()
-        plt.savefig(os.path.join(ART,"epsilon_curve_final.png"))
+        # plt.savefig(os.path.join(ART,"epsilon_curve_final.png"))
         plt.show()
 
 
