@@ -13,7 +13,7 @@ ART      = "assignment-3/artifacts"
 os.makedirs(ART, exist_ok=True)
 
 SEED       = 42
-MAX_FEAT   = 300
+MAX_FEAT   = 258
 HIDDEN     = 128
 LR         = 0.05
 SIGMA      = 1.0
