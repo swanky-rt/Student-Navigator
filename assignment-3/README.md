@@ -12,7 +12,8 @@ The model used is a 2-layer feedforward neural network (multilayer perceptron, M
 
 This architecture is implemented in the `make_model` function in the script.
 
-![Model Architecture](/assignment-3/artifacts/model_architecture.png)
+
+<img src="/assignment-3/artifacts/model_architecture.png" alt="Model Architecture" width="600"/>
 
 
 For a 2-layer MLP, the number of trainable parameters is:
