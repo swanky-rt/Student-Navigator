@@ -219,3 +219,51 @@ Example:
 ```bash
 python assignment-3/code/train_dp_model.py --target_delta 0.0001
 ```
+## Module 4: Miscellaneous Hyperparameter Sweep — analyze_miscellanous_params.py
+
+So after I analyzed how clipping norm and noise multiplier affected my DP model, I also wanted to investigate how the other params in relation to the model itself helps the DP model attain its best accuracy and epsilon budget. So,this module allows you to sweep and analyze the effect of various hyperparameters about the model itself (hidden layer size, lot size, learning rate) on the accuracy and privacy of a DP-SGD model for job role classification.
+
+---
+
+### Purpose
+
+- Empirically show how different hyperparameters affect DP-SGD accuracy and privacy (epsilon).
+- Help select optimal values for hidden units, lot size, and learning rate for your dataset.
+
+---
+
+### Settings
+
+- **Features**: TF-IDF (`max_features=258`, bigrams included).
+- **Model**: 2-layer feedforward NN with hidden size (swept or fixed).
+- **Lot Size**: swept or fixed.
+- **Learning Rate**: swept or fixed.
+- **Clipping Norm (C)**: 0.17 (default - best value from previous analysis).
+- **Noise Multiplier (σ)**: 1.5 (default - best value from previous analysis).
+- **Delta (δ)**: 1/N.
+
+---
+
+### Inputs & Outputs
+
+- **Input**: `dataset.csv` (columns: `job_description`, `job_role`).
+- **Outputs** (saved in `artifacts/`):
+  - `sweep_hidden_smooth.png`, `sweep_lot_smooth.png`, `sweep_lr_smooth.png` (or similar) → accuracy vs swept parameter plots.
+
+---
+
+### How to Run
+
+```bash
+python assignment-3/code/analyze_miscellanous_params.py --sweep <hidden|lot|lr> [--smooth]
+```
+Examples:
+```bash
+python assignment-3/code/analyze_miscellanous_params.py --sweep hidden --smooth
+```
+```bash
+python assignment-3/code/analyze_miscellanous_params.py --sweep lot
+```
+```bash
+python assignment-3/code/analyze_miscellanous_params.py --sweep lr --smooth
+```
