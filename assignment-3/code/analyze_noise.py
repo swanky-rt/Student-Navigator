@@ -6,6 +6,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import LabelEncoder
 from opacus import PrivacyEngine
 import matplotlib.pyplot as plt
+from scipy.interpolate import make_interp_spline
 
 # ---------------- Config ----------------
 CSV_PATH = "assignment-3/code/data/dataset.csv"
@@ -113,13 +114,28 @@ for sigma in NOISE_GRID:
     print(f"[Noise={sigma}] acc={acc:.3f}, eps={eps:.2f}")
 
 # ---------------- Plot ----------------
+SMOOTH = True
+SWEEP_PARAM = "noise"
+grid = NOISE_GRID
+label = "Noise multiplier (σ)"
+
 plt.figure(figsize=(8,5))
-plt.plot(NOISE_GRID, accs, marker="o", label="DP Test Accuracy")
+# Always plot raw points
+plt.scatter(grid, accs, color="black", s=20, alpha=0.6, label="Raw points")
+# Always plot smoothed curve if possible
+if len(grid) > 3:
+    xnew = np.linspace(min(grid), max(grid), 300)
+    spline = make_interp_spline(grid, accs, k=3)
+    ynew = spline(xnew)
+    plt.plot(xnew, ynew, label="Smoothed Accuracy", color="red")
+# Also plot the line connecting raw points
+plt.plot(grid, accs, marker="o", linestyle="--", color="gray", alpha=0.5, label="Raw Accuracy Line")
+
 plt.axhline(y=baseline_acc, color="blue", linestyle="--", label=f"Baseline acc={baseline_acc:.3f}")
 max_idx = np.argmax(accs)
-plt.scatter(NOISE_GRID[max_idx], accs[max_idx], color="green", s=80, label=f"Peak acc={accs[max_idx]:.3f}")
-plt.xlabel("Noise multiplier (σ)"); plt.ylabel("Accuracy")
-plt.title("Effect of Noise on DP-SGD Accuracy")
+plt.scatter(grid[max_idx], accs[max_idx], color="green", s=80, label=f"Peak acc={accs[max_idx]:.3f}")
+plt.xlabel(label); plt.ylabel("Final Test Accuracy")
+plt.title(f"DP-SGD Sweep: {label}\n(epochs=N/L, L=√N default, δ=1/N)")
 plt.grid(True); plt.legend()
-plt.savefig(os.path.join(ART, "noise_vs_acc.png"))
+plt.savefig(os.path.join(ART, f"sweep_{SWEEP_PARAM}_raw_and_smooth.png"))
 plt.show()
