@@ -212,6 +212,7 @@ def main():
             data_loader=base_loader,
             noise_multiplier=SIGMA,
             max_grad_norm=MAX_GRAD_NORM,
+            target_delta=0.00025,
         )
         sigma_used = SIGMA
         plot_eps = True
@@ -229,6 +230,7 @@ def main():
             data_loader=base_loader,
             noise_multiplier=SIGMA,
             max_grad_norm=MAX_GRAD_NORM,
+            target_delta=0.00025,
         )
         sigma_used = SIGMA
         plot_eps = True
@@ -301,6 +303,13 @@ def main():
         plt.grid(True); plt.legend()
         plt.savefig(os.path.join(ART,"epsilon_curve_final.png"))
         plt.show()
+
+    # Save models for MIA in ART folder after both are trained
+    torch.save(model_base.state_dict(), os.path.join(ART, "baseline_model.pth"))
+    try:
+        torch.save(model.state_dict(), os.path.join(ART, "dp_model.pth"))
+    except Exception as e:
+        print("[Warning] DP model not saved:", e)
 
 
 if __name__ == "__main__":
