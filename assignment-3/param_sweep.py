@@ -10,6 +10,36 @@ from torch.utils.data import TensorDataset, DataLoader
 from opacus import PrivacyEngine
 import matplotlib.pyplot as plt
 
+
+'''
+(690f) swethasaseendran@vl965-172-31-238-222 proj-group-04 % clear
+(690f) swethasaseendran@vl965-172-31-238-222 proj-group-04 % python assignment-3/param_sweep.py
+[split] train=3199 test=800
+[data] D=200 C=4
+
+[dp-grid] Running param sweep (sigma, epsilon)...
+/opt/homebrew/Caskroom/miniconda/base/envs/690f/lib/python3.9/site-packages/opacus/privacy_engine.py:96: UserWarning: Secure RNG turned off. This is perfectly fine for experimentation as it allows for much faster training performance, but remember to turn it on and retrain one last time before production with ``secure_mode`` turned on.
+  warnings.warn(
+09/30/2025 23:22:11:WARNING:Ignoring drop_last as it is not compatible with DPDataLoader.
+/Users/swethasaseendran/Documents/UMass/666 Theory of Crypto/proj-group-04/assignment-3/param_sweep.py:155: UserWarning: Full backward hook is firing when gradients are computed with respect to module outputs since no inputs require gradients. See https://docs.pytorch.org/docs/main/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_hook for more details.
+  loss.backward()
+[dp-grid] C=0.5, σ=0.5 -> train_acc=0.8422, test_acc=0.8163, ε=49.274
+09/30/2025 23:22:45:WARNING:Ignoring drop_last as it is not compatible with DPDataLoader.
+[dp-grid] C=0.5, σ=1.0 -> train_acc=0.8369, test_acc=0.8138, ε=8.629
+09/30/2025 23:23:03:WARNING:Ignoring drop_last as it is not compatible with DPDataLoader.
+[dp-grid] C=0.5, σ=2.0 -> train_acc=0.8418, test_acc=0.8112, ε=2.827
+09/30/2025 23:23:23:WARNING:Ignoring drop_last as it is not compatible with DPDataLoader.
+[dp-grid] C=1.0, σ=0.5 -> train_acc=0.8441, test_acc=0.8188, ε=49.274
+09/30/2025 23:24:02:WARNING:Ignoring drop_last as it is not compatible with DPDataLoader.
+[dp-grid] C=1.0, σ=1.0 -> train_acc=0.8535, test_acc=0.8225, ε=8.629
+09/30/2025 23:24:27:WARNING:Ignoring drop_last as it is not compatible with DPDataLoader.
+[dp-grid] C=1.0, σ=2.0 -> train_acc=0.8580, test_acc=0.8188, ε=2.827
+Saved: dp_param_sweep_results.csv
+Saved: dp_param_sweep_train_acc_vs_epoch.png
+Saved: dp_param_sweep_test_acc_vs_epoch.png
+(690f) swethasaseendran@vl965-172-31-238-222 proj-group-04 % 
+'''
+
 # ------------------ Paths & Seeds ------------------
 CSV_PATH = "assignment-3/code/data/dataset.csv"
 ART      = "assignment-3/artifacts"
@@ -125,7 +155,7 @@ def main():
     SWEEP_CLIP = [0.5, 1.0]
     SWEEP_SIGMA = [0.5, 1.0, 2.0]
     EPOCHS_GRID = 50
-    BATCH_SIZE      = 150
+    BATCH_SIZE  = 150
     results = []
     acc_curves = {}
     train_curves = {}
