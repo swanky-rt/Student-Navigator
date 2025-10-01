@@ -13,6 +13,8 @@
 * [Vulnerabilities & Implications](#vulnerabilities--implications)
 * [How to Run the Code](#how-to-run-the-code)
 * [References](#references)
+* [Verification & Results](#assignment-requirements--verification--results)
+* [Communication Overhead](#communication-overhead)
 
 ---
 
@@ -293,14 +295,27 @@ ___
 | FL IID | 0.8250 | 100 | 75 | 82 | 96 | — |
 | FL Non‑IID | 0.7425 | 100 | 89 | — | — | — |
 
-- **Communication overhead (estimate):**  
-  Using the assignment’s formula  
-  `Total ≈ 2 × (#params × 4 bytes) × #clients × #rounds`  
-  For these runs (**rounds = 100**, **clients = 5**):  
-  `Total ≈ 8 × (#params) × 5 × 100 bytes = 4,000 × (#params) bytes.`  
-  Substitute **#params** from your model (flattened float32 parameter count).
+## Communication Overhead
 
-**Artifacts**  
+**Formula (total bytes)**  
+`Total ≈ 2 × (#params × 4 bytes) × #clients × #rounds`  
+**Equivalent:** `8 × #params × #clients × #rounds`
+
+**Model parameter count (TF-IDF → 64 → 5 MLP)**  
+- Input→Hidden: `2000 × 64 = 128,000`  
+- Hidden bias: `64`  
+- Hidden→Output: `64 × 5 = 320`  
+- Output bias: `5`  
+- **Total #params:** `128,389`
+
+**Per round, per client**  
+`8 × 128,389 = 1,027,112 bytes ≈ 1.03 MB`
+
+**All clients, all rounds (5 clients, 100 rounds)**  
+`8 × 128,389 × 5 × 100 = 513,556,000 bytes ≈ 490 MB`
+
+## Artifacts(After sucessful execution, Artificats folder gets created)
+
 - CSVs(For Fed Avg): `fl_iid_accuracy.csv`, `fl_non_iid_accuracy.csv`, `central_accuracy.csv`  
 - Figure: `fl_iid_vs_non_iid_vs_central.png`
   
