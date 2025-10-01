@@ -299,7 +299,7 @@ def main():
         plt.xlabel("Epoch"); plt.ylabel("Epsilon (ε)")
         plt.title("Privacy consumption over epochs")
         plt.grid(True); plt.legend()
-        # plt.savefig(os.path.join(ART,"epsilon_curve_final.png"))
+        plt.savefig(os.path.join(ART,"epsilon_curve_final.png"))
         plt.show()
 
 
