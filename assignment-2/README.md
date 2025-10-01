@@ -214,18 +214,18 @@ Here are the graphs to show the comparison visually:
 
 ## How to Run the Code
 
-** Main Code (This execution is for FL using FedAvg aggregator) **:
+## Main Code Execution (This execution is for FL using FedAvg aggregator):
 
-# Please follow below instructions to execute the code( this is for federated learning using fedAvg aggregator).
+**Please follow below instructions to execute the code( this is for federated learning using fedAvg aggregator).**
 
 **Command Line Commands**
 
-# STEP-1: Please come to repo root using below command line.
+STEP-1: Please come to repo root using below command line.
 ```python
 cd assignment-2/code/federated_learning_fedAvg
 ```
 
-# STEP-2: Run the below command.
+STEP-2: Run the below command.
 ```python
 python run_fedAvg.py
 ```
@@ -233,46 +233,36 @@ python run_fedAvg.py
 ---
 OR
 
-** If we are running script directly **
+**If we are running script directly**
 
-# STEP-1: Run script directly "run_fedAvg.py"
+STEP-1: Run script directly "run_fedAvg.py"
 
 ---
 
-** Optional Code( if we want to run other aggregator) Command Line Commands****:
+**Optional Code( if we want to run other aggregator) Command Line Commands****:
 
-# Please follow below instructions to execute the code( this is for federated learning using fed median aggregator.
+## Please follow below instructions to execute the code( this is for federated learning using other aggregator (Fed Median & Fed SGD) .
 
-# STEP-1: Please come to repo root using below command line.
+Please come to repo root using below commands on CLI.
+
 ```python
 cd assignment-2/code/federated_learning_fedMedian
 ```
 
-# STEP-2: Run the below command.
 ```python
 python run_fed_median.py
 ```
 
----
-
-# Please follow below instructions to execute the code( this is for federated learning using fedsgd aggregator.
-
-# STEP-1: Please come to repo root using below command line using below command.
-```python
-cd assignment-2/code/federated_learning_fedSgd
-```
-
-# STEP-2: Run the below command.
 ```python
 python run_fed_sgd.py.py
 ```
 
 OR
 
-** If we are running script directly **
+**If we are running script directly( Run these 2 scripts)**
 
-# STEP-1: Run script directly "run_fed_median.py"
-# STEP-2: Run script directly "run_fed_sgd.py"
+STEP-1: Run script directly "run_fed_median.py"
+STEP-2: Run script directly "run_fed_sgd.py"
 ___
 
 
