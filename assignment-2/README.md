@@ -301,5 +301,11 @@ ___
   Substitute **#params** from your model (flattened float32 parameter count).
 
 **Artifacts**  
-- CSVs: `fl_iid_accuracy.csv`, `fl_non_iid_accuracy.csv`, `central_accuracy.csv`  
+- CSVs(For Fed Avg): `fl_iid_accuracy.csv`, `fl_non_iid_accuracy.csv`, `central_accuracy.csv`  
 - Figure: `fl_iid_vs_non_iid_vs_central.png`
+  
+- CSVs(for Fed Median): `fl_iid_fedmedian_accuracy.csv`, `fl_non_iid_fedmedian_accuracy.csv`, `central_accuracy.csv`  
+- Figure: `fl_iid_vs_non_iid_vs_central_fedmedian.png`
+  
+- CSVs(for Fed Median): `fl_iid_fedsgd_accuracy.csv`, `fl_non_iid_fedsgd_accuracy.csv`, `central_accuracy.csv`  
+- Figure: `fl_iid_vs_non_iid_vs_central_fedsgd.png`
