@@ -6,7 +6,7 @@ from sklearn.metrics import accuracy_score
 
 SEED = 42
 BASE_DIR = Path(__file__).resolve().parent
-ART = "artifacts_centralized"
+ART = BASE_DIR / "artifacts_centralized"
 NUM_CLIENTS  = 5
 ROUNDS       = 100
 LR_GLOBAL    = 0.05
@@ -173,7 +173,8 @@ def main():
 		acc_hist.append(float(acc))
 		print(f"[FedSGD | {MODE} | Round {r:02d}] acc={acc:.4f}")
 
-	pd.DataFrame({"round": np.arange(1, len(acc_hist)+1), "acc": acc_hist}).to_csv("../fl_non_iid_fedsgd_accuracy.csv", index=False)
+	pd.DataFrame({"round": np.arange(1, len(acc_hist)+1), "acc": acc_hist}).to_csv(
+		ART/"fl_non_iid_fedsgd_accuracy.csv", index=False)
 	print("Saved: fl_non_iid_fedsgd_accuracy.csv")
 
 if __name__ == "__main__":

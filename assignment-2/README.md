@@ -148,6 +148,54 @@ EduPilot is designed to help job-seekers practice for interviews by generating r
 * FedMedian offers robustness to skew but does not fully recover centralized accuracy.
 * Communication overhead: Each round requires clients to send their full parameter vector (~O(#weights)).
 
+Note: We have also used different aggregators to explore the behaviour of federated learning. And below is the comparison mentioned in detail.
+
+## Justification: FedAvg vs FedMedian
+
+In our experiments, both **FedAvg** and **FedMedian** achieved similar accuracy under IID data, since all clients contributed updates aligned toward the global optimum. However, under Non-IID data, **FedAvg remained robust with ~0.7425 accuracy**, while **FedMedian collapsed to ~0.3175**.
+
+This behavior is consistent with prior work:
+
+- **FedAvg**: McMahan et al. (2016) showed that FedAvg is surprisingly effective even under heterogeneous and unbalanced client data, since averaging smooths out divergences in local updates:  
+  > *“Even with highly non-IID and unbalanced data, FedAvg achieves surprisingly good accuracy.”*  
+  [[Paper Link]](https://arxiv.org/pdf/1602.05629)
+
+- **FedMedian**: Robust aggregation rules such as the coordinate-wise median were introduced to defend against adversarial (Byzantine) clients. Yin et al. (2018) demonstrated that while median-based rules provide theoretical robustness guarantees, they can fail under natural data heterogeneity, since the median discards useful directional information when updates diverge:  
+  > *“While median-based rules are provably robust to Byzantine failures, they may fail to converge under heterogeneous client distributions, as the median cancels out informative gradients.”*  
+  [[Paper Link]](https://arxiv.org/pdf/1803.01498)
+
+### Summary
+- Under **IID data**, both FedAvg and FedMedian perform similarly.  
+- Under **Non-IID data**, FedAvg remains robust due to smoothing effects of averaging, while FedMedian suffers accuracy collapse because it relies on majority agreement and cancels out divergent but useful gradients.  
+- Thus, FedAvg is the preferred choice in practical federated learning scenarios without adversaries.
+
+
+Note: We have explored and implemented FedSGD aggregator apart from FedAvg( main aggregator) & FedMedian to get more idea about aggregator performance in FL
+
+## Justification: FedSGD vs FedAvg
+
+The lower accuracy of **FedSGD** compared to **FedAvg** is expected and aligns with the findings of McMahan et al. (2016) in *“Communication-Efficient Learning of Deep Networks from Decentralized Data”* ([arXiv:1602.05629](https://arxiv.org/pdf/1602.05629)).
+
+- **FedSGD**: Each client computes a single gradient step per round, and the server averages these gradients. This makes each communication round equivalent to just **one step of centralized SGD**. As a result, convergence is slow and final accuracy is much lower unless an extremely large number of rounds is run.
+
+- **FedAvg**: Each client performs **multiple local training epochs** before sending model updates. The server then averages these weights. This amortizes communication costs and allows each round to make much more progress, leading to faster convergence and higher accuracy.
+
+As shown in Section 4.2 of McMahan et al. (2016):
+
+> *“FedAvg converges in far fewer rounds, with little or no loss in accuracy, whereas FedSGD requires many more rounds to achieve comparable results.”*
+
+### Summary
+- FedSGD is primarily of **theoretical interest** due to its simplicity.  
+- FedAvg is the **practical algorithm of choice** for federated learning because it leverages local computation for significantly better accuracy and efficiency.
+
+Here are the graphs to show the comparison visually:
+
+<img width="1084" height="675" alt="Screenshot 2025-09-27 at 11 26 33 PM" src="https://github.com/user-attachments/assets/32a4d04c-a5ab-4d0b-9778-9cae60ccbe1c" />
+
+<img width="808" height="505" alt="Screenshot 2025-09-27 at 11 26 50 PM" src="https://github.com/user-attachments/assets/4f918517-2837-4066-9ee5-600763559179" />
+
+<img width="1084" height="675" alt="Screenshot 2025-09-27 at 11 26 37 PM" src="https://github.com/user-attachments/assets/e8e5b57c-1892-48fd-8f78-becc149afc32" />
+
 ---
 
 ## Vulnerabilities & Implications
@@ -166,80 +214,57 @@ EduPilot is designed to help job-seekers practice for interviews by generating r
 
 ## How to Run the Code
 
-# Please follow below instructions to get the comparisons using FedAvg Aggregator.
+## Main Code Execution (This execution is for FL using FedAvg aggregator):
 
-From repo root
-cd assignment-2/federated_learning_fedAvg
+**Please follow below instructions to execute the code( this is for federated learning using fedAvg aggregator).**
 
-step 1) Build centralized baseline + shared text/vector artifacts
-python centralize_global_file.py
+**Command Line Commands**
 
-creates: artifacts_centralized/{tfidf_vectorizer.pkl, label_encoder.pkl, ...}
-and:     artifacts_centralized/central_accuracy.csv
+STEP-1: Please come to repo root using below command line.
+```python
+cd assignment-2/code/federated_learning_fedAvg
+```
 
-step 2) Federated (IID)
-python federated_learning_iid.py
-
--> fl_iid_accuracy.csv
-
-step 3) Federated (Non-IID)
-python federated_learning_non_iid.py
-
--> fl_non_iid_accuracy.csv
-
-step 4) Plot FedAvg vs Centralized
-python graph_plotting.py
-
--> fl_iid_vs_non_iid_vs_central.png
-
-
-# Please follow below instructions to get the comparisons using FedMedian Aggregator.
-
-From repo root
-cd assignment-2/federated_learning_fedMedian
-
-step 1) Build centralized baseline for this executor
-python centralize_global_file.py
--> artifacts_centralized/central_accuracy.csv  (FedMedian’s own copy)
-
-step 2) Federated (IID)
-python fedmedian_iid.py
--> fl_iid_fedmedian_accuracy.csv
-
-step 3) Federated (Non-IID)
-python fedmedian_non_iid.py
--> fl_non_iid_fedmedian_accuracy.csv
-
-step 4) Plot FedMedian vs Centralized
-python graph_plotting_fedmedian.py
--> fedMedianPlot.png
-   
-# Please follow below instructions to get the comparisons using FedSgd Aggregator.
-
-From repo root
-cd assignment-2/federated_learning_fedSgd
-
-step 1) Build centralized baseline for this executor
-python centralize_global_file.py
--> artifacts_centralized/central_accuracy.csv (FedSGD's own copy)
-
-step 2) Federated (IID)
-python fedsgd_iid.py
--> fedsgd_iid.csv
-
-step 3) Federated (Non-IID)
-python fedsgd_non_iid.py
--> fedsgd_non_iid.csv
-
-step 4) Plot FedSGD vs Centralized
-python graph_plotting_fedsgd.py
--> fl_iid_vs_non_iid_vs_central_fedsgd.png
-
-step 4) Plot FedSGD vs Centralized
-python graph_plotting_fedsgd.py
--> fedsgd.png
+STEP-2: Run the below command.
+```python
+python run_fedAvg.py
+```
 
 ---
+OR
+
+**If we are running script directly**
+
+STEP-1: Run script directly "run_fedAvg.py"
+
+---
+
+**Optional Code( if we want to run other aggregator) Command Line Commands****:
+
+## Please follow below instructions to execute the code( this is for federated learning using other aggregator (Fed Median & Fed SGD) .
+
+Please come to repo root using below commands on CLI.
+
+```python
+cd assignment-2/code/federated_learning_fedMedian
+```
+
+```python
+python run_fed_median.py
+```
+
+```python
+python run_fed_sgd.py.py
+```
+
+OR
+
+**If we are running script directly( Run these 2 scripts)**
+
+STEP-1: Run script directly "run_fed_median.py"
+STEP-2: Run script directly "run_fed_sgd.py"
+___
+
 
 ## References
 

@@ -1,10 +1,13 @@
 import os, pickle, numpy as np, pandas as pd
+from pathlib import Path
+
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import StratifiedKFold
 from neural_network_model import NeuralNetwork
 
 SEED = 42
-ART  = "../artifacts_centralized"
+ART = (Path(__file__).resolve().parent / "artifacts_centralized")
+ART.mkdir(parents=True, exist_ok=True)
 NUM_CLIENTS  = 5
 ROUNDS       = 100
 EPOCHS_LOCAL = 5
@@ -74,7 +77,7 @@ def main():
         acc_hist.append(float(acc))
         print(f"[{MODE} | Round {r:02d}] acc={acc:.4f}")
 
-    pd.DataFrame({"round": np.arange(1, len(acc_hist)+1), "acc": acc_hist}).to_csv("fl_iid_accuracy.csv", index=False)
+    pd.DataFrame({"round": np.arange(1, len(acc_hist)+1), "acc": acc_hist}).to_csv(ART /"fl_iid_accuracy.csv", index=False)
     print("Saved: fl_iid_accuracy.csv")
 
 if __name__ == "__main__":

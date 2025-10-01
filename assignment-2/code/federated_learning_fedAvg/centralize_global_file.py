@@ -7,14 +7,15 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
 from neural_network_model import NeuralNetwork
 
-CSV_PATH = Path(__file__).resolve().parents[1] / "EduPilot_dataset_2000.csv"
+CSV_PATH        = "../../data/EduPilot_dataset_2000.csv"
 SEED            = 42
 MAX_FEATURES    = 2000
 HIDDEN_UNITS    = 128
 LAMBDA          = 1e-4
 EPOCHS_CENTRAL  = 100
 LR_CENTRAL      = 0.10
-ART             = "artifacts_centralized"
+ART = (Path(__file__).resolve().parent / "artifacts_centralized")
+ART.mkdir(parents=True, exist_ok=True)
 
 def build_text(df: pd.DataFrame) -> pd.Series:
     if "text" in df.columns: return df["text"].astype(str)
@@ -77,7 +78,7 @@ def main():
         acc = (nn.predict_multiclass(Xte_T) == yte).mean()
         acc_hist.append(float(acc))
 
-    pd.DataFrame({"epoch": np.arange(1, EPOCHS_CENTRAL+1), "acc": acc_hist}).to_csv("central_accuracy.csv", index=False)
+    pd.DataFrame({"epoch": np.arange(1, EPOCHS_CENTRAL+1), "acc": acc_hist}).to_csv(ART/ "central_accuracy.csv", index=False)
     flat = np.concatenate([w.ravel() for w in nn.weights])
     np.save(os.path.join(ART,"nn_weights.npy"), flat)
     print("Saved: central_accuracy.csv and artifacts in", ART)

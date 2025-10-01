@@ -5,22 +5,24 @@ from sklearn.metrics import accuracy_score
 from neural_network_model import NeuralNetwork
 
 SEED = 42
-BASE_DIR = Path(__file__).resolve().parent
-ART = BASE_DIR / "artifacts_centralized"
+ART = (Path(__file__).resolve().parent / "artifacts_centralized")
+ART.mkdir(parents=True, exist_ok=True)
 NUM_CLIENTS  = 5
 ROUNDS       = 100
 EPOCHS_LOCAL = 5
 LR_LOCAL     = 0.05
 HIDDEN_UNITS = 64
 LAMBDA       = 1e-4
-MODE = "NON_IID"
 WARM_START   = False
 
-def make_label_skew_splits(y, k=5, seed=42, labels_per_client=2):
+MODE = "NON_IID"
+
+def make_label_skew_splits(y, k=5, seed=42, labels_per_client=1):
     rng = np.random.default_rng(seed)
     y = np.asarray(y); classes = np.unique(y)
     buckets = {c: list(np.where(y==c)[0]) for c in classes}
     for b in buckets.values(): rng.shuffle(b)
+
     splits = [[] for _ in range(k)]
     for i in range(k):
         chosen = rng.choice(classes, size=min(labels_per_client, len(classes)), replace=False)
@@ -28,26 +30,13 @@ def make_label_skew_splits(y, k=5, seed=42, labels_per_client=2):
             take = max(1, len(buckets[c]) // k)
             splits[i].extend(buckets[c][:take])
             buckets[c] = buckets[c][take:]
+
     leftovers = [idx for v in buckets.values() for idx in v]
     rng.shuffle(leftovers)
     for i, idx in enumerate(leftovers):
         splits[i % k].append(idx)
+
     return [sorted(s) for s in splits]
-
-def client_data(idxs, Xtr, ytr):
-    Xi = Xtr[idxs]; yi = ytr[idxs]
-    return Xi.T, yi
-
-def fedmedian_round(gvec, splits, Xtr, ytr, layer_sizes, lambd):
-    client_weights = []
-    for idxs in splits:
-        Xi, yi = client_data(idxs, Xtr, ytr)
-        local = NeuralNetwork(layer_sizes=layer_sizes, lambd=lambd)
-        local.set_params_vector(gvec.copy())
-        local.train_multiclass(Xi, yi, lr=LR_LOCAL, max_epochs=EPOCHS_LOCAL, verbose=False)
-        wi = local.get_params_vector()
-        client_weights.append(wi)
-    return np.median(np.stack(client_weights, axis=0), axis=0)
 
 def main():
     np.random.seed(SEED)
@@ -71,24 +60,40 @@ def main():
         cnt = collections.Counter(ytr[idxs])
         print(f"[{MODE}] client {i}: N={len(idxs)} hist={dict(cnt)}")
 
+    def client_data(idxs):
+        Xi = Xtr[idxs]; yi = ytr[idxs]
+        return Xi.T, yi
+
     layer_sizes = [D, HIDDEN_UNITS, C]
     global_model = NeuralNetwork(layer_sizes=layer_sizes, lambd=LAMBDA)
     global_vec = global_model.get_params_vector()
 
-    print(f"\n=== FL (FedMedian | {MODE}) START === clients={NUM_CLIENTS} rounds={ROUNDS} E_local={EPOCHS_LOCAL} lr={LR_LOCAL}")
+    print(f"\n=== FL ({MODE}) START === clients={NUM_CLIENTS} rounds={ROUNDS} E_local={EPOCHS_LOCAL} lr={LR_LOCAL}")
     base_pred = global_model.predict_multiclass(Xte_T)
     print(f"[{MODE}] pre-round acc={accuracy_score(yte, base_pred):.4f}")
 
+    def fedavg_round(gvec):
+        total, accum = 0, np.zeros_like(gvec)
+        for idxs in splits:
+            Xi, yi = client_data(idxs)
+            local = NeuralNetwork(layer_sizes=layer_sizes, lambd=LAMBDA)
+            local.set_params_vector(gvec.copy())
+            local.train_multiclass(Xi, yi, lr=LR_LOCAL, max_epochs=EPOCHS_LOCAL, verbose=False)
+            wi = local.get_params_vector()
+            n_i = Xi.shape[1]
+            accum += n_i * wi; total += n_i
+        return accum / max(1, total)
+
     acc_hist = []
     for r in range(1, ROUNDS+1):
-        global_vec = fedmedian_round(global_vec, splits, Xtr, ytr, layer_sizes, LAMBDA)
+        global_vec = fedavg_round(global_vec)
         global_model.set_params_vector(global_vec.copy())
         acc = accuracy_score(yte, global_model.predict_multiclass(Xte_T))
         acc_hist.append(float(acc))
-        print(f"[FedMedian | {MODE} | Round {r:02d}] acc={acc:.4f}")
+        print(f"[{MODE} | Round {r:02d}] acc={acc:.4f}")
 
-    pd.DataFrame({"round": np.arange(1, len(acc_hist)+1), "acc": acc_hist}).to_csv("fl_non_iid_fedmedian_accuracy.csv", index=False)
-    print("Saved: fl_non_iid_fedmedian_accuracy.csv")
+    pd.DataFrame({"round": np.arange(1, len(acc_hist)+1), "acc": acc_hist}).to_csv(ART/"fl_non_iid_accuracy.csv", index=False)
+    print("Saved: fl_non_iid_accuracy.csv")
 
 if __name__ == "__main__":
     main()
