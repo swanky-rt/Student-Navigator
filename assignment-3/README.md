@@ -1,6 +1,56 @@
-# EduPilot - Analysis of Differential Privacy Techniques on Balanced Synthetic Job Data 
+<div align="center">
+
+# EduPilot
+
+### Analysis of Differential Privacy Techniques on Balanced Synthetic Job Data
+
+*This project investigates the impact of differential privacy (DP) techniques on neural network models for job role classification, using a synthetic, balanced dataset and a simple yet effective 2-layer MLP architecture.*
+
+**Team Lead:** Swetha Saseendran  
+</div>
+
+---
+
+### Quick Navigation
+- [Model & Dataset](#model-setting-and-dataset-generation)
+- [Environment Setup](#setting-up-the-conda-environment)
+- [Module 1: Privacy Accounting Comparison](#module-1-privacy-accounting-comparison-strong_vs_moments_accountantpy)
+- [Module 2: Noise Sweep](#module-2-noise-sweep--noise_vs_accuracypy)
+- [Module 3: Clipping Norm Sweep](#module-3-clipping-norm-sweep--analyze_clippy)
+- [Module 4: Hyperparameter Sweep](#module-4-miscellaneous-hyperparameter-sweep--analyze_miscellanous_paramspy)
+- [Module 5: Baseline vs DP Training](#module-5-baseline-vs-dp-training--train_dp_modelpy)
+
+---
+
 
 ## Model Setting and Dataset Generation
+The model used is a 2-layer feedforward neural network (multilayer perceptron, MLP) with the following structure:
+
+- **Input:** TF-IDF features (`max_features=258`)
+- **Hidden layer:** size is swept (default 128, but can be 64, 128, ..., 1024)
+  - `nn.Linear(input_dim, hidden_units)`
+  - `nn.ReLU()`
+- **Output layer:** number of classes
+  - `nn.Linear(hidden_units, num_classes)`
+
+This architecture is implemented in the `make_model` function in the script.
+
+
+<img src="/assignment-3/artifacts/model_architecture.png" alt="Model Architecture" width="600"/>
+
+
+For a 2-layer MLP, the number of trainable parameters is:
+
+- **Layer 1:**
+  - Weights: `input_dim × hidden_units`
+  - Biases: `hidden_units`
+  - Total: `input_dim × hidden_units + hidden_units`
+- **Layer 2:**
+  - Weights: `hidden_units × num_classes`
+  - Biases: `num_classes`
+  - Total: `hidden_units × num_classes + num_classes`
+- **Total:**
+  - `params_l1 + params_l2`
 
 ## Setting Up the Conda Environment
 
@@ -72,7 +122,7 @@ It helps visualize how the privacy budget **ε (epsilon)** grows across training
 python assignment-3/code/strong_vs_moments_accountant.py
 ```
 
-## Module 2: Noise Sweep — noise_vs_accuracy.py
+## Module 2: Noise Sweep — analyze_noise.py
 
 This module evaluates how the **noise multiplier (σ)** affects the performance of DP-SGD when training a text classification model.  
 It runs multiple DP models with varying σ values and compares their test accuracy against a non-DP baseline.
@@ -165,7 +215,54 @@ This module evaluates how the **gradient clipping norm (C)** affects the perform
 python assignment-3/code/analyze_clip.py
 ```
 
-## Module 4: Other Model based Hyperparam Sweep (LR, Lot Size, Hidden Layers)
+## Module 4: Miscellaneous Hyperparameter Sweep — analyze_miscellanous_params.py
+
+So after I analyzed how clipping norm and noise multiplier affected my DP model, I also wanted to investigate how the other params in relation to the model itself helps the DP model attain its best accuracy and epsilon budget. So,this module allows you to sweep and analyze the effect of various hyperparameters about the model itself (hidden layer size, lot size, learning rate) on the accuracy and privacy of a DP-SGD model for job role classification.
+
+---
+
+### Purpose
+
+- Empirically show how different hyperparameters affect DP-SGD accuracy and privacy (epsilon).
+- Help select optimal values for hidden units, lot size, and learning rate for your dataset.
+
+---
+
+### Settings
+After running all the above code I was able to finalize the best clipping norm and noise multiplier.
+- **Features**: TF-IDF (`max_features=258`, bigrams included).
+- **Model**: 2-layer feedforward NN with hidden size (swept or fixed).
+- **Lot Size**: swept or fixed.
+- **Learning Rate**: swept or fixed.
+- **Clipping Norm (C)**: 0.17 (default - best value from previous analysis).
+- **Noise Multiplier (σ)**: 1.5 (default - best value from previous analysis).
+- **Delta (δ)**: 1/N.
+
+---
+
+### Inputs & Outputs
+
+- **Input**: `dataset.csv` (columns: `job_description`, `job_role`).
+- **Outputs** (saved in `artifacts/`):
+  - `sweep_hidden_smooth.png`, `sweep_lot_smooth.png`, `sweep_lr_smooth.png` (or similar) → accuracy vs swept parameter plots.
+
+---
+
+### How to Run
+
+```bash
+python assignment-3/code/analyze_miscellanous_params.py --sweep <hidden|lot|lr> [--smooth]
+```
+Examples:
+```bash
+python assignment-3/code/analyze_miscellanous_params.py --sweep hidden --smooth
+```
+```bash
+python assignment-3/code/analyze_miscellanous_params.py --sweep lot
+```
+```bash
+python assignment-3/code/analyze_miscellanous_params.py --sweep lr --smooth
+```
 
 
 ## Module 5: Baseline vs DP Training — train_dp_model.py
@@ -183,13 +280,13 @@ This module compares the training and test accuracy of a non-private (baseline) 
 ---
 
 ### Settings (Best Params)
-
+After all the hyperparam analysis I have gotten these values below which works best on my dataset and DP setting.
 - **Features**: TF-IDF (`max_features=258`, bigrams included).
 - **Model**: 2-layer feedforward NN with hidden size 128.
 - **Lot Size**: 60 (from hyper-param tuning (close to √N of N i.e 56); can be changed in code).
 - **Epochs**: N / Lot Size.
 - **Clipping Norm (C)**: 0.17 (from hyper-param tuning; can be changed in code).
-- **Noise Multiplier (σ)**: configurable via `--sigma` argument.
+- **Noise Multiplier (σ)**: 1.5 (default value- best from tuning) configurable via `--sigma` argument.
 - **Delta (δ)**: configurable via `--target_delta` argument (default: 1/N).
 - **Epsilon (ε)**: configurable via `--target_eps` argument (optional).
 
@@ -219,3 +316,4 @@ Example:
 ```bash
 python assignment-3/code/train_dp_model.py --target_delta 0.0001
 ```
+
