@@ -221,10 +221,14 @@ Here are the graphs to show the comparison visually:
 **Command Line Commands**
 
 # STEP-1: Please come to repo root using below command line.
+```python
 cd assignment-2/code/federated_learning_fedAvg
+```
 
 # STEP-2: Run the below command.
+```python
 python run_fedAvg.py
+```
 
 ---
 OR
@@ -240,20 +244,28 @@ OR
 # Please follow below instructions to execute the code( this is for federated learning using fed median aggregator.
 
 # STEP-1: Please come to repo root using below command line.
+```python
 cd assignment-2/code/federated_learning_fedMedian
+```
 
 # STEP-2: Run the below command.
+```python
 python run_fed_median.py
+```
 
 ---
 
 # Please follow below instructions to execute the code( this is for federated learning using fedsgd aggregator.
 
 # STEP-1: Please come to repo root using below command line using below command.
+```python
 cd assignment-2/code/federated_learning_fedSgd
+```
 
 # STEP-2: Run the below command.
+```python
 python run_fed_sgd.py.py
+```
 
 OR
 
