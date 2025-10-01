@@ -15,7 +15,6 @@ LR_LOCAL     = 0.05
 HIDDEN_UNITS = 64
 LAMBDA       = 1e-4
 
-
 def make_iid_splits_stratified(y, k=5, seed=42):
     y = np.asarray(y); idx = np.arange(len(y))
     skf = StratifiedKFold(n_splits=k, shuffle=True, random_state=seed)
@@ -62,7 +61,7 @@ def main():
         acc = accuracy_score(yte, global_model.predict_multiclass(Xte_T))
         acc_hist.append(float(acc))
         print(f"[FedMedian | IID | Round {r:02d}] acc={acc:.4f}")
-    pd.DataFrame({"round": np.arange(1, len(acc_hist)+1), "acc": acc_hist}).to_csv("fl_iid_fedmedian_accuracy.csv", index=False)
+    pd.DataFrame({"round": np.arange(1, len(acc_hist)+1), "acc": acc_hist}).to_csv(ART/"fl_iid_fedmedian_accuracy.csv", index=False)
     print("Saved: fl_iid_fedmedian_accuracy.csv")
 
 if __name__ == "__main__":

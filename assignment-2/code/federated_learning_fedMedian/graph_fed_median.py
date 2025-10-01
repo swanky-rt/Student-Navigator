@@ -1,8 +1,12 @@
+from pathlib import Path
+
 import pandas as pd, matplotlib.pyplot as plt
 if __name__ == "__main__":
-    IID_CSV   = "fl_iid_fedmedian_accuracy.csv"
-    NONIID_CSV= "fl_non_iid_fedmedian_accuracy.csv"
-    CENTRAL_CSV = "central_accuracy.csv"
+    ART = (Path(__file__).resolve().parent / "artifacts_centralized")
+    ART.mkdir(parents=True, exist_ok=True)
+    IID_CSV   = ART/"fl_iid_fedmedian_accuracy.csv"
+    NONIID_CSV= ART/"fl_non_iid_fedmedian_accuracy.csv"
+    CENTRAL_CSV = ART/"central_accuracy.csv"
     def acc_col(df): return df["accuracy"] if "accuracy" in df.columns else df["acc"]
 
     iid   = pd.read_csv(IID_CSV)
@@ -23,6 +27,6 @@ if __name__ == "__main__":
     plt.grid(True, linestyle=":")
     plt.legend()
     plt.tight_layout()
-    plt.savefig("fl_iid_vs_non_iid_vs_central_fedmedian.png", dpi=300)
+    plt.savefig(ART/"fl_iid_vs_non_iid_vs_central_fedmedian.png", dpi=300)
     print("Saved: fl_iid_vs_non_iid_vs_central_fedmedian.png")
     plt.show()
