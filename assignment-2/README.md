@@ -237,7 +237,7 @@ OR
 
 **If we are running script directly**
 
-STEP-1: Run script directly "run_fedAvg.py"
+STEP-1: Run script directly "run_fedAvg.py" which is at this location assignment-2/code/federated_learning_fedAvg
 
 ---
 
@@ -256,15 +256,19 @@ python run_fed_median.py
 ```
 
 ```python
-python run_fed_sgd.py.py
+cd assignment-2/code/federated_learning_fedSgd
+```
+
+```python
+python run_fed_sgd.py
 ```
 
 OR
 
 **If we are running script directly( Run these 2 scripts)**
 
-STEP-1: Run script directly "run_fed_median.py"
-STEP-2: Run script directly "run_fed_sgd.py"
+STEP-1: Run script directly "run_fed_median.py" which is at this location "assignment-2/code/federated_learning_fedMedian"
+STEP-2: Run script directly "run_fed_sgd.py" which we is at this location "assignment-2/code/federated_learning_fedSgd"
 ___
 
 
