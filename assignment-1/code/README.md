@@ -173,6 +173,7 @@ Without these, the system could leak sensitive candidate information.
 
 ## How to Run the Code
 
+### MIA and LiRA on MLP:
 1. Open the Colab notebook from this repository (`EduPilot_690F_git.ipynb`).
 2. Install the required libraries (the notebook already contains `pip install` cells for **transformers**, **datasets**, **torch**, **scikit-learn**, **matplotlib**, **seaborn**, etc.).
 3. Run the notebook cells in order. The dataset will be loaded with:
@@ -182,31 +183,21 @@ Note: the dataset is already placed under the same folder i.e. "EduPilot_dataset
    ```python
    df = pd.read_csv("EduPilot_dataset_2000.csv")
    ```
-4. Follow the notebook to train the models (LogReg, BERT, and MLP), run membership inference attacks (Threshold + LiRA), and reproduce the reported metrics.
+4. Follow the notebook to train MLP, run membership inference attacks (Threshold + LiRA), and reproduce the reported metrics.
 
-## How to Run BlackBox Attack Code
+### MIA and LiRA on LogReg and MIA on BERT:
+1. Open the Colab notebook from this repository (`baselines_assignment1.ipynb`).
+2. Install the required libraries (the notebook already contains `pip install` cells for **transformers**, **datasets**, **torch**, **scikit-learn**, **matplotlib**, **seaborn**, etc.).
+3. Run the notebook cells in order. The dataset will be loaded with:
 
-1. Open the Colab notebook from this repository (`BlackBoxQuery_MIA_MLP.ipynb`).
-2. Run the notebook cells in order. The dataset will be loaded with:
-Note: To run this file, dataset is already placed under the same location i.e. "EduPilot_dataset.csv", so no need to make any change.
+Note: the dataset is already placed under the same folder i.e. "EduPilot_dataset_2000.csv", so no need to make any change.
 
-## How to Run LiRA Attack using LR Code
+   ```python
+   df = pd.read_csv("EduPilot_dataset_2000.csv")
+   ```
+4. Follow the notebook to train LogReg and BERT, run membership inference attacks (Threshold + LiRA), and reproduce the reported metrics.
 
-1. Open the Colab notebook from this repository (`LiRA_implementation_eduPilot.ipynb `).
-2. Run the notebook cells in order. The dataset will be loaded with:
-Note: To run this file, dataset is already placed under the same location i.e. "EduPilot_dataset.csv", so no need to make any change.
-
-## How to Run MIA Attack Code
-
-1. Open the Colab notebook from this repository (`MIA_implementation_using_MLP.ipynb`).
-2. Run the notebook cells in order. The dataset will be loaded with:
-Note: To run this file, dataset is already placed under the same location i.e. "EduPilot_dataset.csv", so no need to make any change.
-
-## How to Run Adversarial Attack Code
-
-1. Open the Colab notebook from this repository (`Adversarial_MIA_demo.ipynb`).
-2. Run the notebook cells in order. The dataset will be loaded with:
-Note: To run this file, dataset is already placed under the same location i.e. "EduPilot_dataset.csv", so no need to make any change.
+---
 
 ## LLM Usage and References
 
