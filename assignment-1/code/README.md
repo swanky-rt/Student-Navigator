@@ -14,7 +14,6 @@
 
 ## What we did in the two .ipynb notebooks
 * **EduPilot_690F_git_updated.ipynb:**
-
   1. Recreate the leak-safe text column.
   2. Train a target TF-IDF + 2-layer MLP.
   3. Run a simple Threshold MIA (score = −loss).
@@ -22,7 +21,6 @@
   5. Compare ROC curves, especially at low FPRs.
 
 * **baselines_assignment1_updated.ipynb:**
-
   1) Install and import libraries, set seeds, and detect device (CPU/GPU).
   2) Load the EduPilot dataset and build a leak-safe text field called `text_safe` by removing round names and excluding `mock_question`.
   3) Train a TF-IDF + Logistic Regression baseline on `text_safe` and record clean metrics (accuracy, log-loss).
