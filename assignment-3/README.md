@@ -12,9 +12,8 @@
 ---
 
 ### Quick Navigation
-- [Model & Dataset](#model-setting-and-dataset-generation)
-- [Environment Setup](#setting-up-the-conda-environment)
 - [Folder Structure](#folder-structure)
+- [Environment Setup](#setting-up-the-conda-environment)
 - [Hyperparameter Tuning Modules](#hyperparameter-tuning-modules)
   - [Privacy Accounting Comparison](#privacy-accounting-comparison-strong_vs_moments_accountantpy)
   - [Noise Sweep](#noise-sweep-analyze_noisepy)
@@ -28,7 +27,7 @@
 
 ---
 
-
+<!-- 
 ## Model Setting and Dataset Generation
 The model used is a 2-layer feedforward neural network (multilayer perceptron, MLP) with the following structure:
 
@@ -56,7 +55,33 @@ For a 2-layer MLP, the number of trainable parameters is:
   - Biases: `num_classes`
   - Total: `hidden_units × num_classes + num_classes`
 - **Total:**
-  - `params_l1 + params_l2`
+  - `params_l1 + params_l2` -->
+
+## Folder Structure
+
+The assignment is organized into the following main directories. Please follow this below structure to view the files needed
+
+```
+code/
+├── data/
+    └── dataset.csv                       # Main dataset for train
+
+├── Hyperparam_Tuning/                    # Parameter analysis modules
+    ├── analyze_clip.py                   # Clipping norm analysis
+    ├── analyze_noise.py                  # Noise multiplier analysis  
+    ├── analyze_miscellanous_params.py    # Other hyperparameters
+    ├── param_sweep.py                    # General parameter sweep utility
+    └── strong_vs_moments_accountant.py   # Privacy accounting comparison
+
+├── Main_Baseline_Vs_BestDP/              # Main training comparison
+   └── train_dp_model.py                  # Baseline vs DP model train
+
+└── Threshold_MIA_Colab/                  # Membership Inference Attack analysis (EXTRA)
+    ├── dataset.csv                       # Small subset dataset for MIA
+    └── MIA_Attack_Threshold.ipynb        # MIA analysis notebook
+```
+
+---
 
 ## Setting Up the Conda Environment
 
@@ -84,31 +109,6 @@ You are now ready to run the scripts in this assignment.
 
 ---
 
-## Folder Structure
-
-The assignment is organized into the following main directories. Please follow this below structure to view the files needed
-
-```
-code/
-├── data/
-    └── dataset.csv                       # Main dataset for train
-
-├── Hyperparam_Tuning/                    # Parameter analysis modules
-    ├── analyze_clip.py                   # Clipping norm analysis
-    ├── analyze_noise.py                  # Noise multiplier analysis  
-    ├── analyze_miscellanous_params.py    # Other hyperparameters
-    ├── param_sweep.py                    # General parameter sweep utility
-    └── strong_vs_moments_accountant.py   # Privacy accounting comparison
-
-├── Main_Baseline_Vs_BestDP/              # Main training comparison
-   └── train_dp_model.py                  # Baseline vs DP model train
-
-└── Threshold_MIA_Colab/                  # Membership Inference Attack analysis (EXTRA)
-    ├── dataset.csv                       # Small subset dataset for MIA
-    └── MIA_Attack_Threshold.ipynb        # MIA analysis notebook
-```
-
----
 
 ## Hyperparameter Tuning Modules
 
