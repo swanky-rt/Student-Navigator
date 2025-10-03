@@ -34,6 +34,7 @@
   9) Visualize LiRA internals:
       
       a) pick high/mid/low LLR examples and plot their IN vs OUT histograms,
+     
       b) pool all IN vs OUT losses and show hist/boxplots.
   11) Compare Threshold MIA vs LiRA (LogReg) on one plot to see how LiRA improves membership detection, especially at low FPR.
   
