@@ -59,8 +59,19 @@ For a 2-layer MLP, the number of trainable parameters is:
 
 ## Folder Structure
 
-The assignment is organized into the following main directories. Please follow this below structure to view the files needed
+The assignment is organized into the following main directories. Please follow this below structure to view the files needed.<br/>
 
+**Main Folders to look at: ```Hyperparam_Tuning/``` and ``` Main_Baseline_Vs_BestDP/ ```.**
+
+
+The other folders are for extra credit: <br/>
+MIA ATTACK:
+- ```Threshold_MIA_Colab/``` <br/>
+
+We also testing a new model (more complex model) so see how it has affect on privacy:
+- ```test```
+
+#### Folder Structure
 ```
 code/
 ├── data/
@@ -73,10 +84,10 @@ code/
     ├── param_sweep.py                    # General parameter sweep utility
     └── strong_vs_moments_accountant.py   # Privacy accounting comparison
 
-├── Main_Baseline_Vs_BestDP/              # Main training comparison
-   └── train_dp_model.py                  # Baseline vs DP model train
+├── Main_Baseline_Vs_BestDP/              # Main training comparison from param tuning
+   └── train_dp_model.py                  # Baseline vs Best DP model train
 
-└── Threshold_MIA_Colab/                  # Membership Inference Attack analysis (EXTRA)
+└── Threshold_MIA_Colab/                  # Membership Inference Attack analysis (EXTRA CREDIT)
     ├── dataset.csv                       # Small subset dataset for MIA
     └── MIA_Attack_Threshold.ipynb        # MIA analysis notebook
 ```
@@ -252,7 +263,7 @@ This module evaluates how the **gradient clipping norm (C)** affects the perform
 python assignment-3/code/Hyperparam_Tuning/analyze_clip.py
 ```
 
-### 4. Other Hyperparameter Sweep - analyze_miscellanous_params.py
+### 4. Other Hyperparameters - analyze_miscellanous_params.py
 
 So after I analyzed how clipping norm and noise multiplier affected my DP model, I also wanted to investigate how the other params in relation to the model itself helps the DP model attain its best accuracy and epsilon budget. So,this module allows you to sweep and analyze the effect of various hyperparameters about the model itself (hidden layer size, lot size, learning rate) on the accuracy and privacy of a DP-SGD model for job role classification.
 
