@@ -4,8 +4,9 @@
 
 ## Changes made for the resubmission
 * Removed all the extra files from the 'code' folder
-* Made the 'How to run the code' section in the README file clear, direct, and more readable
+* Made the 'How to run the code' section in the README file clearer and more readable
 * Added a "What we're doing in this notebook" cell block on top of each .ipynb notebook
+* Replaced the EduPilot_690F_git.ipynb and baselines_assignment1.ipynb notebooks with EduPilot_690F_git_updated.ipynb and baselines_assignment1_updated.ipynb respectively.
 * Made a lot changes to the inline comments in both the notebooks
 * Added the 'Changes made for the resubmission' section on top of the README file
 * Added "What we did in the two .ipynb notebooks" section in the README
