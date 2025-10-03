@@ -15,7 +15,7 @@
 ## What we did in the two .ipynb notebooks
 * **EduPilot_690F_git_updated.ipynb:**
 
-  1 Recreate the leak-safe text column.
+  1. Recreate the leak-safe text column.
   * Train a target TF-IDF + 2-layer MLP.
   * Run a simple Threshold MIA (score = −loss).
   * Run LiRA with many shadow MLPs (per-example IN/OUT loss modeling).
