@@ -1,6 +1,10 @@
 # EduPilot Membership Inference Attack Documentation
 
 ---
+## Changes made for the resubmission
+* Removed all the extra files from the 'code' folder
+* Added a "What we're doing in this notebook" 
+---
 
 ## Table of Contents
 
