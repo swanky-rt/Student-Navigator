@@ -21,8 +21,8 @@
   5. Compare ROC curves, especially at low FPRs.
 
 * **baselines_assignment1_updated.ipynb:**
-  1) Install and import libraries, set seeds, and detect device (CPU/GPU).
-  2) Load the EduPilot dataset and build a leak-safe text field called `text_safe` by removing round names and excluding `mock_question`.
+  1. Install and import libraries, set seeds, and detect device (CPU/GPU).
+  2. Load the EduPilot dataset and build a leak-safe text field called `text_safe` by removing round names and excluding `mock_question`.
   3) Train a TF-IDF + Logistic Regression baseline on `text_safe` and record clean metrics (accuracy, log-loss).
   4) Compute per-example losses (−log p(true)) for Logistic Regression on both train (members) and test (non-members).
   5) Prepare BERT: tokenize `text_safe`, make a small Dataset/Collator, fine-tune a classifier head on top of `bert-base-uncased`, and evaluate it.
