@@ -8,7 +8,7 @@
 * Added a "What we're doing in this notebook" cell block on top of each .ipynb notebook
 * Made a lot changes to the inline comments in both the notebooks
 * Added the 'Changes made for the resubmission' section on top of the README file
-* Added "What we're doing in the notebooks" section in the README
+* Added "What we did in the two .ipynb notebooks" section in the README
 
 ---
 
