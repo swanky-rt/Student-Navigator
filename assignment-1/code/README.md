@@ -13,7 +13,19 @@
 ---
 
 ## What we did in the two .ipynb notebooks
-- wddw
+* **EduPilot_690F_git_updated.ipynb:**
+
+  * Recreate the leak-safe text column.
+  * Train a target TF-IDF + 2-layer MLP.
+  * Run a simple Threshold MIA (score = −loss).
+  * Run LiRA with many shadow MLPs (per-example IN/OUT loss modeling).
+  * Compare ROC curves, especially at low FPRs.
+
+* **baselines_assignment1_updated.ipynb:**
+
+  1) Text is tokenized using HuggingFace’s AutoTokenizer with max length = 192.
+  2) We fine-tune `bert-base-uncased` for 3 epochs using the HuggingFace Trainer API (batch size 16 train, 32 eval, lr = 2e-5).
+  * After training, we evaluate and collect per-sample cross-entropy losses from the logits.
 
 ## Table of Contents
 
@@ -174,7 +186,7 @@ The models are clearly leaking membership information because of the large overf
 * For EduPilot, this means if real job-seeker data (like resumes or candidate questions) were used, with a simple LogReg or MLP, attackers could run membership inference and find out if someone’s data was used. That’s a serious privacy risk.
 * BERT looks safer in MIA, but rare or unique data (like a one-off interview question) could be extracted almost verbatim, as Carlini et al. showed for large language models.
 
-➡ To protect against this, EduPilot would need defenses such as:
+--> To protect against this, EduPilot would need defenses such as:
 
 * Regularization to reduce overfitting
 * Limiting output exposure (avoid giving out confidence scores)
@@ -227,14 +239,14 @@ Note: the dataset is already placed under the same folder i.e. "EduPilot_dataset
 
   * The importance of evaluating MIAs not just by AUC but by True Positive Rate at very low False Positive Rates (≤0.1%).
   * The LiRA method: training shadow models, collecting “IN” vs “OUT” loss distributions for each example, and computing likelihood ratio scores.
-    → Link: https://arxiv.org/abs/2112.03570?
+    --> Link: https://arxiv.org/abs/2112.03570?
 
 ### What We Referenced From Public Code Repositories
 
 * **GitHub repo mia\_attacks:** we looked at its structure for shadow model training and loss recording.
-  → Link: [github.com/superdianuj/mia\_attacks](https://github.com/antibloch/mia_attacks?)
+  --> Link: [github.com/superdianuj/mia\_attacks](https://github.com/antibloch/mia_attacks?)
 * **GitHub repo lira-pytorch:** we referred to how it computes per-example TPR at low FPR and organizes multiple shadow runs.
-  → Link: [github.com/orientino/lira-pytorch](https://github.com/orientino/lira-pytorch?)
+  --> Link: [github.com/orientino/lira-pytorch](https://github.com/orientino/lira-pytorch?)
 
 ### What We Did Ourselves
 
