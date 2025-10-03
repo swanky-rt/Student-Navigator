@@ -29,7 +29,7 @@
   6. Compute per-example losses for BERT (manual batched forward pass).
   7. Run a simple Threshold MIA (score = −loss) for both models and compare ROC curves + TPR at low FPR (0.1, 0.01, 0.001).
   8. Implement LiRA for Logistic Regression: train many shadow models, collect IN vs OUT loss distributions per example, fit Gaussians, and compute LLR scores.
-  9. Visualize LiRA internals:
+  9) Visualize LiRA internals:
     
       a) pick high/mid/low LLR examples and plot their IN vs OUT histograms,
      
