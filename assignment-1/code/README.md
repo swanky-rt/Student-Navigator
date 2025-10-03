@@ -12,6 +12,9 @@
 
 ---
 
+## What we did in the two .ipynb notebooks
+- wddw
+
 ## Table of Contents
 
 * [Dataset](#dataset)
