@@ -174,7 +174,7 @@ Without these, the system could leak sensitive candidate information.
 ## How to Run the Code
 
 ### MIA and LiRA on MLP:
-1. Open the Colab notebook from this repository (`EduPilot_690F_git.ipynb`).
+1. Open the Colab notebook from this repository (`EduPilot_690F_git_updated.ipynb`).
 2. Install the required libraries (the notebook already contains `pip install` cells for **transformers**, **datasets**, **torch**, **scikit-learn**, **matplotlib**, **seaborn**, etc.).
 3. Run the notebook cells in order. The dataset will be loaded with:
 
@@ -186,7 +186,7 @@ Note: the dataset is already placed under the same folder i.e. "EduPilot_dataset
 4. Follow the notebook to train MLP, run membership inference attacks (Threshold + LiRA), and reproduce the reported metrics.
 
 ### MIA and LiRA on LogReg and MIA on BERT:
-1. Open the Colab notebook from this repository (`baselines_assignment1.ipynb`).
+1. Open the Colab notebook from this repository (`baselines_assignment1_updated.ipynb`).
 2. Install the required libraries (the notebook already contains `pip install` cells for **transformers**, **datasets**, **torch**, **scikit-learn**, **matplotlib**, **seaborn**, etc.).
 3. Run the notebook cells in order. The dataset will be loaded with:
 
