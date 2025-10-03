@@ -14,11 +14,17 @@
 ### Quick Navigation
 - [Model & Dataset](#model-setting-and-dataset-generation)
 - [Environment Setup](#setting-up-the-conda-environment)
-- [Module 1: Privacy Accounting Comparison](#module-1-privacy-accounting-comparison-strong_vs_moments_accountantpy)
-- [Module 2: Noise Sweep](#module-2-noise-sweep--noise_vs_accuracypy)
-- [Module 3: Clipping Norm Sweep](#module-3-clipping-norm-sweep--analyze_clippy)
-- [Module 4: Hyperparameter Sweep](#module-4-miscellaneous-hyperparameter-sweep--analyze_miscellanous_paramspy)
-- [Module 5: Baseline vs DP Training](#module-5-baseline-vs-dp-training--train_dp_modelpy)
+- [Folder Structure](#folder-structure)
+- [Hyperparameter Tuning Modules](#hyperparameter-tuning-modules)
+  - [Privacy Accounting Comparison](#privacy-accounting-comparison-strong_vs_moments_accountantpy)
+  - [Noise Sweep](#noise-sweep-analyze_noisepy)
+  - [Clipping Norm Sweep](#clipping-norm-sweep-analyze_clippy)
+  - [Other Hyperparameter Sweep](#other-hyperparameter-sweep-analyze_miscellanous_paramspy)
+  - [Parameter Sweep Utility](#parameter-sweep-utility-param_sweeppy)
+- [Main Training Module](#main-training-module)
+  - [Baseline vs DP Training](#baseline-vs-dp-training-train_dp_modelpy)
+- [MIA Analysis](#mia-analysis)
+  - [Threshold-based MIA](#threshold-based-mia-mia_attack_thresholdipynb)
 
 ---
 
@@ -76,8 +82,39 @@ To create the conda environment and install all dependencies for this assignment
 
 You are now ready to run the scripts in this assignment.
 
+---
 
-## Module 1: Privacy Accounting Comparison: strong_vs_moments_accountant.py
+## Folder Structure
+
+The assignment is organized into the following main directories. Please follow this below structure to view the files needed
+
+```
+code/
+├── data/
+    └── dataset.csv                       # Main dataset for train
+
+├── Hyperparam_Tuning/                    # Parameter analysis modules
+    ├── analyze_clip.py                   # Clipping norm analysis
+    ├── analyze_noise.py                  # Noise multiplier analysis  
+    ├── analyze_miscellanous_params.py    # Other hyperparameters
+    ├── param_sweep.py                    # General parameter sweep utility
+    └── strong_vs_moments_accountant.py   # Privacy accounting comparison
+
+├── Main_Baseline_Vs_BestDP/              # Main training comparison
+   └── train_dp_model.py                  # Baseline vs DP model train
+
+└── Threshold_MIA_Colab/                  # Membership Inference Attack analysis (EXTRA)
+    ├── dataset.csv                       # Small subset dataset for MIA
+    └── MIA_Attack_Threshold.ipynb        # MIA analysis notebook
+```
+
+---
+
+## Hyperparameter Tuning Modules
+
+All hyperparameter tuning scripts are located in `code/Hyperparam_Tuning/`. These modules help identify optimal settings for DP-SGD training.
+
+### 1. Privacy Accounting Comparison- xxstrong_vs_moments_accountant.py
 
 This module compares two differential privacy accounting methods used in training machine learning models with DP-SGD:
 
@@ -87,14 +124,14 @@ This module compares two differential privacy accounting methods used in trainin
 It helps visualize how the privacy budget **ε (epsilon)** grows across training epochs under each method.
 
 ---
-### Purpose
+#### Purpose
 
 - Provide a **side-by-side comparison** of privacy accounting techniques.  
 - Demonstrate that **Moments Accountant yields tighter bounds** on ε than Strong Composition.  
 - Serve as a reference plot for how important Moments Accountant is.
 
 ---
-### Settings
+#### Settings
 
 - **Model**: 2-layer feedforward NN with ReLU, hidden size = 128  
 - **Features**: TF-IDF vectors from job descriptions (`max_features=258`)  
@@ -108,7 +145,7 @@ It helps visualize how the privacy budget **ε (epsilon)** grows across training
 - **Optimizer**: SGD, `lr=0.1`.   
 
 ---
-### Inputs & Outputs
+#### Inputs & Outputs
 
 - **Input**: `dataset.csv` (columns: `job_description`, `job_role`)  
 - **Output artifacts** (saved in `artifacts/`):
@@ -116,27 +153,27 @@ It helps visualize how the privacy budget **ε (epsilon)** grows across training
 
 ---
 
-### How to Run
+#### How to Run
 
 ```bash
-python assignment-3/code/strong_vs_moments_accountant.py
+python assignment-3/code/Hyperparam_Tuning/strong_vs_moments_accountant.py
 ```
 
-## Module 2: Noise Sweep — analyze_noise.py
+### 2.  Noise Sweep - analyze_noise.py
 
 This module evaluates how the **noise multiplier (σ)** affects the performance of DP-SGD when training a text classification model.  
 It runs multiple DP models with varying σ values and compares their test accuracy against a non-DP baseline.
 
 ---
 
-### Purpose
+#### Purpose
 
 - Empirically show the **trade-off between noise and model accuracy** in DP-SGD.  
 - Provide intuition for choosing the right noise multiplier in practice.  
 
 ---
 
-### Settings
+#### Settings
   
 - **Features**: TF-IDF (`max_features=258`, bigrams included).  
 - **Model**: 2-layer feedforward NN with hidden size 128.  
@@ -153,7 +190,7 @@ It runs multiple DP models with varying σ values and compares their test accura
 
 ---
 
-### Inputs & Outputs
+#### Inputs & Outputs
 
 - **Input**: `dataset.csv` (columns: `job_description`, `job_role`).  
 - **Outputs** (saved in `artifacts_sweep/`):
@@ -163,26 +200,26 @@ It runs multiple DP models with varying σ values and compares their test accura
 
 ---
 
-### How to Run
+#### How to Run
 
 ```bash
-python assignment-3/code/analyze_noise.py
+python assignment-3/code/Hyperparam_Tuning/analyze_noise.py
 ```
 
-## Module 3: Clipping Norm Sweep — analyze_clip.py
+### 3. Clipping Norm Sweep - analyze_clip.py
 
 This module evaluates how the **gradient clipping norm (C)** affects the performance of DP-SGD when training a text classification model. It runs multiple DP models with varying clipping values and compares their test accuracy. I ran the hyper param sweep for different parameters, initially I tested the code with the values suggested in Abadi et al., but after tuning the params, I changed it to what graphically worked better for my synthetic dataset.
 
 ---
 
-### Purpose
+#### Purpose
 
 - Empirically show the **impact of gradient clipping** on DP-SGD accuracy.  
 - Provide intuition for choosing a suitable clipping norm in practice.
 
 ---
 
-### Settings
+#### Settings
   
 - **Features**: TF-IDF (`max_features=258`, bigrams included).  
 - **Model**: 2-layer feedforward NN with hidden size 128.  
@@ -197,7 +234,7 @@ This module evaluates how the **gradient clipping norm (C)** affects the perform
 
 ---
 
-### Inputs & Outputs
+#### Inputs & Outputs
 
 - **Input**: `dataset.csv` (columns: `job_description`, `job_role`).  
 - **Outputs** (saved in `artifacts/`):
@@ -209,26 +246,26 @@ This module evaluates how the **gradient clipping norm (C)** affects the perform
 
 ---
 
-### How to Run
+#### How to Run
 
 ```bash
-python assignment-3/code/analyze_clip.py
+python assignment-3/code/Hyperparam_Tuning/analyze_clip.py
 ```
 
-## Module 4: Miscellaneous Hyperparameter Sweep — analyze_miscellanous_params.py
+### 4. Other Hyperparameter Sweep - analyze_miscellanous_params.py
 
 So after I analyzed how clipping norm and noise multiplier affected my DP model, I also wanted to investigate how the other params in relation to the model itself helps the DP model attain its best accuracy and epsilon budget. So,this module allows you to sweep and analyze the effect of various hyperparameters about the model itself (hidden layer size, lot size, learning rate) on the accuracy and privacy of a DP-SGD model for job role classification.
 
 ---
 
-### Purpose
+#### Purpose
 
 - Empirically show how different hyperparameters affect DP-SGD accuracy and privacy (epsilon).
 - Help select optimal values for hidden units, lot size, and learning rate for your dataset.
 
 ---
 
-### Settings
+#### Settings
 After running all the above code I was able to finalize the best clipping norm and noise multiplier.
 - **Features**: TF-IDF (`max_features=258`, bigrams included).
 - **Model**: 2-layer feedforward NN with hidden size (swept or fixed).
@@ -240,7 +277,7 @@ After running all the above code I was able to finalize the best clipping norm a
 
 ---
 
-### Inputs & Outputs
+#### Inputs & Outputs
 
 - **Input**: `dataset.csv` (columns: `job_description`, `job_role`).
 - **Outputs** (saved in `artifacts/`):
@@ -248,30 +285,46 @@ After running all the above code I was able to finalize the best clipping norm a
 
 ---
 
-### How to Run
+#### How to Run
 
 ```bash
-python assignment-3/code/analyze_miscellanous_params.py --sweep <hidden|lot|lr> [--smooth]
+python assignment-3/code/Hyperparam_Tuning/analyze_miscellanous_params.py --sweep <hidden|lot|lr> [--smooth]
 ```
 Examples:
 ```bash
-python assignment-3/code/analyze_miscellanous_params.py --sweep hidden --smooth
+python assignment-3/code/Hyperparam_Tuning/analyze_miscellanous_params.py --sweep hidden --smooth
 ```
 ```bash
-python assignment-3/code/analyze_miscellanous_params.py --sweep lot
+python assignment-3/code/Hyperparam_Tuning/analyze_miscellanous_params.py --sweep lot
 ```
 ```bash
-python assignment-3/code/analyze_miscellanous_params.py --sweep lr --smooth
+python assignment-3/code/Hyperparam_Tuning/analyze_miscellanous_params.py --sweep lr --smooth
 ```
 
+### 5. Parameter Sweep Utility - param_sweep.py
 
-## Module 5: Baseline vs DP Training — train_dp_model.py
+This is a general utility script that supports comprehensive parameter sweeps across C (clipping) and σ (noise multiplier) as given in the question:
+- Clip norm C ∈ {0.5, 1.0}
+- Noise multiplier σ ∈ {0.5, 1.0, 2.0}
+
+#### How to Run
+```bash
+python assignment-3/code/Hyperparam_Tuning/param_sweep.py
+```
+
+---
+
+## Main Training Module
+
+The main training comparison is located in `code/Main_Baseline_Vs_BestDP/`.
+
+### Baseline vs DP Training: train_dp_model.py
 
 This module compares the training and test accuracy of a non-private (baseline) model and a differentially private (DP-SGD) model on the job role classification task. It supports flexible privacy settings via command-line arguments.
 
 ---
 
-### Purpose
+#### Purpose
 
 - Show the effect of differential privacy (DP-SGD) on model accuracy compared to a non-private baseline.
 - Visualize privacy consumption (epsilon) over epochs when using DP-SGD.
@@ -279,7 +332,7 @@ This module compares the training and test accuracy of a non-private (baseline) 
 
 ---
 
-### Settings (Best Params)
+#### Settings (Best Params)
 After all the hyperparam analysis I have gotten these values below which works best on my dataset and DP setting.
 - **Features**: TF-IDF (`max_features=258`, bigrams included).
 - **Model**: 2-layer feedforward NN with hidden size 128.
@@ -292,7 +345,7 @@ After all the hyperparam analysis I have gotten these values below which works b
 
 ---
 
-### Inputs & Outputs
+#### Inputs & Outputs
 
 - **Input**: `dataset.csv` (columns: `job_description`, `job_role`).
 - **Outputs** (saved in `artifacts/`):
@@ -307,13 +360,47 @@ You can test this code in 2 different ways:
 
 ---
 
-### How to Run
+#### How to Run
 
 ```bash
-python assignment-3/code/train_dp_model.py [--target_eps <float>] [--target_delta <float>] [--sigma <float>]
+python assignment-3/code/Main_Baseline_Vs_BestDP/train_dp_model.py [--target_eps <float>] [--target_delta <float>] [--sigma <float>]
 ```
 Example:
 ```bash
-python assignment-3/code/train_dp_model.py --target_delta 0.0001
+python assignment-3/code/Main_Baseline_Vs_BestDP/train_dp_model.py --target_delta 0.00025
+```
+
+---
+
+## MIA Analysis
+
+The Membership Inference Attack analysis is located in `code/Threshold_MIA_Colab/`.
+
+### 1. Threshold-based MIA: MIA_Attack_Threshold.ipynb
+
+This Jupyter notebook implements and evaluates membership inference attacks against both baseline and DP-trained models to assess privacy leakage. **The file was taking a lot of time to run in my system, hence I went with Google Colab which gave me a better runtime environment.**
+That's why I went with a subset of the the dataset that is given within the same directory.(assignment-3/code/Threshold_MIA_Colab/dataset.csv)
+
+#### Purpose
+- Demonstrate the effectiveness of membership inference attacks on machine learning models
+- Compare privacy leakage between baseline and DP-trained models
+- Evaluate the privacy-utility tradeoff quantitatively
+
+#### Features
+- Threshold-based membership inference attack implementation
+- ROC curve analysis and AUC calculation
+- Comparative analysis between models with different privacy settings
+- Visualization of attack success rates
+
+#### How to Use
+1. Open the notebook in Jupyter Lab or Google Colab
+2. Please add the same dataset that is given in the same directory: 'assignment-3/code/Threshold_MIA_Colab/dataset.csv' (Smaller dataset)
+3. Run all cells to perform the complete MIA analysis
+4. Results include attack accuracy metrics and visualization plots
+
+#### Location
+```
+Code: assignment-3/code/Threshold_MIA_Colab/MIA_Attack_Threshold.ipynb
+Subset dataset for this IPYNB: assignment-3/code/Threshold_MIA_Colab/dataset.csv
 ```
 
