@@ -1,3 +1,28 @@
+# 1) Install and import libraries, set seeds, and detect device (CPU/GPU).
+# 2) Load the EduPilot dataset and build a leak-safe text field called `text_safe`
+#    by removing round names and excluding `mock_question`.
+# 3) Train a TF-IDF + Logistic Regression baseline on `text_safe`
+#    and record clean metrics (accuracy, log-loss).
+# 4) Compute per-example losses (−log p(true)) for Logistic Regression
+#    on both train (members) and test (non-members).
+# 5) Prepare BERT: tokenize `text_safe`, make a small Dataset/Collator,
+#    fine-tune a classifier head on top of `bert-base-uncased`, and evaluate it.
+# 6) Compute per-example losses for BERT (manual batched forward pass).
+# 7) Run a simple Threshold MIA (score = −loss) for both models
+#    and compare ROC curves + TPR at low FPR (0.1, 0.01, 0.001).
+# 8) Implement LiRA for Logistic Regression:
+#    train many shadow models, collect IN vs OUT loss distributions per example,
+#    fit Gaussians, and compute LLR scores.
+# 9) Visualize LiRA internals:
+#    (a) pick high/mid/low LLR examples and plot their IN vs OUT histograms,
+#    (b) pool all IN vs OUT losses and show hist/boxplots.
+# 10) Compare Threshold MIA vs LiRA (LogReg) on one plot to see
+#     how LiRA improves membership detection, especially at low FPR.
+
+# So basically, we build leak-safe text, train LR and BERT, get per-example losses,
+# run Threshold MIA on both, then run LiRA on LR, and visualize/compare results.
+
+
 # EduPilot Membership Inference Attack Documentation
 
 ---
@@ -16,16 +41,27 @@
 * **EduPilot_690F_git_updated.ipynb:**
 
   1. Recreate the leak-safe text column.
-  * Train a target TF-IDF + 2-layer MLP.
-  * Run a simple Threshold MIA (score = −loss).
-  * Run LiRA with many shadow MLPs (per-example IN/OUT loss modeling).
-  * Compare ROC curves, especially at low FPRs.
+  2. Train a target TF-IDF + 2-layer MLP.
+  3. Run a simple Threshold MIA (score = −loss).
+  4. Run LiRA with many shadow MLPs (per-example IN/OUT loss modeling).
+  5. Compare ROC curves, especially at low FPRs.
 
 * **baselines_assignment1_updated.ipynb:**
 
-  1) Text is tokenized using HuggingFace’s AutoTokenizer with max length = 192.
-  2) We fine-tune `bert-base-uncased` for 3 epochs using the HuggingFace Trainer API (batch size 16 train, 32 eval, lr = 2e-5).
-  * After training, we evaluate and collect per-sample cross-entropy losses from the logits.
+  1) Install and import libraries, set seeds, and detect device (CPU/GPU).
+  2) Load the EduPilot dataset and build a leak-safe text field called `text_safe` by removing round names and excluding `mock_question`.
+  3) Train a TF-IDF + Logistic Regression baseline on `text_safe` and record clean metrics (accuracy, log-loss).
+  4) Compute per-example losses (−log p(true)) for Logistic Regression on both train (members) and test (non-members).
+  5) Prepare BERT: tokenize `text_safe`, make a small Dataset/Collator, fine-tune a classifier head on top of `bert-base-uncased`, and evaluate it.
+  6) Compute per-example losses for BERT (manual batched forward pass).
+  7) Run a simple Threshold MIA (score = −loss) for both models and compare ROC curves + TPR at low FPR (0.1, 0.01, 0.001).
+  8) Implement LiRA for Logistic Regression: train many shadow models, collect IN vs OUT loss distributions per example, fit Gaussians, and compute LLR scores.
+  9) Visualize LiRA internals:
+      a) pick high/mid/low LLR examples and plot their IN vs OUT histograms,
+      b) pool all IN vs OUT losses and show hist/boxplots.
+  11) Compare Threshold MIA vs LiRA (LogReg) on one plot to see how LiRA improves membership detection, especially at low FPR.
+  
+  So basically, we build leak-safe text, train LR and BERT, get per-example losses, run Threshold MIA on both, then run LiRA on LR, and visualize/compare results.
 
 ## Table of Contents
 
