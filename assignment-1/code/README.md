@@ -1,9 +1,15 @@
 # EduPilot Membership Inference Attack Documentation
 
 ---
+
 ## Changes made for the resubmission
 * Removed all the extra files from the 'code' folder
-* Added a "What we're doing in this notebook" 
+* Made the 'How to run the code' section in the README file clear, direct, and more readable
+* Added a "What we're doing in this notebook" cell block on top of each .ipynb notebook
+* Made a lot changes to the inline comments in both the notebooks
+* Added the 'Changes made for the resubmission' section on top of the README file
+* Added "What we're doing in the notebooks" section in the README
+
 ---
 
 ## Table of Contents
