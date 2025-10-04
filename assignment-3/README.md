@@ -481,7 +481,7 @@ Compute scores on train/test.
 Save artifacts/post_yeom_roc.png, artifacts/post_yeom_scores_labels.npz.
 Update artifacts/mia_pre_post_summary.json and (optionally) pre_vs_post_attack_comparison.png.
 
-Interpretation:
+**Interpretation**:
 
 PRE AUC ≈ 0.814 → strong membership leakage in the non-DP, overfit model.
 
@@ -489,7 +489,7 @@ POST AUC ≈ 0.513 → near-random; DP substantially reduces leakage.
 
 ![pre_vs_post_attack_comparison.png](artifacts/pre_vs_post_attack_comparison.png)
 
-Conclusion:
+**Conclusion**:
 
 We evaluate privacy leakage using the Yeom loss-threshold membership-inference attack (Yeom et al., 2018).
 For each example we compute the per-example cross-entropy loss and use its negative as a membership score; 
@@ -497,7 +497,7 @@ low loss indicates “member-like”. We report ROC-AUC over "train" (members) v
 yields AUC ≈ 0.814, showing clear leakage consistent with overfitting. With DP training, AUC drops to ≈ 0.513, 
 near random guessing, which further indicates that DP mitigates membership leakage.
 
-Note: Below are the hyper-parameters tuning for default settings to execute the attack.
+**Hyper-Parameters used for this attack**
 
 Defaults (PRE non-DP, loss_threshold_attack.py):
 
