@@ -1,30 +1,38 @@
 <div align="center">
 
-# EduPilot
+# GROUP 4: EduPilot - Assignment 3
 
 ### Analysis of Differential Privacy Techniques on Balanced Synthetic Job Data
 
-*This project investigates the impact of differential privacy (DP) techniques on neural network models for job role classification, using a synthetic, balanced dataset and a simple yet effective 2-layer MLP architecture.*
+*This study investigates the trade-off between privacy and utility in differentially private neural network training for job role classification, leveraging a balanced synthetic dataset and a lightweight two-layer MLP design.*
 
 **Team Lead:** Swetha Saseendran  
 </div>
 
+## File Overview  - IMPORTANT
+
+***This file only explains each script’s purpose, the parameters used, and how to execute them.***
+For the analysis and interpretation of the experimental results, please refer to the [**InferenceReport.md**](./InferenceReport.md).
+I have made this into two files for better structure and understandability.
+
 ---
 
-### Quick Navigation
+## Quick Navigation
 - [Folder Structure](#folder-structure)
 - [Environment Setup](#setting-up-the-conda-environment)
 - [Hyperparameter Tuning Modules](#hyperparameter-tuning-modules)
-  - [Privacy Accounting Comparison](#privacy-accounting-comparison-strong_vs_moments_accountantpy)
-  - [Noise Sweep](#noise-sweep-analyze_noisepy)
-  - [Clipping Norm Sweep](#clipping-norm-sweep-analyze_clippy)
-  - [Other Hyperparameter Sweep](#other-hyperparameter-sweep-analyze_miscellanous_paramspy)
-  - [Parameter Sweep Utility](#parameter-sweep-utility-param_sweeppy)
+  - [Privacy Accounting Comparison](#1-privacy-accounting-comparison--strong_vs_moments_accountantpy)
+  - [Noise Sweep](#2--noise-sweep---analyze_noisepy)
+  - [Clipping Norm Sweep](#3-clipping-norm-sweep---analyze_clippy)
+  - [Other Hyperparameters](#4-other-hyperparameters---analyze_miscellanous_paramspy)
+  - [Parameter Sweep Utility](#5-parameter-sweep-utility---param_sweeppy)
 - [Main Training Module](#main-training-module)
-  - [Baseline vs DP Training](#baseline-vs-dp-training-train_dp_modelpy)
-- [MIA Analysis](#mia-analysis)
-  - [Threshold-based MIA](#threshold-based-mia-mia_attack_thresholdipynb)
-  - [Loss-Threshold-Attack-Model](#loss-threshold-attack-model)
+  - [Baseline vs DP Training](#baseline-vs-dp-training-traindpmodelpy)
+  - [Delta Sensitivity Experiment](#delta-sensitivity-plot--integrated-in-traindpmodelpy)
+- [MIA Analysis](#mia-modules)
+  - [Threshold-based MIA](#1-threshold-based-mia--mia_attack_thresholdipynb)
+  - [Loss Threshold Attack](#2-loss-threshold-attack-model)
+- [AI Usage Disclosure](#ai-usage-disclosure)
 
 ---
 
@@ -32,16 +40,16 @@
 
 The assignment is organized into the following main directories. Please follow this below structure to view the files needed.<br/>
 
-**Main Folders to look at: ```Hyperparam_Tuning/``` and ``` Main_Baseline_Vs_BestDP/ ```.**
-
+**Main Code Folders to look at: ```Hyperparam_Tuning/``` and ``` Main_Baseline_Vs_BestDP/ ```.**
 
 The other folders are for extra credit: <br/>
 MIA ATTACK:
 - ```Threshold_MIA_Colab/``` <br/>
-- ```Loss-threshold-attack``` <br/>
+- ```Loss-threshold-attack/``` <br/>
 
 We also testing a new model (more complex model) so see how it has affect on privacy:
 - ```test```
+
 
 #### Folder Structure
 ```
@@ -94,6 +102,13 @@ To create the conda environment and install all dependencies for this assignment
   ```
 
 You are now ready to run the scripts in this assignment.
+
+### Key Dependencies (You can also run the files if you have these below dependencies):
+- **PyTorch:**(neural network training)
+- **Opacus:** (differential privacy)
+- **Scikit-learn:**(preprocessing and metrics)
+- **Matplotlib:**  (visualization)
+- **NumPy/Pandas:** Standard scientific computing
 
 ---
 
@@ -269,7 +284,7 @@ After running all the above code I was able to finalize the best clipping norm a
 
 - **Input**: `dataset.csv` (columns: `job_description`, `job_role`).
 - **Outputs** (saved in `artifacts/`):
-  - `sweep_hidden_smooth.png`, `sweep_lot_smooth.png`, `sweep_lr_smooth.png` (or similar) → accuracy vs swept parameter plots.
+  - `sweep_hidden_smooth.png`, `sweep_lot_smooth.png`, `sweep_lr_smooth.png` → accuracy vs swept parameter plots.
 
 ---
 
@@ -458,6 +473,7 @@ python assignment-3/code/Loss-threshold-attack/loss_threshold_attack.py  #This f
 python assignment-3/code/Loss-threshold-attack/dp_train.py               #This file shows DP impl on dataset.
 python assignment-3/code/Loss-threshold-attack/post_rp_attack.py         #This file measures the performance before & after DP impl.
 ```
+
 #### **Interpretation**:
 PRE AUC ≈ 0.814 → strong membership leakage in the non-DP, overfit model.
 POST AUC ≈ 0.513 → near-random; DP substantially reduces leakage.
@@ -469,3 +485,33 @@ For each example we compute the per-example cross-entropy loss and use its negat
 low loss indicates “member-like”. We report ROC-AUC over "train" (members) vs "test" (non-members). Our non-DP model 
 yields AUC ≈ 0.814, showing clear leakage consistent with overfitting. With DP training, AUC drops to ≈ 0.513, 
 near random guessing, which further indicates that DP mitigates membership leakage.
+
+---
+
+## AI Usage Disclosure
+
+### AI Tools and Assistance
+During this project, AI assistance was utilized in the following areas:
+
+#### Code Development and Debugging
+- **Tool: ChatGPT** 
+- **Usage:** 
+  - Code structure suggestions and boilerplate generation
+  - Debugging assistance for Opacus integration issues
+  - Matplotlib plotting code optimization
+  - Error resolution and troubleshooting
+
+#### Mathematical Verification
+- **Tool:** ChatGPT
+- **Usage:**
+  - Verification of privacy accounting formulas
+  - Explanation of Moments Accountant vs Strong Composition
+  - Parameter count calculations
+  - Paper Reading
+
+### Human Contributions
+All core experimental design, reporting, hyperparameter selection, privacy analysis, and scientific conclusions were developed through human analysis and domain expertise. AI tools were used primarily for implementation efficiency.
+
+---
+
+
