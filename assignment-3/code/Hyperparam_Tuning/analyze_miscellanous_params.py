@@ -131,7 +131,7 @@ else:
     plt.plot(grid, accs, marker="o", label="Test Accuracy")
 
 plt.xlabel(label); plt.ylabel("Final Test Accuracy")
-plt.title(f"DP-SGD Sweep: {label}\n(epochs=N/L, L=√N default, δ=1/N)")
+plt.title(f"DP-SGD Sweep: {label}")
 plt.grid(True); plt.legend()
 plt.savefig(os.path.join(ART, f"sweep_{SWEEP_PARAM}{'_smooth' if SMOOTH else ''}.png"))
 plt.show()
