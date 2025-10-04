@@ -415,6 +415,7 @@ Code: assignment-3/code/Threshold_MIA_Colab/MIA_Attack_Threshold.ipynb
 Subset dataset for this IPYNB: assignment-3/code/Threshold_MIA_Colab/dataset.csv
 ```
 
+2. 
 ## EXTRA CREDIT #2:  Loss Threshold Attack Model
 
 **Membership-Inference: Yeom Loss-Threshold Attack**
