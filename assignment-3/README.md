@@ -372,6 +372,20 @@ You can test this code in 2 different ways:
 
 ---
 
+#### Delta Sensitivity Plot — Integrated in train_dp_model.py
+After training the Baseline and Differentially Private models, we also conducted a Delta Sensitivity experiment inside the same script (train_dp_model.py) to visualize how varying δ values affect the privacy–utility trade-off while keeping the noise multiplier (σ) fixed.
+
+---
+
+#### Purpose
+
+- To analyze how the choice of δ influences the relationship between ε (privacy budget) and test accuracy.
+- To validate findings from Abadi et al. (2016), which show that larger δ values yield slightly better utility at the same ε but converge for moderate privacy levels.
+  
+___
+
+
+
 #### How to Run
 
 ```bash
