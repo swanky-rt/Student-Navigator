@@ -1,10 +1,20 @@
-# EduPilot Federated Learning Documentation
+<div align="center">
+
+# EduPilot
+
+### Analysis of Federated Learning on Synthetic Job Data
+
+*This project investigates the impact of Federated Learning with FedAvg & other 2 aggregators i.e. FedMedian & FedSGD on Synthetic Job Role Dataset for EduPilot
+
+**Team Lead:** Aarti Kumari  
+</div>
 
 ---
 
 ## Table of Contents
 
 * [Dataset](#dataset)
+* [Folder Setup](#folder-setup)
 * [Design Choices](#design-choices)
 * [Model & Training Details](#model--training-details)
 * [Client Partitioning](#client-partitioning)
@@ -44,7 +54,31 @@ EduPilot is designed to help job-seekers practice for interviews by generating r
   "technical question": "Implement an LRU cache with O(1) operations."
 }
 ```
+---
 
+## Folder Setup
+
+The assignment is organized into the following main directories. Please follow this below structure to view the files needed.
+
+Main Folders to look at: federated_learning_fedAvg/.
+
+The other folders are for the extra credit:
+federated_learning_fedMedian/
+
+federated_learning_fedSgd/
+
+#### Folder Structure
+```
+assignment-2/
+└── code/
+    ├── data/                               # (Data folder)
+    │   └── EduPilot_dataset_2000.csv       # Main dataset
+
+    ├── federated_learning_fedAvg/          # (FL Implementation using Fed Avg aggregator)
+    ├── federated_learning_fedMedian/       # (FL Implementation using Fed Median aggregator)
+    ├── federated_learning_fedSgd/          # (FL Implementation using Fed SGD aggregator)
+
+```
 ---
 
 ## Design Choices
@@ -237,10 +271,11 @@ OR
 
 **If we are running script directly**
 
-STEP-1: Run script directly "run_fedAvg.py"
+STEP-1: Run script directly "run_fedAvg.py" which is at this location "assignment-2/code/federated_learning_fedAvg"
 
 ---
 
+Extra Credits:
 **Optional Code (To run other aggregator) Command Line Commands****:
 
 ## Please follow below instructions to execute the FL( this is for federated learning using other aggregator (Fed Median & Fed SGD) .
@@ -256,18 +291,35 @@ python run_fed_median.py
 ```
 
 ```python
-python run_fed_sgd.py.py
+cd assignment-2/code/federated_learning_fedSgd
+```
+
+```python
+python run_fed_sgd.py
 ```
 
 OR
 
 **If we are running script directly( Run these 2 scripts)**
 
-STEP-1: Run script directly "run_fed_median.py"
-STEP-2: Run script directly "run_fed_sgd.py"
+STEP-1: Run script directly "run_fed_median.py" which is at this location "assignment-2/code/federated_learning_fedMedian"
+
+STEP-2: Run script directly "run_fed_sgd.py" which we is at this location "assignment-2/code/federated_learning_fedSgd"
 ___
 
+Note:
 
+## Artifacts(After sucessful execution, Artificats folder gets created)
+
+- CSVs(For Fed Avg): `fl_iid_accuracy.csv`, `fl_non_iid_accuracy.csv`, `central_accuracy.csv`  
+- Figure: `fl_iid_vs_non_iid_vs_central.png`
+  
+- CSVs(for Fed Median): `fl_iid_fedmedian_accuracy.csv`, `fl_non_iid_fedmedian_accuracy.csv`, `central_accuracy.csv`  
+- Figure: `fl_iid_vs_non_iid_vs_central_fedmedian.png`
+
+- CSVs(for Fed Median): `fl_iid_fedsgd_accuracy.csv`, `fl_non_iid_fedsgd_accuracy.csv`, `central_accuracy.csv`  
+- Figure: `fl_iid_vs_non_iid_vs_central_fedsgd.png`
+  
 ## References
 
 * McMahan et al., 2017. *Communication-Efficient Learning of Deep Networks from Decentralized Data* (FedAvg).
@@ -313,14 +365,3 @@ ___
 
 **All clients, all rounds (5 clients, 100 rounds)**  
 `8 × 128,389 × 5 × 100 = 513,556,000 bytes ≈ 490 MB`
-
-## Artifacts(After sucessful execution, Artificats folder gets created)
-
-- CSVs(For Fed Avg): `fl_iid_accuracy.csv`, `fl_non_iid_accuracy.csv`, `central_accuracy.csv`  
-- Figure: `fl_iid_vs_non_iid_vs_central.png`
-  
-- CSVs(for Fed Median): `fl_iid_fedmedian_accuracy.csv`, `fl_non_iid_fedmedian_accuracy.csv`, `central_accuracy.csv`  
-- Figure: `fl_iid_vs_non_iid_vs_central_fedmedian.png`
-  
-- CSVs(for Fed Median): `fl_iid_fedsgd_accuracy.csv`, `fl_non_iid_fedsgd_accuracy.csv`, `central_accuracy.csv`  
-- Figure: `fl_iid_vs_non_iid_vs_central_fedsgd.png`
