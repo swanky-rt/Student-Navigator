@@ -415,4 +415,99 @@ Code: assignment-3/code/Threshold_MIA_Colab/MIA_Attack_Threshold.ipynb
 Subset dataset for this IPYNB: assignment-3/code/Threshold_MIA_Colab/dataset.csv
 ```
 
-## EXTRA CREDIT #2:  New Model
+## EXTRA CREDIT #2:  Loss Threshold Attack Model
+
+**Membership-Inference: Yeom Loss-Threshold Attack**
+
+Goal. Given a trained classifier and a labeled example (x,y), decide whether (x,y) was in the training set(member) or held out (non-member)
+The attack relies on the observation that overfit models assign lower loss to training examples than to unseen ones.
+Reference. Yeom et al., Privacy Risk in Machine Learning: Analyzing the Connection to Overfitting (2018).
+
+**What the Yeom loss-threshold attack does**:
+
+1. Train or load a model.
+  PRE (non-DP): loss_threshold_attack.py trains a high-capacity MLP on a small train fraction to encourage memorization.
+  POST-DP: dp_train.py trains with DP; post_dp_attack.py evaluates the same attack on the DP model.
+
+2. Compute per-example loss.
+   For each example with true label 𝑦 and predicted class probabilities 𝑝:
+    ℓ(x,y)=−logpy
+
+3. Turn loss into a membership score.
+   s(x,y)=−ℓ(x,y). Higher score ⇒ more “member-like.”
+
+4. Evaluate separability (privacy leakage).
+      Concatenate scores for train (label 1) and test (label 0), then compute ROC-AUC.
+      AUC ≈ 0.5 → near random guessing (low leakage / better privacy)
+
+      AUC → 1.0 → strong leakage (poor privacy, typically due to overfitting)
+
+**Inputs, Outputs, and Artifacts**
+
+1. Input data: dataset.csv (under Threshold_MIA_colab folder)
+
+2. Key outputs:
+         Metrics: printed Train/Test accuracy; AUC of the attack.
+
+              Artifacts (under artifacts/):
+
+                    *_scores_labels.npz — NumPy archives with scores, labels, auc.
+
+                    loss-threshold-attack.png, post_yeom_roc.png, pre_vs_post_attack_comparison.png — ROC plots.
+
+                    mia_pre_post_summary.json — compact PRE/POST AUC summary.
+
+**How to run**
+
+Activate the virtual env first if needed( please follow the step above to setup the environment).
+
+Note: please execute in the sequence as it is mentioned below:
+```
+python assignment-3/code/Loss-threshold-attack/loss_threshold_attack.py  #This file shows the attack on dataset before DP impl.
+python assignment-3/code/Loss-threshold-attack/dp_train.py               #This file shows DP impl on dataset.
+python assignment-3/code/Loss-threshold-attack/post_rp_attack.py         #This file measures the performance before & after DP impl.
+```
+or
+
+```
+Please run the file directly by clicking on following files 1. loss_threshold_attack.py, 2. dp_train.py , 3. post_rp_attack.py 
+```
+Output: 
+This will:
+Load the DP model/vectorizer.
+Compute scores on train/test.
+Save artifacts/post_yeom_roc.png, artifacts/post_yeom_scores_labels.npz.
+Update artifacts/mia_pre_post_summary.json and (optionally) pre_vs_post_attack_comparison.png.
+
+Interpretation:
+
+PRE AUC ≈ 0.814 → strong membership leakage in the non-DP, overfit model.
+
+POST AUC ≈ 0.513 → near-random; DP substantially reduces leakage.
+
+![pre_vs_post_attack_comparison.png](artifacts/pre_vs_post_attack_comparison.png)
+
+Conclusion:
+
+We evaluate privacy leakage using the Yeom loss-threshold membership-inference attack (Yeom et al., 2018).
+For each example we compute the per-example cross-entropy loss and use its negative as a membership score; 
+low loss indicates “member-like”. We report ROC-AUC over "train" (members) vs "test" (non-members). Our non-DP model 
+yields AUC ≈ 0.814, showing clear leakage consistent with overfitting. With DP training, AUC drops to ≈ 0.513, 
+near random guessing, which further indicates that DP mitigates membership leakage.
+
+Note: Below are the hyper-parameters tuning for default settings to execute the attack.
+
+Defaults (PRE non-DP, loss_threshold_attack.py):
+
+--train-frac=0.05 → uses 5% as members. If we increase: more data, less overfitting → lower AUC.
+--epochs=100 → training steps. If we increase: more memorization → higher AUC (until saturation).
+--lr=0.30 (SGD) → step size. If we increase: faster fitting/overfit, risk of instability.
+--batch=4 → batch size. If we increase: smoother grads, less overfit → lower AUC; decrease tends to overfit.
+--max-feat=100000, --ngrams=4 (TF-IDF capacity). If we increase: more capacity → easier memorization → higher AUC.
+
+Model: d→4096→1024→c (fixed). More width/depth (code edit): ↑capacity → ↑AUC.
+
+Defaults (POST DP, dp_train.py):
+
+--epochs=10, --lr=0.05, --batch=64. If we increase epochs/lr: better utility but can raise leakage if DP is weak.
+--sigma=5.0 (noise), --clip=0.1 (grad norm). If we increase sigma / decrease clip: stronger DP → lower AUC (but lower accuracy).

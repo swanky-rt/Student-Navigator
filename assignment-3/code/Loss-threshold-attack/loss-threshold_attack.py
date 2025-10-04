@@ -26,7 +26,7 @@ def _nll_from_proba(proba, y):
     p = np.take_along_axis(np.clip(proba, eps, 1 - eps), y.reshape(-1, 1), axis=1).ravel()
     return -np.log(p)
 
-def yeom_loss_attack(proba_in, y_in, proba_out, y_out, name="Yeom-Loss"):
+def loss_threshold_attack(proba_in, y_in, proba_out, y_out, name="Yeom-Loss"):
     loss_in  = _nll_from_proba(proba_in,  y_in)
     loss_out = _nll_from_proba(proba_out, y_out)
     scores   = np.concatenate([-loss_in, -loss_out])   # higher => member-like
@@ -99,7 +99,7 @@ def main():
         p_in  = torch.softmax(model(Xtr_t), dim=1).cpu().numpy()
         p_out = torch.softmax(model(Xte_t), dim=1).cpu().numpy()
 
-    res = yeom_loss_attack(p_in, ytr, p_out, yte)
+    res = loss_threshold_attack(p_in, ytr, p_out, yte)
     print(f"[OVERFIT-loss-threshold-attack] {res['name']} AUC={res['auc']:.3f}")
 
     loss_in  = _nll_from_proba(p_in,  ytr)
