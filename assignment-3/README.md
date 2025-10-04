@@ -372,7 +372,7 @@ You can test this code in 2 different ways:
 
 ---
 
-#### Delta Sensitivity Plot — Integrated in train_dp_model.py
+### Delta Sensitivity Plot — Integrated in train_dp_model.py
 After training the Baseline and Differentially Private models, we also conducted a Delta Sensitivity experiment inside the same script (train_dp_model.py) to visualize how varying δ values affect the privacy–utility trade-off while keeping the noise multiplier (σ) fixed.
 
 ---
@@ -384,6 +384,24 @@ After training the Baseline and Differentially Private models, we also conducted
   
 ___
 
+#### Implementation Details
+
+- Implemented within the main() function of train_dp_model.py.
+- Uses the same trained model architecture and hyperparameters as the baseline–DP comparison.
+- For each δ in {1/N, 1e-3, 5e-4, 1e-4, 5e-5}, the function train_dp_for_delta() retrains a DP model using the same σ = 1.5, C = 0.17, and Lot Size = 60.
+- At every epoch, it records the (ε, test accuracy) pair and saves them for plotting.
+
+#### Outputs (Saved under artifacts/)
+
+- delta_sensitivity_acc_vs_eps.png → Test Accuracy vs Epsilon curves for all δ values.
+- delta_sweep.csv → Per-epoch accuracy and ε values for each δ.
+
+#### Interpretation
+The resulting plot shows the expected privacy–utility trade-off:
+- As ε increases, test accuracy rises steadily for all δ values.
+- At low ε (stricter privacy), larger δ (e.g., 1e-3) attains higher accuracy earlier, since it relaxes the privacy constraint.
+- For moderate ε and above (ε > 1.5), the curves converge, indicating δ has minimal effect on accuracy once privacy noise becomes small.
+- This pattern mirrors Abadi et al. (2016) (Figure 4 in the paper) and validates that δ can typically be fixed (e.g., 1/N or 1e-5) while reporting ε as the key privacy metric.
 
 
 #### How to Run
