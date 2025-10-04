@@ -393,8 +393,8 @@ ___
 
 #### Outputs (Saved under artifacts/)
 
-- delta_sensitivity_acc_vs_eps.png → Test Accuracy vs Epsilon curves for all δ values.
-- delta_sweep.csv → Per-epoch accuracy and ε values for each δ.
+- `delta_sensitivity_acc_vs_eps.png` → Test Accuracy vs Epsilon curves for all δ values.
+- `delta_sweep.csv` → Per-epoch accuracy and ε values for each δ.
 
 #### Interpretation
 The resulting plot shows the expected privacy–utility trade-off:
