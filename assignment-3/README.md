@@ -438,7 +438,7 @@ Subset dataset for this IPYNB: assignment-3/code/Threshold_MIA_Colab/dataset.csv
 
 Goal. Given a trained classifier and a labeled example (x,y), decide whether (x,y) was in the training set(member) or held out (non-member)
 The attack relies on the observation that overfit models assign lower loss to training examples than to unseen ones.
-Reference: Yeom et al., Privacy Risk in Machine Learning: Analyzing the Connection to Overfitting (2018).
+Reference: Yeom et al., *“Privacy Risk in Machine Learning: Analyzing the Connection to Overfitting (2018)“* ([arxiv.1709.01604](https://arxiv.org/abs/1709.01604)).
 
 #### **What the Yeom loss-threshold attack does**:
 
