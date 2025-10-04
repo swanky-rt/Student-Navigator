@@ -415,4 +415,8 @@ Code: assignment-3/code/Threshold_MIA_Colab/MIA_Attack_Threshold.ipynb
 Subset dataset for this IPYNB: assignment-3/code/Threshold_MIA_Colab/dataset.csv
 ```
 
-## EXTRA CREDIT #2:  New Model
+2. 
+<!-- TODO: Add Yeom Attack Details -->
+
+## EXTRA CREDIT #2:  
+<!-- TODO add code and readme for new model -->
