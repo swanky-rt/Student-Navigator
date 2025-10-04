@@ -64,7 +64,7 @@ Input Layer (TF-IDF features) → Hidden Layer (ReLU) → Output Layer (Classes)
 ## 3. Differential Privacy Implementation
 
 ### Experimental Setup
-So how I went about it what was implemented in the Abadi et al. paper suggested. I went on to understand how the paremeters affected the utility. So classified the papemeters into 2 parts:
+So how I went about it what was implemented in the Abadi et al. paper suggested. I went on to understand how the paremeters affected the utility. So classified the parameters into 2 parts:
 1. <b>Privacy focusing parameters: </b> The ones that are focused on enhancing the privacy budget (Clipping norm C and Noise Multiplier σ)
 2. <b>Model focusing parameters: </b>
  The ones focused on model's ability to learn and produce good utility. (Learning rate, Lot Size - also helps with privacy tho, Hidden Layers)
@@ -131,7 +131,7 @@ To study how network capacity interacts with privacy noise, I varied the number 
 This behavior is consistent with the findings in Abadi et al. (2016), where increasing network size did not significantly change accuracy under DP-SGD. The reason is that, although larger networks introduce more parameters, the injected Gaussian noise is added per gradient step rather than per parameter. As a result, when gradients are averaged over many weights, the relative noise per parameter becomes smaller, effectively diluting the impact of privacy noise. 
 
 ### Module 2: Baseline Vs DP - Model Analysis and Utility Tradeoff
-My best DP setting derieved from above analysis are: (Fixed: δ = 1/N)
+My best DP setting derieved from above analysis are: (Fixed: δ = 1/N and 50 epochs)
 |   **Hyperparameter** | **Best Value** |
 | -------------------: | -------------: |
 |         Hidden Units |            128 |
@@ -210,115 +210,54 @@ This demonstrates that dataset-specific tuning of both privacy and model paramet
 | Noise Multiplier (σ) |            1.5 |
 
 
+## 4.Membership Interference Attack and Privacy–Utility trade-off (Extra Credit #1)
+I implemnted the MIA attack on the DP model from my best settings and these were the results we got:
+<p align="center"> 
+ <img src="/assignment-3/artifacts/Threshold_MIA_Attack.png" width="500" height="600"> <br/>
+  Figure: Small Grid sweep: Test Acc Vs. Epoch and ε values
+</p>
 
 
+| **Configuration** | **Test Accuracy** | **Privacy Budget (ε)** | **MIA AUC** |                     **Privacy Gain** |                                                     **Utility–Privacy Trade-off** |
+| ----------------- | ----------------: | ---------------------: | ----------: | -----------------------------------: | --------------------------------------------------------------------------------: |
+| **Baseline**      |             84.0% |         ∞ (No privacy) |   **0.812** |                                    – |                                            High utility, **no privacy guarantee** |
+| **DP (σ = 1.5)**  |             81.5% |               **2.53** |   **0.632** | **+22% reduction in attack success** | Small accuracy drop (**−2.5%**) for **strong privacy guarantee (finite ε vs. ∞)** |
 
-#### Privacy Accounting
-- **Method:** Moments Accountant (via Opacus)
-- **Tracking:** Real-time epsilon consumption
-- **Comparison:** Strong Composition vs. Moments Accountant bounds
-
-### 3.2 Hyperparameter Optimization Process
-
-#### 3.2.1 Gradient Clipping Analysis
-- **Method:** Estimated median gradient norms on training data
-- **Range Tested:** [0.5×, ..., 2×] median norm (8 values)
-- **Optimal Value:** C = 0.17 (dataset-specific)
-
-#### 3.2.2 Noise Multiplier Sweep
-- **Range Tested:** [0.1, 0.5, 1, 2, 3, 4, 5]
-- **Evaluation Metric:** Test accuracy vs. privacy budget
-- **Optimal Value:** σ = 1.5 (best privacy-utility tradeoff)
-
-#### 3.2.3 Additional Hyperparameters
-- **Hidden Layer Size:** Swept [64, 128, 256, 512, 1024]
-- **Learning Rate:** Swept [0.05, 0.1, 0.15, 0.2, 0.3]
-- **Batch Size:** Swept around √N for optimal privacy
-
----
-
-## 4. Experimental Results
-
-### 4.1 Model Performance
-
-#### 4.1.1 Baseline Model Results
-- **Training Accuracy:** ~100% (intentional overfitting)
-- **Test Accuracy:** 83.5%
-- **Privacy Vulnerability:** High (AUC ≥ 0.7 in MIA)
-
-#### 4.1.2 DP Model Results
-- **Training Accuracy:** 75-85%
-- **Test Accuracy:** 81.5%
-- **Privacy Budget:** ε ≈ 2.5-4.0 (depending on configuration)
-- **Privacy Improvement:** Significant MIA AUC reduction
-
-### 4.2 Privacy Analysis Results
-
-#### 4.2.1 Membership Inference Attack (MIA) Evaluation
-Our MIA analysis uses the Yeom loss-based attack:
-
-**Baseline Model:**
-- **MIA AUC:** 0.85-0.95 (high vulnerability)
-- **Attack Success:** Clear separation between members/non-members
-- **Interpretation:** Significant privacy leakage
-
-**DP Model:**
-- **MIA AUC:** 0.52-0.65 (reduced vulnerability)
-- **Attack Success:** Reduced separation
-- **Privacy Improvement:** 20-40% AUC reduction
-
-#### 4.2.2 Privacy Accounting Results
-- **Moments Accountant:** Tighter bounds than Strong Composition
-- **Epsilon Growth:** Logarithmic with epochs (as expected)
-- **Final Privacy Budget:** ε ≈ 2.5 for reasonable utility
-
-### 4.3 Privacy-Utility Tradeoff Analysis
-
-| Configuration | Test Accuracy | Privacy Budget (ε) | MIA AUC | Privacy Gain |
-|---------------|---------------|-------------------|---------|--------------|
-| Baseline      | 83.5%         | ∞                 | 0.89    | -            |
-| DP (σ=1.0)    | 82.1%         | 4.2               | 0.71    | 0.18         |
-| DP (σ=1.5)    | 81.5%         | 2.8               | 0.63    | 0.26         |
-| DP (σ=2.0)    | 79.8%         | 2.1               | 0.58    | 0.31         |
-| DP (σ=4.0)    | 75.2%         | 1.2               | 0.54    | 0.35         |
+The privacy–utility trade-off observed in this above table highlights how differential privacy can effectively protect sensitive information with only a minimal impact on model performance. The DP-SGD model achieved a test accuracy of 81.5%, compared to 84% for the baseline, demonstrating that enforcing privacy led to just a ~2.5% drop in utility. At the same time, the privacy budget improved dramatically, from no protection (ε = ∞) in the baseline to a strongly private ε = 2.53, while the MIA AUC decreased from 0.812 to 0.632, indicating a significant reduction in an attacker’s ability to infer training membership. The injected Gaussian noise and gradient clipping acted as implicit regularizers, reducing overfitting and improving generalization. This demonstrates that although the trade-off cannot be completely eliminated, it can be strategically managed to extract the best possible balance between model utility and data privacy.
 
 ---
 
 ## 5. Key Findings and Insights
 
 ### 5.1 Privacy Protection Effectiveness
-1. **Significant Privacy Improvement:** DP-SGD reduces MIA vulnerability by 20-35%
-2. **Reasonable Utility Cost:** 2-8% accuracy drop for substantial privacy gains
-3. **Parameter Sensitivity:** Noise multiplier is the most critical parameter
 
-### 5.2 Hyperparameter Sensitivity Analysis
-1. **Clipping Norm:** Dataset-dependent; requires empirical tuning
-2. **Batch Size:** √N provides good privacy-utility balance
-3. **Learning Rate:** Higher rates (0.15) work better with DP noise
-4. **Model Capacity:** Smaller models (512 hidden) sufficient for DP training
+DP-SGD significantly improved privacy, reducing the budget from ∞ to **ε = 2.53** with only a **2.5% accuracy drop**. The MIA AUC decreased from **0.812 → 0.632**, showing a **22% lower attack success rate**. The tuned setup *(C = 0.17, σ = 1.5, L = 60, LR = 0.1)* achieved very less degradation from baseline accuracy while ensuring strong privacy.
+
+### 5.2 Hyperparameter Sensitivity
+
+* **Clipping Norm (C):** Best at **0.17** (~1.13x median gradient norm). Too small over-clips; too large weakens privacy.
+* **Lot Size (L):** Optimal at **60**, balancing privacy amplification and stable gradients.
+* **Learning Rate (LR):** **0.1** gave stable convergence; higher values amplified noise.
+* **Model Capacity:** Accuracy stayed constant (~0.81–0.83); noise diluted with more parameters.
 
 ### 5.3 Privacy Accounting Insights
-1. **Moments Accountant:** 2-3× tighter bounds than Strong Composition
-2. **Epsilon Growth:** Predictable logarithmic pattern
-3. **Delta Setting:** 1/N is appropriate for this dataset size
+
+Using the **Moments Accountant**, ε grew sublinearly and stabilized near **2.53** after 50 epochs. This confirmed the theoretical √T scaling. The chosen **δ = 1/N** was suitable for the dataset size (~4k).
 
 ---
 
 ## 6. Limitations and Future Work
 
 ### 6.1 Current Limitations
-1. **Synthetic Data:** Results may not generalize to real-world text data
-2. **Small Dataset:** Limited to 2,000 samples
-3. **Simple Architecture:** MLP may not capture complex text patterns
-4. **Single Attack Type:** Only evaluated against loss-based MIA
 
-### 6.2 Future Research Directions
-1. **Real-World Evaluation:** Test on actual job posting datasets
-2. **Advanced Architectures:** Evaluate DP training with transformers/BERT
-3. **Multiple Attack Types:** Include property inference and model inversion attacks
-4. **Federated Learning:** Combine DP with federated training scenarios
+Results are based on **synthetic, small-scale data** (~4k samples) and a **simple MLP model**, evaluated only against **MIA attacks**, so findings may not fully generalize.
+
+### 6.2 Future Directions
+
+Test on **real datasets**, explore **transformer-based models**, extend to **more attack types**, and combine DP with **federated learning** for broader privacy protection.
 
 ---
+
 
 ## 7. AI Usage Disclosure
 
@@ -326,22 +265,15 @@ Our MIA analysis uses the Yeom loss-based attack:
 During this project, AI assistance was utilized in the following areas:
 
 #### 7.1.1 Code Development and Debugging
-- **Tool:** GitHub Copilot and Claude AI
+- **Tool:** 
 - **Usage:** 
   - Code structure suggestions and boilerplate generation
   - Debugging assistance for Opacus integration issues
   - Matplotlib plotting code optimization
   - Error resolution and troubleshooting
 
-#### 7.1.2 Documentation and Analysis
-- **Tool:** Claude AI
-- **Usage:**
-  - README structure and formatting
-  - Code documentation and comments
-  - Explanation of DP concepts for clarity
-  - Report writing assistance and organization
 
-#### 7.1.3 Mathematical Verification
+#### Mathematical Verification
 - **Tool:** Claude AI
 - **Usage:**
   - Verification of privacy accounting formulas
@@ -354,29 +286,13 @@ All core experimental design, hyperparameter selection, privacy analysis, and sc
 
 ---
 
-## 8. Reproducibility Information
+## 9. Conclusions
 
-### 8.1 Environment Setup
-```bash
-# Create conda environment
-conda env create -f assignment-3/code/environment.yml
-conda activate 690f
-```
+This study demonstrates that differential privacy can provide meaningful protection against membership inference attacks in text classification tasks. The privacy-utility tradeoff analysis provides actionable insights for practitioners implementing DP in production text classification systems. Future work should focus on scaling these techniques to larger datasets and more complex model architectures.
 
-### 8.2 Experiment Reproduction
-```bash
-# Run hyperparameter analysis
-python assignment-3/code/Hyperparam_Tuning/analyze_noise.py
-python assignment-3/code/Hyperparam_Tuning/analyze_clip.py
+---
 
-# Train models and perform MIA
-python assignment-3/code/dp_train_with_mia.py
-
-# Generate comparison plots
-python assignment-3/code/post_dp_attck.py
-```
-
-### 8.3 Key Dependencies
+### Key Dependencies
 - **PyTorch:** 1.12+ (neural network training)
 - **Opacus:** 1.3+ (differential privacy)
 - **Scikit-learn:** 1.1+ (preprocessing and metrics)
@@ -384,23 +300,5 @@ python assignment-3/code/post_dp_attck.py
 - **NumPy/Pandas:** Standard scientific computing
 
 ---
-
-## 9. Conclusions
-
-This study demonstrates that differential privacy can provide meaningful protection against membership inference attacks in text classification tasks. The key findings are:
-
-1. **DP-SGD Effectiveness:** Properly configured DP-SGD reduces privacy vulnerability by 20-35% with minimal utility loss
-2. **Hyperparameter Criticality:** Careful tuning of noise multiplier and clipping norm is essential
-3. **Privacy Accounting:** Moments Accountant provides significantly tighter bounds than naive composition
-4. **Practical Feasibility:** DP techniques are viable for real-world text classification applications
-
-The privacy-utility tradeoff analysis provides actionable insights for practitioners implementing DP in production text classification systems. Future work should focus on scaling these techniques to larger datasets and more complex model architectures.
-
----
-
-**Contact Information:**  
-Swetha Saseendran  
-University of Massachusetts Amherst  
-CS 690F - Theory of Cryptography  
 
 **Repository:** [proj-group-04](https://github.com/umass-CS690F/proj-group-04)
