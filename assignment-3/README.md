@@ -28,36 +28,6 @@
 
 ---
 
-<!-- 
-## Model Setting and Dataset Generation
-The model used is a 2-layer feedforward neural network (multilayer perceptron, MLP) with the following structure:
-
-- **Input:** TF-IDF features (`max_features=258`)
-- **Hidden layer:** size is swept (default 128, but can be 64, 128, ..., 1024)
-  - `nn.Linear(input_dim, hidden_units)`
-  - `nn.ReLU()`
-- **Output layer:** number of classes
-  - `nn.Linear(hidden_units, num_classes)`
-
-This architecture is implemented in the `make_model` function in the script.
-
-
-<img src="/assignment-3/artifacts/model_architecture.png" alt="Model Architecture" width="600"/>
-
-
-For a 2-layer MLP, the number of trainable parameters is:
-
-- **Layer 1:**
-  - Weights: `input_dim × hidden_units`
-  - Biases: `hidden_units`
-  - Total: `input_dim × hidden_units + hidden_units`
-- **Layer 2:**
-  - Weights: `hidden_units × num_classes`
-  - Biases: `num_classes`
-  - Total: `hidden_units × num_classes + num_classes`
-- **Total:**
-  - `params_l1 + params_l2` -->
-
 ## Folder Structure
 
 The assignment is organized into the following main directories. Please follow this below structure to view the files needed.<br/>
@@ -68,6 +38,7 @@ The assignment is organized into the following main directories. Please follow t
 The other folders are for extra credit: <br/>
 MIA ATTACK:
 - ```Threshold_MIA_Colab/``` <br/>
+- ```Loss-threshold-attack``` <br/>
 
 We also testing a new model (more complex model) so see how it has affect on privacy:
 - ```test```
@@ -375,6 +346,16 @@ You can test this code in 2 different ways:
 1. Mention your budget delta (Accountant will get you the model for best epsilon)
 2. Mention your budget delta and epsilon (Accountant will get you for the model for the optimal noise)
 
+#### How to Run
+
+```bash
+python assignment-3/code/Main_Baseline_Vs_BestDP/train_dp_model.py [--target_eps <float>] [--target_delta <float>] [--sigma <float>]
+```
+Example:
+```bash
+python assignment-3/code/Main_Baseline_Vs_BestDP/train_dp_model.py --target_delta 0.00025
+```
+
 ---
 
 ### Delta Sensitivity Plot — Integrated in train_dp_model.py
@@ -401,27 +382,10 @@ ___
 - `delta_sensitivity_acc_vs_eps.png` → Test Accuracy vs Epsilon curves for all δ values.
 - `delta_sweep.csv` → Per-epoch accuracy and ε values for each δ.
 
-#### Interpretation
-The resulting plot shows the expected privacy–utility trade-off:
-- As ε increases, test accuracy rises steadily for all δ values.
-- At low ε (stricter privacy), larger δ (e.g., 1e-3) attains higher accuracy earlier, since it relaxes the privacy constraint.
-- For moderate ε and above (ε > 1.5), the curves converge, indicating δ has minimal effect on accuracy once privacy noise becomes small.
-- This pattern mirrors Abadi et al. (2016) (Figure 4 in the paper) and validates that δ can typically be fixed (e.g., 1/N or 1e-5) while reporting ε as the key privacy metric.
-
-
-#### How to Run
-
-```bash
-python assignment-3/code/Main_Baseline_Vs_BestDP/train_dp_model.py [--target_eps <float>] [--target_delta <float>] [--sigma <float>]
-```
-Example:
-```bash
-python assignment-3/code/Main_Baseline_Vs_BestDP/train_dp_model.py --target_delta 0.00025
-```
 
 ---
 
-## EXTRA CREDIT #1:  MIA Analysis
+## MIA Modules:
 
 The Membership Inference Attack analysis is located in `code/Threshold_MIA_Colab/`.
 
@@ -453,100 +417,55 @@ Code: assignment-3/code/Threshold_MIA_Colab/MIA_Attack_Threshold.ipynb
 Subset dataset for this IPYNB: assignment-3/code/Threshold_MIA_Colab/dataset.csv
 ```
 
-## EXTRA CREDIT #2:  
-## Loss Threshold Attack Model
+### 2. Loss Threshold Attack Model
 
 **Membership-Inference: Yeom Loss-Threshold Attack**
 
 Goal. Given a trained classifier and a labeled example (x,y), decide whether (x,y) was in the training set(member) or held out (non-member)
 The attack relies on the observation that overfit models assign lower loss to training examples than to unseen ones.
-Reference. Yeom et al., Privacy Risk in Machine Learning: Analyzing the Connection to Overfitting (2018).
+Reference: Yeom et al., Privacy Risk in Machine Learning: Analyzing the Connection to Overfitting (2018).
 
-**What the Yeom loss-threshold attack does**:
+#### **What the Yeom loss-threshold attack does**:
 
 1. Train or load a model.
   PRE (non-DP): loss_threshold_attack.py trains a high-capacity MLP on a small train fraction to encourage memorization.
   POST-DP: dp_train.py trains with DP; post_dp_attack.py evaluates the same attack on the DP model.
-
 2. Compute per-example loss.
    For each example with true label 𝑦 and predicted class probabilities 𝑝:
     ℓ(x,y)=−logpy
-
 3. Turn loss into a membership score.
    s(x,y)=−ℓ(x,y). Higher score ⇒ more “member-like.”
-
 4. Evaluate separability (privacy leakage).
       Concatenate scores for train (label 1) and test (label 0), then compute ROC-AUC.
       AUC ≈ 0.5 → near random guessing (low leakage / better privacy)
-
       AUC → 1.0 → strong leakage (poor privacy, typically due to overfitting)
 
-**Inputs, Outputs, and Artifacts**
+#### **Inputs, Outputs, and Artifacts**
 
 1. Input data: dataset.csv (under Threshold_MIA_colab folder)
-
 2. Key outputs:
          Metrics: printed Train/Test accuracy; AUC of the attack.
-
               Artifacts (under artifacts/):
-
                     *_scores_labels.npz — NumPy archives with scores, labels, auc.
-
                     loss-threshold-attack.png, post_yeom_roc.png, pre_vs_post_attack_comparison.png — ROC plots.
-
                     mia_pre_post_summary.json — compact PRE/POST AUC summary.
 
-**How to run**
-
+#### **How to run**
 Activate the virtual env first if needed( please follow the step above to setup the environment).
-
 Note: please execute in the sequence as it is mentioned below:
 ```
 python assignment-3/code/Loss-threshold-attack/loss_threshold_attack.py  #This file shows the attack on dataset before DP impl.
 python assignment-3/code/Loss-threshold-attack/dp_train.py               #This file shows DP impl on dataset.
 python assignment-3/code/Loss-threshold-attack/post_rp_attack.py         #This file measures the performance before & after DP impl.
 ```
-or
-
-```
-Please run the file directly by clicking on following files 1. loss_threshold_attack.py, 2. dp_train.py , 3. post_rp_attack.py 
-```
-Output: 
-This will:
-Load the DP model/vectorizer.
-Compute scores on train/test.
-Save artifacts/post_yeom_roc.png, artifacts/post_yeom_scores_labels.npz.
-Update artifacts/mia_pre_post_summary.json and (optionally) pre_vs_post_attack_comparison.png.
-
-**Interpretation**:
-
+#### **Interpretation**:
 PRE AUC ≈ 0.814 → strong membership leakage in the non-DP, overfit model.
-
 POST AUC ≈ 0.513 → near-random; DP substantially reduces leakage.
 
 ![pre_vs_post_attack_comparison.png](artifacts/pre_vs_post_attack_comparison.png)
-
-**Conclusion**:
 
 We evaluate privacy leakage using the Yeom loss-threshold membership-inference attack (Yeom et al., 2018).
 For each example we compute the per-example cross-entropy loss and use its negative as a membership score; 
 low loss indicates “member-like”. We report ROC-AUC over "train" (members) vs "test" (non-members). Our non-DP model 
 yields AUC ≈ 0.814, showing clear leakage consistent with overfitting. With DP training, AUC drops to ≈ 0.513, 
 near random guessing, which further indicates that DP mitigates membership leakage.
-
-**Hyper-Parameters used for this attack**
-
-Defaults (PRE non-DP, loss_threshold_attack.py):
-
---train-frac=0.05 → uses 5% as members. If we increase: more data, less overfitting → lower AUC.
---epochs=100 → training steps. If we increase: more memorization → higher AUC (until saturation).
---lr=0.30 (SGD) → step size. If we increase: faster fitting/overfit, risk of instability.
---batch=4 → batch size. If we increase: smoother grads, less overfit → lower AUC; decrease tends to overfit.
---max-feat=100000, --ngrams=4 (TF-IDF capacity). If we increase: more capacity → easier memorization → higher AUC.
-
-Model: d→4096→1024→c (fixed). More width/depth (code edit): ↑capacity → ↑AUC.
-
-Defaults (POST DP, dp_train.py):
-
---epochs=10, --lr=0.05, --batch=64. If we increase epochs/lr: better utility but can raise leakage if DP is weak.
---sigma=5.0 (noise), --clip=0.1 (grad norm). If we increase sigma / decrease clip: stronger DP → lower AUC (but lower accuracy).
