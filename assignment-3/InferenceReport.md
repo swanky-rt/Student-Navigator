@@ -104,7 +104,7 @@ As you can see the median was around 0.15, so I varied my clipping for the value
 Smaller sampling rates (smaller L) yield stronger privacy guarantees/privacy amplification by subsampling. When fewer records are seen per iteration, the contribution of any single data point to the model’s gradients is reduced, effectively lowering its exposure and improving privacy. The search space sweeped was ```range(10, 100, 10) ```
 
 <p align="center"> 
- <img src="/assignment-3/artifacts/Var_LOT.png" width="500" height="600"> <br/>
+ <img src="/assignment-3/artifacts/sweep_lot_smooth.png" width="500" height="600"> <br/>
   Figure: Effect of Lot Size on Test Accuracy
 </p>
 
@@ -114,7 +114,7 @@ In Abadi et al., the best accuracy was achieved when the lot size was around √
 To analyze the effect of learning rate (LR) on convergence under differential privacy, I varied LR over the range [0.01, 0.05, 0.1, 0.2, 0.5] while keeping all other parameters constant (σ = 1.5, clipping norm = 0.17, δ = 1/N). The plot shows a bell-shaped trend, where accuracy rises initially with higher LR, peaks near LR = 0.1, and then steadily declines.
 
 <p align="center"> 
- <img src="/assignment-3/artifacts/Var_LR.png" width="500" height="600"> <br/>
+ <img src="/assignment-3/artifacts/sweep_lr_smooth.png" width="500" height="600"> <br/>
   Figure: Effect of LR on Test Accuracy
 </p>
 
@@ -124,7 +124,7 @@ At very low LR values (0.01), parameter updates are too small to overcome the in
 To study how network capacity interacts with privacy noise, I varied the number of hidden units from 64 to 1024 while keeping all other parameters constant (σ = 1.0, clipping norm = 0.17, δ = 1/N). The plot shows that test accuracy remains nearly constant across all hidden layer sizes, fluctuating only slightly around 0.81–0.83.
 
 <p align="center"> 
- <img src="/assignment-3/artifacts/Var_HIDDENLAYERS.png" width="500" height="600"> <br/>
+ <img src="/assignment-3/artifacts/sweep_hidden_smooth.png" width="500" height="600"> <br/>
   Figure: Effect of Hidden Layers on Test Accuracy
 </p>
 
