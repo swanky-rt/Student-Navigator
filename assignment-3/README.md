@@ -88,6 +88,11 @@ code/
 ├── Main_Baseline_Vs_BestDP/              # Main training comparison from param tuning
    └── train_dp_model.py                  # Baseline vs Best DP model train
 
+└── Loss-threshold-attack/                # Loss Threshold Attack (EXTRA CREDIT)
+    ├── dp_train.py                       # dp implementation to support before and after attack
+    └── loss-threshold_attack.py          # loss threshold attack implementation
+    └── post_dp_attack                    # post dp implementation attack analysis
+
 └── Threshold_MIA_Colab/                  # Membership Inference Attack analysis (EXTRA CREDIT)
     ├── dataset.csv                       # Small subset dataset for MIA
     └── MIA_Attack_Threshold.ipynb        # MIA analysis notebook
