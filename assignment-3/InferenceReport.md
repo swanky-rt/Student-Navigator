@@ -170,8 +170,6 @@ In the Figure on the RIGHT which uses the settings from Abadi et al.,(clip = 0.1
 | DP-SGD (Differentially Private) | *Abadi et al. (2016)* | 0.7925                  | 5.04            | –                  | –                        |
 | DP-SGD (Differentially Private) | **My Experiment**     | **0.8150**              | **2.53**        | **+2.8%**          | **−49.8%**               |
 
-
-
 ### ***Module 3:Small Grid Sweep C ∈ {0.5, 1.0}; σ ∈ {0.5, 1.0, 2.0}:***
 I also wanted to analyse the ranges given in the website, so I conducted a grid search over C ∈ {0.5, 1.0} and σ ∈ {0.5, 1.0, 2.0}, keeping all other hyperparameters fixed (learning rate = 0.1, lot size = 60, δ = 1/N). Each configuration was trained for 50 epochs, and both training/test accuracies and the corresponding ε values were recorded using the Opacus PrivacyEngine.
 - Increasing σ → stronger privacy (ε ↓) but slightly slower or noisier training.
@@ -210,7 +208,7 @@ This demonstrates that dataset-specific tuning of both privacy and model paramet
 | Noise Multiplier (σ) |            1.5 |
 
 
-## 4.Membership Interference Attack and Privacy–Utility trade-off (Extra Credit #1)
+## 4. Membership Interference Attack and Privacy–Utility trade-off (Extra Credit #1)
 I implemnted the MIA attack on the DP model from my best settings and these were the results we got:
 <p align="center"> 
  <img src="/assignment-3/artifacts/Threshold_MIA_Attack.png" width="500" height="600"> <br/>
@@ -226,45 +224,71 @@ I implemnted the MIA attack on the DP model from my best settings and these were
 The privacy–utility trade-off observed in this above table highlights how differential privacy can effectively protect sensitive information with only a minimal impact on model performance. The DP-SGD model achieved a test accuracy of 81.5%, compared to 84% for the baseline, demonstrating that enforcing privacy led to just a ~2.5% drop in utility. At the same time, the privacy budget improved dramatically, from no protection (ε = ∞) in the baseline to a strongly private ε = 2.53, while the MIA AUC decreased from 0.812 to 0.632, indicating a significant reduction in an attacker’s ability to infer training membership. The injected Gaussian noise and gradient clipping acted as implicit regularizers, reducing overfitting and improving generalization. This demonstrates that although the trade-off cannot be completely eliminated, it can be strategically managed to extract the best possible balance between model utility and data privacy.
 
 ---
+## 5. Additional Analytics to understand Differential Privacy (EXTRA CREDIT #2)
+### Strong Composition Vs. Moments Accountant
+<p align="center"> 
+ <img src="/assignment-3/artifacts/epsilon_comparison.png" width="500" height="600"> <br/>
+  Figure: Strong Composition Vs Moments Accountant
+</p>
+This plot compares Strong Composition (orange) with the Moments Accountant (green, from Opacus) in tracking privacy loss (ε) over training epochs on our DP model.
+- Strong Composition: Estimates ε conservatively, assuming worst-case accumulation. ε grows rapidly and exceeds 50 after 50 epochs.
+- Moments Accountant: Provides a much tighter bound by tracking privacy loss via moment statistics, keeping ε below 5 even after 50 epochs.
+The Moments Accountant offers more realistic and tighter privacy guarantees, allowing longer training with stronger privacy and better model utility than traditional composition methods.
 
-## 5. Key Findings and Insights
 
-### 5.1 Privacy Protection Effectiveness
+### Delta-Sensitivity Graph
+We varied all parameters keeping delta as 1/N. This graph was done on our Best DP Param setting to analyse what happes what happens if delta changes.
+TODO: Arin
+<p align="center"> 
+ <img src="/assignment-3/artifacts/<add-file>.png" width="500" height="600"> <br/>
+  Figure: Delta Sensitivity Graph for Best DP Setting- What happens when delta changes?
+</p>
+
+---
+## 7. Key Findings and Insights
+
+###  Privacy Protection Effectiveness
 
 DP-SGD significantly improved privacy, reducing the budget from ∞ to **ε = 2.53** with only a **2.5% accuracy drop**. The MIA AUC decreased from **0.812 → 0.632**, showing a **22% lower attack success rate**. The tuned setup *(C = 0.17, σ = 1.5, L = 60, LR = 0.1)* achieved very less degradation from baseline accuracy while ensuring strong privacy.
 
-### 5.2 Hyperparameter Sensitivity
+### Hyperparameter Sensitivity
 
 * **Clipping Norm (C):** Best at **0.17** (~1.13x median gradient norm). Too small over-clips; too large weakens privacy.
 * **Lot Size (L):** Optimal at **60**, balancing privacy amplification and stable gradients.
 * **Learning Rate (LR):** **0.1** gave stable convergence; higher values amplified noise.
 * **Model Capacity:** Accuracy stayed constant (~0.81–0.83); noise diluted with more parameters.
 
-### 5.3 Privacy Accounting Insights
+### Privacy Accounting Insights
 
 Using the **Moments Accountant**, ε grew sublinearly and stabilized near **2.53** after 50 epochs. This confirmed the theoretical √T scaling. The chosen **δ = 1/N** was suitable for the dataset size (~4k).
 
 ---
 
-## 6. Limitations and Future Work
+## 8. Limitations and Future Work
 
-### 6.1 Current Limitations
+### Current Limitations
 
 Results are based on **synthetic, small-scale data** (~4k samples) and a **simple MLP model**, evaluated only against **MIA attacks**, so findings may not fully generalize.
 
-### 6.2 Future Directions
+### Future Directions
 
 Test on **real datasets**, explore **transformer-based models**, extend to **more attack types**, and combine DP with **federated learning** for broader privacy protection.
 
 ---
 
+## 9. Conclusions
 
-## 7. AI Usage Disclosure
+This study demonstrates that differential privacy can provide meaningful protection against membership inference attacks in text classification tasks. The privacy-utility tradeoff analysis provides actionable insights for practitioners implementing DP in production text classification systems. Future work should focus on scaling these techniques to larger datasets and more complex model architectures.
 
-### 7.1 AI Tools and Assistance
+---
+
+
+## AI Usage Disclosure
+
+### AI Tools and Assistance
 During this project, AI assistance was utilized in the following areas:
 
-#### 7.1.1 Code Development and Debugging
+#### Code Development and Debugging
 - **Tool:** 
 - **Usage:** 
   - Code structure suggestions and boilerplate generation
@@ -281,14 +305,8 @@ During this project, AI assistance was utilized in the following areas:
   - Parameter count calculations
   - Statistical analysis interpretation
 
-### 7.2 Human Contributions
+### Human Contributions
 All core experimental design, hyperparameter selection, privacy analysis, and scientific conclusions were developed through human analysis and domain expertise. AI tools were used primarily for implementation efficiency and documentation quality.
-
----
-
-## 9. Conclusions
-
-This study demonstrates that differential privacy can provide meaningful protection against membership inference attacks in text classification tasks. The privacy-utility tradeoff analysis provides actionable insights for practitioners implementing DP in production text classification systems. Future work should focus on scaling these techniques to larger datasets and more complex model architectures.
 
 ---
 
