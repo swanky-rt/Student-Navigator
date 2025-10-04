@@ -275,6 +275,7 @@ STEP-1: Run script directly "run_fedAvg.py" which is at this location "assignmen
 
 ---
 
+Extra Credits:
 **Optional Code (To run other aggregator) Command Line Commands****:
 
 ## Please follow below instructions to execute the FL( this is for federated learning using other aggregator (Fed Median & Fed SGD) .
