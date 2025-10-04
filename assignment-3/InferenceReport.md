@@ -37,8 +37,7 @@ Our experiments utilize a simple yet effective 2-layer Multi-Layer Perceptron (M
 Input Layer (TF-IDF features) → Hidden Layer (ReLU) → Output Layer (Classes)
 ```
 
-<img src="/assignment-3/artifacts/model_architecture.png"/>
-
+<p align="center"> <img src="/assignment-3/artifacts/model_architecture.png" width="500" height="600"> </p>
 
 **Architecture Specifications:**
 - **Input Dimension:** Variable (based on TF-IDF max_features)
@@ -76,7 +75,12 @@ Our DP implementation uses the Opacus library with the following key components:
 - **Batch Size:** √N (privacy-utility balance)
 
 #### 3.1.1 Privacy Parameters
-- **Noise Multiplier (σ):** 1.5 - 4.0 (optimized through grid search)
+- **Noise Multiplier (σ):** This code helped me to systematically explore the privacy-utility tradeoff and identify the optimal noise multiplier that balances model utility with privacy protection. I explored how the acc changes in a DP model over the range of σ ∈ ```[0.5, 1, 1.5, 2, 2.5, 3]```
+<p align="center"> 
+ <img src="/assignment-3/artifacts/noise_vs_acc.png" width="500" height="600"> <br/>
+  Figure: Effect of noise multiplier on model accuracy
+</p>
+As seen from the graph, my best accuracy was for σ = 1.5. 
 
 - **Clipping Norm (C):** 0.17 - 1.0 (based on gradient norm analysis)
 
