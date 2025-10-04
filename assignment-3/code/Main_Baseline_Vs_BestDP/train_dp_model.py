@@ -261,6 +261,49 @@ def main():
         "epsilon": eps_hist if plot_eps else [TARGET_EPS]*EPOCHS
     }).to_csv(os.path.join(ART,"dp_accuracy.csv"), index=False)
 
+    # Function for the delta sensitivity experiment
+    def train_dp_for_delta(delta, sigma):
+        """Trains one DP model for a given delta and return (eps_hist, acc_hist)"""
+        model = make_model(D, C, device)
+        optimizer = torch.optim.SGD(model.parameters(), lr=LR)
+        privacy_engine = PrivacyEngine()
+        model, optimizer, train_loader = privacy_engine.make_private(
+            module=model,
+            optimizer=optimizer,
+            data_loader=base_loader,
+            noise_multiplier=sigma,
+            max_grad_norm=MAX_GRAD_NORM,
+        )
+        eps_hist, acc_hist = [], []
+        for _ in range(EPOCHS):
+            model.train()
+            for xb, yb in train_loader:
+                optimizer.zero_grad(set_to_none=True)
+                logits = model(xb)
+                loss = F.cross_entropy(logits, yb) + l2_weight_decay(model, LAMBDA)
+                loss.backward()
+                optimizer.step()
+            eps_hist.append(privacy_engine.get_epsilon(delta=delta))
+            acc_hist.append(accuracy(model, Xte_t, yte_t))
+        return eps_hist, acc_hist
+
+    delta_list = [1.0/len(Xtr_t), 1e-3, 5e-4, 1e-4, 5e-5]
+    rows = []
+    plt.figure(figsize=(8,6))
+    for delta in delta_list:
+        eps_hist, acc_hist = train_dp_for_delta(delta, SIGMA)
+        rows += [{"delta": delta, "epoch": i+1, "epsilon": e, "test_acc": a,
+                  "sigma": SIGMA, "clip": MAX_GRAD_NORM, "lot_size": LOT_SIZE}
+                 for i,(e,a) in enumerate(zip(eps_hist, acc_hist))]
+        plt.plot(eps_hist, acc_hist, marker="o", label=f"δ={delta:g}")
+    plt.xlabel("Epsilon (ε)"); plt.ylabel("Test Accuracy")
+    plt.title("Delta Sensitivity: Accuracy vs Epsilon (σ fixed)")
+    plt.grid(True); plt.legend()
+    os.makedirs(ART, exist_ok=True)
+    pd.DataFrame(rows).to_csv(os.path.join(ART,"delta_sweep.csv"), index=False)
+    plt.savefig(os.path.join(ART,"delta_sensitivity_acc_vs_eps.png"), bbox_inches="tight")
+    plt.show()
+
     # Print final baseline test accuracy
     print(f"Final baseline model test accuracy: {test_hist_base[-1]:.4f}")
 
