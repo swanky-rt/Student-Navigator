@@ -68,9 +68,11 @@ So how I went about it what was implemented in the Abadi et al. paper suggested.
 1. <b>Privacy focusing parameters: </b> The ones that are focused on enhancing the privacy budget (Clipping norm C and Noise Multiplier σ)
 2. <b>Model focusing parameters: </b>
  The ones focused on model's ability to learn and produce good utility. (Learning rate, Lot Size - also helps with privacy tho, Hidden Layers)
-3. Parameter Sweep asked in the website:  C ∈ {0.5, 1.0}; σ ∈ {0.5, 1.0, 2.0} and analysing the results
 
-After completing the parameter tuning, I identified the optimal configuration for my differentially private (DP) model and proceeded to compare it with the non-DP baseline to evaluate the utility–privacy trade-off. To further validate the privacy strength of my model, I conducted a Membership Inference Attack (MIA) to assess how well the DP mechanism protected sensitive training data from potential leakage.
+After completing the parameter tuning, I identified the optimal configuration for my differentially private (DP) model and proceeded to compare it with the non-DP baseline to evaluate the utility–privacy trade-off. I also did a small parameter Sweep asked in the website:  C ∈ {0.5, 1.0}; σ ∈ {0.5, 1.0, 2.0} and analysing the results.
+
+To further validate the privacy strength of my model, I conducted a Membership Inference Attack (MIA) to assess how well the DP mechanism protected sensitive training data from potential leakage.
+
 
 ### Module 1: Hyperparameter Tuning
 Our DP implementation uses the Opacus library with the following key components:
@@ -127,7 +129,43 @@ To study how network capacity interacts with privacy noise, I varied the number 
 
 This behavior is consistent with the findings in Abadi et al. (2016), where increasing network size did not significantly change accuracy under DP-SGD. The reason is that, although larger networks introduce more parameters, the injected Gaussian noise is added per gradient step rather than per parameter. As a result, when gradients are averaged over many weights, the relative noise per parameter becomes smaller, effectively diluting the impact of privacy noise. 
 
-#### Small Grid Sweep: 
+### Baseline Vs DP - Model Analysis and Utility Tradeoff
+|       **Hyperparameter** | **Best Value** | **Rationale**                                                                                                                      |
+| -----------------------: | -------------: | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+|         **Hidden Units** |            128 | Provided sufficient model capacity without increasing gradient sensitivity. Larger layers did not improve accuracy significantly under DP noise. |
+|   **Learning Rate (LR)** |            0.1 | Balanced fast convergence and stability under noisy gradients — too small led to underfitting, too large amplified noise.                        |
+|         **Lot Size (L)** |             60 | Close to √N (≈62), giving the best trade-off between gradient averaging (utility) and privacy amplification by subsampling.                      |
+|    **Clipping Norm (C)** |           0.17 | Slightly higher than the median gradient norm; reduced excessive clipping while keeping noise effective for regularization.                      |
+| **Noise Multiplier (σ)** |            1.5 | Provided strong privacy (lower ε) while maintaining stable accuracy — moderate noise acted as regularizer without degrading performance.         |
+
+
+
+### ***Small Grid Sweep C ∈ {0.5, 1.0}; σ ∈ {0.5, 1.0, 2.0}:***
+I also wanted to analyse the ranges given in the website, so I conducted a grid search over C ∈ {0.5, 1.0} and σ ∈ {0.5, 1.0, 2.0}, keeping all other hyperparameters fixed (learning rate = 0.1, lot size = 60, δ = 1/N). Each configuration was trained for 50 epochs, and both training/test accuracies and the corresponding ε values were recorded using the Opacus PrivacyEngine.
+- Increasing σ → stronger privacy (ε ↓) but slightly slower or noisier training.
+- Increasing C → better gradient preservation but higher privacy cost.
+
+The results I got from the sweep were:
+| **Clip Norm (C)** | **Noise Multiplier (σ)** | **ε (epsilon)** | **Train Accuracy** | **Test Accuracy** |                              **Observation** |
+| ----------------: | -----------------------: | --------------: | -----------------: | ----------------: | -------------------------------------------: |
+|               0.5 |                      0.5 |           49.27 |             0.8422 |            0.8163 |         Weak privacy (ε≈49), stable accuracy |
+|               0.5 |                      1.0 |            8.63 |             0.8369 |            0.8138 |      Better privacy, slight drop in accuracy |
+|               0.5 |                      2.0 |            2.83 |             0.8418 |            0.8112 |           Strong privacy, slower convergence |
+|               1.0 |                      0.5 |           49.27 |             0.8441 |            0.8188 |       Weak privacy, slightly better accuracy |
+|               1.0 |                      1.0 |            8.63 |             0.8535 |        **0.8225** | **Best balance** between privacy and utility |
+|               1.0 |                      2.0 |            2.83 |             0.8580 |            0.8188 |           Strong privacy, mild accuracy loss |
+
+<p align="center"> 
+ <img src="/assignment-3/artifacts/dp_param_sweep_test_acc_vs_epoch" width="500" height="600"> <br/>
+  Figure: Small Grid sweep: Test Acc Vs. Epoch and ε values
+</p>
+
+The test accuracy curves (see figure) show that all models converge to similar final accuracies (~0.81–0.82), but their privacy losses (ε) differ dramatically. *From the give ranges*, the configuration (C = 1.0, σ = 1.0) achieved the best overall trade-off, reaching the highest test accuracy (0.8225) at a moderate privacy cost (ε ≈ 8.63). But by paramteter tuning specifally based on my datset (median of gradients, specific range of C and σ, tune LR and lot size) I was able to get a better accuracy and way lesser privacy budget. 
+
+
+I still stand with my original analysis that my best DP setting is:
+
+
 
 
 #### Privacy Accounting
