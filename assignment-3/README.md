@@ -125,7 +125,7 @@ You are now ready to run the scripts in this assignment.
 
 All hyperparameter tuning scripts are located in `code/Hyperparam_Tuning/`. These modules help identify optimal settings for DP-SGD training.
 
-### 1. Privacy Accounting Comparison- xxstrong_vs_moments_accountant.py
+### 1. Privacy Accounting Comparison- strong_vs_moments_accountant.py
 
 This module compares two differential privacy accounting methods used in training machine learning models with DP-SGD:
 
@@ -383,7 +383,7 @@ python assignment-3/code/Main_Baseline_Vs_BestDP/train_dp_model.py --target_delt
 
 ---
 
-## MIA Analysis
+## EXTRA CREDIT #1:  MIA Analysis
 
 The Membership Inference Attack analysis is located in `code/Threshold_MIA_Colab/`.
 
@@ -415,3 +415,4 @@ Code: assignment-3/code/Threshold_MIA_Colab/MIA_Attack_Threshold.ipynb
 Subset dataset for this IPYNB: assignment-3/code/Threshold_MIA_Colab/dataset.csv
 ```
 
+## EXTRA CREDIT #2:  New Model
