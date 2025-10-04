@@ -24,6 +24,7 @@
   - [Baseline vs DP Training](#baseline-vs-dp-training-train_dp_modelpy)
 - [MIA Analysis](#mia-analysis)
   - [Threshold-based MIA](#threshold-based-mia-mia_attack_thresholdipynb)
+  - [Loss-Threshold-Attack-Model](#loss-threshold-attack-model)
 
 ---
 
@@ -415,8 +416,8 @@ Code: assignment-3/code/Threshold_MIA_Colab/MIA_Attack_Threshold.ipynb
 Subset dataset for this IPYNB: assignment-3/code/Threshold_MIA_Colab/dataset.csv
 ```
 
-2. 
-## EXTRA CREDIT #2:  Loss Threshold Attack Model
+## EXTRA CREDIT #2:  
+## Loss Threshold Attack Model
 
 **Membership-Inference: Yeom Loss-Threshold Attack**
 
