@@ -64,28 +64,73 @@ Input Layer (TF-IDF features) → Hidden Layer (ReLU) → Output Layer (Classes)
 ## 3. Differential Privacy Implementation
 
 ### Experimental Setup
-So how i went about it what was implemented in the Abadi et al. paper suggested. I went on to understand how the paremeters affected the utility. So classified the papemeters into 2 parts:
+So how I went about it what was implemented in the Abadi et al. paper suggested. I went on to understand how the paremeters affected the utility. So classified the papemeters into 2 parts:
 1. <b>Privacy focusing parameters: </b> The ones that are focused on enhancing the privacy budget (Clipping norm C and Noise Multiplier σ)
 2. <b>Model focusing parameters: </b>
  The ones focused on model's ability to learn and produce good utility. (Learning rate, Lot Size - also helps with privacy tho, Hidden Layers)
+3. Parameter Sweep asked in the website:  C ∈ {0.5, 1.0}; σ ∈ {0.5, 1.0, 2.0} and analysing the results
 
-### 3.1 DP-SGD Configuration
+After completing the parameter tuning, I identified the optimal configuration for my differentially private (DP) model and proceeded to compare it with the non-DP baseline to evaluate the utility–privacy trade-off. To further validate the privacy strength of my model, I conducted a Membership Inference Attack (MIA) to assess how well the DP mechanism protected sensitive training data from potential leakage.
+
+### Module 1: Hyperparameter Tuning
 Our DP implementation uses the Opacus library with the following key components:
 - **Delta (δ):** 1/N (standard setting)
 - **Batch Size:** √N (privacy-utility balance)
 
-#### 3.1.1 Privacy Parameters
-- **Noise Multiplier (σ):** This code helped me to systematically explore the privacy-utility tradeoff and identify the optimal noise multiplier that balances model utility with privacy protection. I explored how the acc changes in a DP model over the range of σ ∈ ```[0.5, 1, 1.5, 2, 2.5, 3]```
+#### **Noise Multiplier (σ):** 
+This code helped me to systematically explore the privacy-utility tradeoff and identify the optimal noise multiplier that balances model utility with privacy protection. I explored how the acc changes in a DP model over the range of σ ∈ [0.5, 1, 1.5, 2, 2.5, 3]
 <p align="center"> 
  <img src="/assignment-3/artifacts/noise_vs_acc.png" width="500" height="600"> <br/>
   Figure: Effect of noise multiplier on model accuracy
 </p>
-As seen from the graph, my best accuracy was for σ = 1.5. 
+As seen from the graph, my best accuracy was for σ = 1.5. Initially, when σ is small (around 0.5–1.0), accuracy is slightly lower because the model is trained with a weak privacy guarantee (high ε) and can overfit to the training data, reducing generalization. As σ increases to a moderate range (around 1.5), accuracy peaks, this is where the added noise regularizes training, improving generalization while maintaining a reasonable privacy level. Beyond this point, as σ grows larger (above 2), accuracy steadily declines because the injected Gaussian noise begins to dominate the gradient signal, making optimization unstable and learning less effective. This trend aligns closely with the findings in Abadi et al. (2016), which report that moderate noise levels achieve the best trade-off between privacy and accuracy.
 
-- **Clipping Norm (C):** 0.17 - 1.0 (based on gradient norm analysis)
+#### **Clipping Norm (C):** 
+The paper suggests that an appropriate clipping norm value is typically close to the median of the L2 norms of the per-example gradients. Following this insight, I began by computing the gradient norm distribution and identified its median. Based on the hypothesis that the optimal clipping norm would likely lie near this median (though not necessarily exactly at it), I used this as the starting point for tuning the parameter.
+<p align="center"> 
+ <img src="/assignment-3/artifacts/grad_norms.png" width="500" height="600"> <br/>
+  Figure: L2 gradient distribution of the baseline model
+</p>
+As you can see the median was around 0.15, so I varied my clipping for the values ```0.5× → 2.0× median (8 values)``` and the below show the variation of utility. My optimal clipping norm value was C = 0.17, which is slightly higher than the median of the gradient norm distribution. I believe this is because my dataset is synthetic, using a somewhat larger clipping norm (1.13x median) results in additional noise likely acted as a form of regularization, improving the model’s generalization and leading to better overall accuracy.
+<p align="center"> 
+ <img src="/assignment-3/artifacts/clip_vs_acc.png" width="500" height="400"> <br/>
+  Figure: Effect of C on Test Accuracy
+</p>
+
+#### **Lot Size:**
+Smaller sampling rates (smaller L) yield stronger privacy guarantees/privacy amplification by subsampling. When fewer records are seen per iteration, the contribution of any single data point to the model’s gradients is reduced, effectively lowering its exposure and improving privacy. The search space sweeped was ```range(10, 100, 10) ```
+
+<p align="center"> 
+ <img src="/assignment-3/artifacts/Var_LOT.png" width="500" height="600"> <br/>
+  Figure: Effect of Lot Size on Test Accuracy
+</p>
+
+In Abadi et al., the best accuracy was achieved when the lot size was around √N, balancing privacy and gradient stability. In my dataset, which contains around 4k samples, the √N is about 62, and my best-performing lot size was L = 60, closely matching this expectation. The graph shows accuracy rising sharply up to this point, as larger lots improve gradient averaging and reduce the relative impact of DP noise. Beyond L = 60, the curve flattens and slightly declines, I think this is because increasing the lot size raises the sampling rate q, thereby reducing privacy amplification and slightly increasing effective noise per example, so in my dataset with way less number of records performs better with slightly lesser lot size of 60.
+
+#### **Learning Rate (LR):**
+To analyze the effect of learning rate (LR) on convergence under differential privacy, I varied LR over the range [0.01, 0.05, 0.1, 0.2, 0.5] while keeping all other parameters constant (σ = 1.5, clipping norm = 0.17, δ = 1/N). The plot shows a bell-shaped trend, where accuracy rises initially with higher LR, peaks near LR = 0.1, and then steadily declines.
+
+<p align="center"> 
+ <img src="/assignment-3/artifacts/Var_LR.png" width="500" height="600"> <br/>
+  Figure: Effect of LR on Test Accuracy
+</p>
+
+At very low LR values (0.01), parameter updates are too small to overcome the injected DP noise, leading to slow or underfitted convergence. As LR increases to an optimal value, gradient steps become large enough to make effective progress while still averaging out noise across updates. Beyond that point (LR ≥ 0.2), training becomes unstable because each update amplifies both the true gradient and the noise term, causing the model to overshoot local minima and lose accuracy.
+
+#### **Hidden Layers**
+To study how network capacity interacts with privacy noise, I varied the number of hidden units from 64 to 1024 while keeping all other parameters constant (σ = 1.0, clipping norm = 0.17, δ = 1/N). The plot shows that test accuracy remains nearly constant across all hidden layer sizes, fluctuating only slightly around 0.81–0.83.
+
+<p align="center"> 
+ <img src="/assignment-3/artifacts/Var_HIDDENLAYERS.png" width="500" height="600"> <br/>
+  Figure: Effect of Hidden Layers on Test Accuracy
+</p>
+
+This behavior is consistent with the findings in Abadi et al. (2016), where increasing network size did not significantly change accuracy under DP-SGD. The reason is that, although larger networks introduce more parameters, the injected Gaussian noise is added per gradient step rather than per parameter. As a result, when gradients are averaged over many weights, the relative noise per parameter becomes smaller, effectively diluting the impact of privacy noise. 
+
+#### Small Grid Sweep: 
 
 
-#### 3.1.2 Privacy Accounting
+#### Privacy Accounting
 - **Method:** Moments Accountant (via Opacus)
 - **Tracking:** Real-time epsilon consumption
 - **Comparison:** Strong Composition vs. Moments Accountant bounds
