@@ -347,12 +347,12 @@ def main():
         plt.savefig(os.path.join(ART,"epsilon_curve_final.png"))
         plt.show()
 
-    # Save models for MIA in ART folder after both are trained
-    torch.save(model_base.state_dict(), os.path.join(ART, "baseline_model.pth"))
-    try:
-        torch.save(model.state_dict(), os.path.join(ART, "dp_model.pth"))
-    except Exception as e:
-        print("[Warning] DP model not saved:", e)
+    # # Save models for MIA in ART folder after both are trained
+    # torch.save(model_base.state_dict(), os.path.join(ART, "baseline_model.pth"))
+    # try:
+    #     torch.save(model.state_dict(), os.path.join(ART, "dp_model.pth"))
+    # except Exception as e:
+    #     print("[Warning] DP model not saved:", e)
 
 
 if __name__ == "__main__":
