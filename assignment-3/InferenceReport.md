@@ -237,12 +237,18 @@ The Moments Accountant offers more realistic and tighter privacy guarantees, all
 
 
 ### Delta-Sensitivity Graph
-We varied all parameters keeping delta as 1/N. This graph was done on our Best DP Param setting to analyse what happes what happens if delta changes.
-TODO: Arin
+We varied all parameters keeping delta as 1/N. We were curious what will happen if delta was varied rather. This graph was done on our Best DP Param setting to analyse what happes what happens if delta changes:
+
 <p align="center"> 
- <img src="/assignment-3/artifacts/<add-file>.png" width="500" height="600"> <br/>
+ <img src="/assignment-3/artifacts/delta_sensitivity_acc_vs_eps.png" width="500" height="600"> <br/>
   Figure: Delta Sensitivity Graph for Best DP Setting- What happens when delta changes?
 </p>
+
+The resulting plot shows the expected privacy–utility trade-off:
+- As ε increases, test accuracy rises steadily for all δ values.
+- At low ε (stricter privacy), larger δ (e.g., 1e-3) attains higher accuracy earlier, since it relaxes the privacy constraint.
+- For moderate ε and above (ε > 1.5), the curves converge, indicating δ has minimal effect on accuracy once privacy noise becomes small.
+- This pattern mirrors Abadi et al. (2016) (Figure 4 in the paper) and validates that δ can typically be fixed (e.g., 1/N or 1e-5) while reporting ε as the key privacy metric.
 
 ---
 ## 7. Key Findings and Insights
@@ -279,43 +285,6 @@ Test on **real datasets**, explore **transformer-based models**, extend to **mor
 ## 9. Conclusions
 
 This study demonstrates that differential privacy can provide meaningful protection against membership inference attacks in text classification tasks. The privacy-utility tradeoff analysis provides actionable insights for practitioners implementing DP in production text classification systems. Future work should focus on scaling these techniques to larger datasets and more complex model architectures.
-
----
-
-
-## AI Usage Disclosure
-
-### AI Tools and Assistance
-During this project, AI assistance was utilized in the following areas:
-
-#### Code Development and Debugging
-- **Tool:** 
-- **Usage:** 
-  - Code structure suggestions and boilerplate generation
-  - Debugging assistance for Opacus integration issues
-  - Matplotlib plotting code optimization
-  - Error resolution and troubleshooting
-
-
-#### Mathematical Verification
-- **Tool:** Claude AI
-- **Usage:**
-  - Verification of privacy accounting formulas
-  - Explanation of Moments Accountant vs Strong Composition
-  - Parameter count calculations
-  - Statistical analysis interpretation
-
-### Human Contributions
-All core experimental design, hyperparameter selection, privacy analysis, and scientific conclusions were developed through human analysis and domain expertise. AI tools were used primarily for implementation efficiency and documentation quality.
-
----
-
-### Key Dependencies
-- **PyTorch:** 1.12+ (neural network training)
-- **Opacus:** 1.3+ (differential privacy)
-- **Scikit-learn:** 1.1+ (preprocessing and metrics)
-- **Matplotlib:** 3.5+ (visualization)
-- **NumPy/Pandas:** Standard scientific computing
 
 ---
 
