@@ -20,20 +20,28 @@ I have made this into two files for better structure and understandability.
 ## Quick Navigation
 - [Folder Structure](#folder-structure)
 - [Environment Setup](#setting-up-the-conda-environment)
+
 - [Hyperparameter Tuning Modules](#hyperparameter-tuning-modules)
-  - [Privacy Accounting Comparison](#1-privacy-accounting-comparison--strong_vs_moments_accountantpy)
-  - [Noise Sweep](#2--noise-sweep---analyze_noisepy)
-  - [Clipping Norm Sweep](#3-clipping-norm-sweep---analyze_clippy)
-  - [Other Hyperparameters](#4-other-hyperparameters---analyze_miscellanous_paramspy)
-  - [Parameter Sweep Utility](#5-parameter-sweep-utility---param_sweeppy)
+  - [1. Privacy Accounting Comparison](#1-privacy-accounting-comparison-strong_vs_moments_accountantpy)
+  - [2. Noise Sweep](#2-noise-sweep---analyze_noisepy)
+  - [3. Clipping Norm Sweep](#3-clipping-norm-sweep---analyze_clippy)
+  - [4. Other Hyperparameters](#4-other-hyperparameters---analyze_miscellanous_paramspy)
+  - [5. Parameter Sweep Utility](#5-parameter-sweep-utility---param_sweeppy)
+
 - [Main Training Module](#main-training-module)
-  - [Baseline vs DP Training](#baseline-vs-dp-training-traindpmodelpy)
-  - [Delta Sensitivity Experiment](#delta-sensitivity-plot--integrated-in-traindpmodelpy)
-- [MIA Analysis](#mia-modules)
-  - [Threshold-based MIA](#1-threshold-based-mia--mia_attack_thresholdipynb)
-  - [Loss Threshold Attack](#2-loss-threshold-attack-model)
-- [AI Usage Disclosure](#ai-usage-disclosure)
-- [References] (#references)
+  - [1. Baseline vs DP Training](#1-baseline-vs-dp-training-traindpmodelpy)
+  - [2. Delta Sensitivity Plot](#2-delta-sensitivity-plot---integrated-in-traindpmodelpy)
+
+- [MIA Modules](#mia-modules)
+  - [1. Threshold-based MIA](#1-threshold-based-mia-mia_attack_thresholdipynb)
+  - [2. Loss Threshold Attack Model](#2-loss-threshold-attack-model)
+
+- [LLM Usage and References](#llm-usage-and-references)
+  - [How We Used LLMs - script wise](#how-we-used-llms)
+  - [What We Did Ourselves](#what-we-did-ourselves)
+
+- [References](#references)
+
 
 ---
 
