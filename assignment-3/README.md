@@ -530,7 +530,7 @@ We kept in our mind to achieves a sweet spot between expressiveness and stabilit
 
 ### How We Used LLMs
 
-We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of this assignment **for support, not substitution**. Our focus was on learning differential privacy concepts deeply and only using the LLM to accelerate repetitive or mechanical parts of coding and for errors. We used LLMs to clarify doubts, learn more, and structure our code better.We occasionally asked ChatGPT to explain how the Opacus `PrivacyEngine` computes ε internally via the Moments Accountant, how δ affects ε, and how to correctly re-initialize optimizers after privacy wrapping. 
+We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of this assignment **for support, not substitution**. Our focus was on learning differential privacy concepts deeply and only using the LLM to accelerate repetitive or mechanical parts of coding and for errors. We used LLMs to clarify doubts, learn more, and structure our code better.
 
 * **Baseline vs. DP Model Comparison:** Built baseline (non-private) and DP-SGD MLP models to track accuracy, ε evolution, and overfitting using Opacus’s Moments Accountant. Used ChatGPT to clarify theoretical differences between Strong Composition and Moments Accountant, ensure consistency with Abadi et al. (2016), and refine plots (axes, legends, layout). No training code or interpretation was AI-generated. GPT also helped debug small tensor shape and plotting issues and suggested best practices for presenting privacy-utility curves.
 
