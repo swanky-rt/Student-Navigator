@@ -76,6 +76,9 @@ After completing the parameter tuning, I identified the optimal configuration fo
 
 To further validate the privacy strength of my model, I conducted a Membership Inference Attack (MIA) to assess how well the DP mechanism protected sensitive training data from potential leakage.
 
+#### Other Experiment:
+- Apart from normal MIA threshold we also implemented Yeom Loss-Threshold Attack. (https://arxiv.org/abs/1709.01604)
+- Abadi et al. (2016). talks about DP on image data, we thought it would be a good idea to use a model that has CNN capabilities too. So we tried to implement Differential Privacy on a more complex model - **TextCNN** (https://arxiv.org/abs/1408.5882) as it sounded intresting.
 
 ### Module 1: Hyperparameter Tuning
 Our DP implementation is built using the Opacus library. I keep the following component fixed while varying other parameters (the specific configurations for each sweep are documented in the respective README files):
@@ -252,6 +255,35 @@ The resulting plot shows the expected privacy–utility trade-off:
 - At low ε (stricter privacy), larger δ (e.g., 1e-3) attains higher accuracy earlier, since it relaxes the privacy constraint.
 - For moderate ε and above (ε > 1.5), the curves converge, indicating δ has minimal effect on accuracy once privacy noise becomes small.
 - This pattern mirrors Abadi et al. (2016) (Figure 4 in the paper) and validates that δ can typically be fixed (e.g., 1/N or 1e-5) while reporting ε as the key privacy metric.
+
+---
+### 6. Exploring the effects of implementing Differential Privacy on TextCNN (EXTRA CREDIT #3)
+This section analyzes how differentially private stochastic gradient descent (DP-SGD) affects a TextCNN model trained for text classification. The experiment explores how learning rate, noise multiplier (σ), clipping norm (C), and batch size influence both model accuracy and privacy.
+
+### What is TextCNN?
+TextCNN, proposed by Yoon Kim (2014) (https://arxiv.org/abs/1408.5882) in Convolutional Neural Networks for Sentence Classification, is a pioneering deep learning model that applies convolutional neural networks (CNNs) to natural language processing (NLP) tasks. Unlike recurrent models that process text sequentially, TextCNN treats a sentence as a spatial structure of word embeddings, using convolutional filters to capture local n-gram features such as key phrases and patterns indicative of meaning or sentiment. Through simple yet powerful layers of convolution, pooling, and classification, TextCNN achieves strong performance on text classification benchmarks demonstrating that local semantic patterns can be learned efficiently without complex recurrent architectures. Its simplicity, speed, and interpretability have made it a foundational baseline in modern text classification pipelines.
+
+
+### Why TextCNN?
+Abadi et al. talks about DP on image data, we thought it would be a good idea to use a model that has CNN capabilities too. But since our data is text data we went with TextCNN as it sounded intresting and we wanted to explore it.
+
+### Model Architecture 
+* ⁠Embedding layer (dim=128)
+* ⁠  ⁠Three parallel 1D convolutions (kernel sizes 3, 4, 5)
+* ⁠ ⁠Global max pooling
+* ⁠  Fully connected output layer
+* ⁠ Dropout = 0.2 
+```Note: design choice justification in README.md```
+
+
+### Privacy–Utility Grid (Clipping Norm C vs Noise σ)
+This was a heavier model and it took a lot of time and computation to run, so we settled with tuning just the privacy metrics the clipping norm and the noise multiplier - with the small grid sweep given in the website: Clip norm C ∈ {0.5, 1.0}; Noise multiplier σ ∈ {0.5, 1.0, 2.0}
+
+The following 3D landscape shows how different combinations of clipping norm (C) and noise multiplier (σ) affect model accuracy and privacy ε. Each point represents a trained model configuration. We are trying to tune our privacy parameters to achieve best accuracy-privacy balance:
+
+
+
+
 
 ---
 ## 7. Key Findings and Insights

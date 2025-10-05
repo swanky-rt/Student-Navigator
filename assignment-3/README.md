@@ -19,10 +19,11 @@ I have made this into two files for better structure and understandability.
 
 ## Quick Navigation
 - [Folder Structure](#folder-structure)
-- [Environment Setup](#setting-up-the-conda-environment)
+- [Setting Up the Conda Environment and Run the Code](#setting-up-the-conda-environment-and-run-the-code)
+- [Dataset Overview](#dataset-overview-datasetcsv)
 - [Design Choice for Model and Vectorization](#design-choice-for-model-and-vectorization)
 - [Hyperparameter Tuning Modules](#hyperparameter-tuning-modules)
-  - [1. Privacy Accounting Comparison](#1-privacy-accounting-comparison-strong_vs_moments_accountantpy)
+  - [1. Privacy Accounting Comparison](#1-privacy-accounting-comparison--strong_vs_moments_accountantpy)
   - [2. Noise Sweep](#2-noise-sweep---analyze_noisepy)
   - [3. Clipping Norm Sweep](#3-clipping-norm-sweep---analyze_clippy)
   - [4. Other Hyperparameters](#4-other-hyperparameters---analyze_miscellanous_paramspy)
@@ -33,8 +34,9 @@ I have made this into two files for better structure and understandability.
 - [MIA Modules](#mia-modules)
   - [1. Threshold-based MIA](#1-threshold-based-mia-mia_attack_thresholdipynb)
   - [2. Loss Threshold Attack Model](#2-loss-threshold-attack-model)
+- [TextCNN Module](#textcnn-module)
 - [LLM Usage and References](#llm-usage-and-references)
-  - [How We Used LLMs - script wise](#how-we-used-llms)
+  - [How We Used LLMs](#how-we-used-llms)
   - [What We Did Ourselves](#what-we-did-ourselves)
 - [References](#references)
 
@@ -80,6 +82,8 @@ code/
 └── Threshold_MIA_Colab/                  # Membership Inference Attack analysis (EXTRA CREDIT)
     ├── dataset.csv                       # Small subset dataset for MIA
     └── MIA_Attack_Threshold.ipynb        # MIA analysis notebook
+
+└── TextCNN_Colab/                  # Membership Inference Attack analysis (EXTRA CREDIT)
 ```
 
 ---
@@ -108,6 +112,12 @@ You are now ready to run the scripts in this assignment.
 - **Matplotlib:**  (visualization)
 - **NumPy/Pandas:** Standard scientific computing
 
+---
+## Dataset Overview (dataset.csv)
+- **Name:** EduPilot Synthetic Job Dataset
+- **Size:** 4,000 samples (balanced)
+- **Features:** Job descriptions (text data)
+- **Target:** Job roles (categorical) - ```Data Scientist, Product Manager, UX Designer, Software Engineer```
 ---
 ## Design Choice for Model and vectorization:
 ### NOTE: ***Parameter-specific design choices are detailed within each module’s section below.***
@@ -479,9 +489,42 @@ python assignment-3/code/Loss-threshold-attack/dp_train.py               #This f
 python assignment-3/code/Loss-threshold-attack/post_rp_attack.py         #This file measures the performance before & after DP impl.
 ```
 ---
+## TextCNN Module
+Abadi et al. (2016). talks about DP on image data, we thought it would be a good idea to use a model that has CNN capabilities too. But since our data is text data we went with TextCNN as it sounded intresting and we wanted to explore it. We use the same dataset as we used for the aforementioned MLP in [Design Choice for Model and Vectorization](#design-choice-for-model-and-vectorization)
+
+```TextCNN, proposed by Yoon Kim (2014) (https://arxiv.org/abs/1408.5882) ```
+
+### Purpose
+- Show the effect of differential privacy (DP-SGD) on model accuracy compared to a non-private baseline.
+- Visualize privacy consumption (epsilon) over epochs when using DP-SGD.
+- Allow experimentation with different privacy budgets and noise multipliers.
+
+### Input and Output
+We have this as an ipynb as TextCNN is a bit heavy and was taking a lot of time to run. Hence, we wanted to use Google Colab's T4 GPU runtime environment.
+
+### How to Use
+- Open the notebook in Jupyter Lab or Google Colab
+- Please add the same dataset that is given in the same directory: 'assignment-3/code/TextCNN_Colab/dataset.csv' (Same dataset as [Dataset Overview](#dataset-overview-datasetcsv))
+- Run all cells to perform the parameter analysis to get the best DP setting to compare with Non DP baseline.
+
+
+### Model Architecture and Design Choice Justification
+We kept in our mind to achieves a sweet spot between expressiveness and stability, making it both privacy-efficient and performance-consistent under differential privacy constraints while deciding the architecture.
+
+* ***⁠Embedding layer (dim=128)*** - A moderate embedding dimension provides sufficient semantic richness while keeping the parameter footprint small a critical factor when DP noise addition amplifies with larger models - same as the ANN used before.
+
+* ⁠  ⁠***Three parallel 1D convolutions (kernel sizes 3, 4, 5)*** - These capture n-gram features of varying lengths (trigrams, 4-grams, and 5-grams), enabling the model to detect both short and moderately long contextual cues without recurrent dependencies.
+
+* ⁠ ***⁠Global max pooling*** - Aggregates the most salient features across the sequence, ensuring position invariance and reducing model complexity.
+
+* ⁠  ***Fully connected output layer*** - Translates the pooled feature vector into classification logits, providing a direct and interpretable mapping from learned text patterns to class probabilities.
+
+* ⁠ ***Dropout = 0.2*** - Adds regularization to counter overfitting, which is especially important when DP noise is introduced, as it can otherwise destabilize training.
+
+
+---
 
 ## LLM Usage and References
-
 ### How We Used LLMs
 
 We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of this assignment **for support, not substitution**.  Our focus was on learning differential privacy concepts deeply and only use the LLM to accelerate repetitive or mechanical parts of coding and for errors. We used LLM to clarify doubts, learn more and structure our code better.
@@ -500,7 +543,7 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
       - **analyze_miscellanous_params.py** – We built a generic script to sweep hidden size, learning rate, and lot size; ChatGPT helped add argument parsing (`--sweep`, `--smooth`) and made the sweep results modular.  
       - **param_sweep.py** – We wrote a grid search to combine clipping and noise sweeps; AI helped refactor loops for clarity and manage artifact outputs consistently.
 
-    ####  Baseline vs Best DP Model Training  
+    ####  Baseline vs Best DP Model Training Module
       ##### **Files:**  
       `train_dp_model.py` (includes delta sensitivity experiment)
   
@@ -511,8 +554,9 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
       - Enhanced my pipeline function in properly reinitializing the optimizer after calling `PrivacyEngine.make_private()` to avoid stale state issues.  
       - Helped debug tensor shape mismatches and loss calculation errors.  
       - For the delta sensitivity experiment, ChatGPT helped me structure the δ-sweep loop and store (ε, accuracy) pairs per epoch.
+  
 
-    #### Membership Inference Attack (MIA)  
+    #### Membership Inference Attack (MIA) Module
       ##### **Files:**  
       `Threshold_MIA_Colab/MIA_Attack_Threshold.ipynb`, `Loss-threshold-attack/loss_threshold_attack.py`, `dp_train.py`, `post_dp_attack.py`
   
@@ -523,6 +567,14 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
       - For **MIA_Attack_Threshold.ipynb**, ChatGPT helped structure the ROC/AUC pipeline using `sklearn.metrics`, fix axis labeling, and improve figure readability.  
       - For **loss_threshold_attack.py**, * ChatGPT Clarified Yeom loss-threshold MIA: use per-example cross-entropy as the signal, lower loss means more member-like. It also helped me to understand the score definition used in code: score = -NLL(y_true) so that higher = member-like which is matching ROC conventions
       - For **dp_train.py** and **post_dp_attack.py**, * ChatGPT helped me to score the labels to compare pre and post attack i.e. post_loss_threshold_attack_scores_labels and helped me to plot the conventions for the comparisons. It also helped me to understand the evaluation flow.
+
+
+    #### TextCNN Module
+      ##### **Files:**   
+      ##### **What we did?**
+      We integrated the Opacus library to this model and analysed effect of differential privacy on a TextCNN model ourselves. We also implemented the small grid sweep.
+      ##### **How AI helped?**
+      TextCNN was relavently new to us, so we used ChatGPT to help us train our dataset on TextCNN. We also wanted to use the GPU in colab, so we used the LLM help to connect our code to GPU.
 
 - **Mathematical and Conceptual Guidance**
   - Queried ChatGPT to confirm the formulas for explaining the mathematical theorems in the paper and basically helping me learn the paper, ensuring we didn’t misinterpret theoretical claims.
@@ -563,7 +615,7 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
 
 - *Membership Inference Attacks From First Principles* - Carlini et al. (2022) [https://arxiv.org/abs/2112.03570](https://arxiv.org/abs/2112.03570)
 
-
+- *Convolutional Neural Networks for Sentence Classification* - Kim et al. (2014) [https://arxiv.org/abs/1408.5882](https://arxiv.org/abs/1408.5882)
 
 
 
