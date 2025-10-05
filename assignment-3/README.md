@@ -360,7 +360,7 @@ This module compares the training and test accuracy of a non-private (baseline) 
 After all the hyperparam analysis I have gotten these values below which works best on my dataset and DP setting.
 - **Features**: TF-IDF (`max_features=258`, bigrams included).
 - **Model**: 2-layer feedforward NN with hidden size 128.
-- **Lot Size**: 60 (from hyper-param tuning (close to √N of N i.e 56); can be changed in code).
+- **Lot Size**: 60 (from hyper-param tuning (close to √N of N i.e 62); can be changed in code).
 - **Epochs**: N / Lot Size.
 - **Clipping Norm (C)**: 0.17 (from hyper-param tuning; can be changed in code).
 - **Noise Multiplier (σ)**: 1.5 (default value- best from tuning) configurable via `--sigma` argument.
