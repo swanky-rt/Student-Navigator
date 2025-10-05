@@ -530,11 +530,9 @@ We kept in our mind to achieves a sweet spot between expressiveness and stabilit
 
 ### How We Used LLMs
 
-We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of this assignment **for support, not substitution**. Our focus was on learning differential privacy concepts deeply and only using the LLM to accelerate repetitive or mechanical parts of coding and for errors. We used LLMs to clarify doubts, learn more, and structure our code better.
+We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of this assignment **for support, not substitution**. Our focus was on learning differential privacy concepts deeply and only using the LLM to accelerate repetitive or mechanical parts of coding and for errors. We used LLMs to clarify doubts, learn more, and structure our code better.We occasionally asked ChatGPT to explain how the Opacus `PrivacyEngine` computes ε internally via the Moments Accountant, how δ affects ε, and how to correctly re-initialize optimizers after privacy wrapping. 
 
-We occasionally asked ChatGPT to explain how the Opacus `PrivacyEngine` computes ε internally via the Moments Accountant, how δ affects ε, and how to correctly re-initialize optimizers after privacy wrapping. The LLM also helped debug small tensor shape and plotting issues and suggested best practices for presenting privacy-utility curves.
-
-* **Baseline vs. DP Model Comparison:** Built baseline (non-private) and DP-SGD MLP models to track accuracy, ε evolution, and overfitting using Opacus’s Moments Accountant. Used ChatGPT to clarify theoretical differences between Strong Composition and Moments Accountant, ensure consistency with Abadi et al. (2016), and refine plots (axes, legends, layout). No training code or interpretation was AI-generated.
+* **Baseline vs. DP Model Comparison:** Built baseline (non-private) and DP-SGD MLP models to track accuracy, ε evolution, and overfitting using Opacus’s Moments Accountant. Used ChatGPT to clarify theoretical differences between Strong Composition and Moments Accountant, ensure consistency with Abadi et al. (2016), and refine plots (axes, legends, layout). No training code or interpretation was AI-generated. GPT also helped debug small tensor shape and plotting issues and suggested best practices for presenting privacy-utility curves.
 
 * **Hyperparameter Tuning and Analysis:** Varied σ, clipping norm C, lot size L, and learning rate LR (δ = 1/N fixed), logging ε, accuracy, and runtime. Used ChatGPT to streamline sweep loops, refactor code into argparse scripts, and fix Opacus–DataLoader issues. Also used it to visualize ε growth smoothly via interpolation. All parameter selection, tuning, and insights were manual.
 
@@ -542,7 +540,7 @@ We occasionally asked ChatGPT to explain how the Opacus `PrivacyEngine` computes
 
 * **TextCNN Experiment:** Applied DP-SGD to TextCNN for text classification, tuning σ and C with a small grid sweep to compare against MLP. ChatGPT guided on implementing the CNN architecture we came up with setup (embeddings, 1D conv, pooling), Opacus integration, and Colab GPU optimization. All experiments and results were executed and interpreted by us.
 
-* **Report Writing and Visualization:** Authored eading Report, README and InferenceReport independently, including dataset details, DP analysis, and results. ChatGPT was used only for minor Markdown editing, section organization, and phrasing improvements - not for writing, analysis, or conclusions. We used LLM to verify if our theoritical understanding is right. Formulas were derived from the cited papers and clarified via ChatGPT for notation consistency.
+* **Documentation:** Authored eading Report, README and InferenceReport independently, including dataset details, DP analysis, and results. ChatGPT was used only for minor Markdown editing, and phrasing improvements - not for writing, analysis, or conclusions. We used LLM to verify if our theoritical understanding is right and clarified via ChatGPT for notation consistency.
 
 ---
 ### What We Did Ourselves
