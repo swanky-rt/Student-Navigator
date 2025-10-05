@@ -282,7 +282,7 @@ The resulting plot shows the expected privacy–utility trade-off:
 - This pattern mirrors Abadi et al. (2016) (Figure 4 in the paper) and validates that δ can typically be fixed (e.g., 1/N or 1e-5) while reporting ε as the key privacy metric.
 
 ---
-### 6. Exploring the effects of implementing Differential Privacy on TextCNN (EXTRA CREDIT #3)
+## 6. Exploring the effects of implementing Differential Privacy on TextCNN (EXTRA CREDIT #3)
 This section analyzes how differentially private stochastic gradient descent (DP-SGD) affects a TextCNN model trained for text classification. The experiment explores how learning rate, noise multiplier (σ), clipping norm (C), and batch size influence both model accuracy and privacy.
 
 ### What is TextCNN?
