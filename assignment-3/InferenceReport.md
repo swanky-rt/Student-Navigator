@@ -311,7 +311,7 @@ This study demonstrates that differential privacy can provide meaningful protect
 
   <p align="center"> 
   <img src="/assignment-3/artifacts/pre_vs_post_attack_comparison.png" width="500" height="600"> <br/>
-    Figure: Delta Sensitivity Graph for Best DP Setting- What happens when delta changes?
+    Figure: Yeom Loss-Threshold Attack- Baseline Vs DP Model
   </p>
 
   #### **Interpretation**:
