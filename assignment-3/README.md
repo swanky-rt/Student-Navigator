@@ -89,13 +89,10 @@ code/
 To create the conda environment and install all dependencies for this assignment:
 
 1. Make sure you have [Miniconda](https://docs.conda.io/en/latest/miniconda.html) or [Anaconda](https://www.anaconda.com/products/distribution) installed.
-2. Open a terminal and navigate to the `assignment-3/code` directory:
-  ```bash
-  cd assignment-3/code
-  ```
+2. All the files will run from the root directory itself. Please don't go to other folders, since the paths are already set.
 3. Create the environment using the provided `environment.yml` file:
   ```bash
-  conda env create -f environment.yml
+  conda env create -f assignment-3\code\environment.yml
   ```
 4. Activate the environment:
   ```bash
@@ -103,12 +100,12 @@ To create the conda environment and install all dependencies for this assignment
   ```
 5. All required dependencies will be installed automatically. If you add new packages, update the environment with:
   ```bash
-  conda env update -f environment.yml --prune
+  conda env update -f assignment-3\code\environment.yml --prune
   ```
 
 You are now ready to run the scripts in this assignment.
 
-### Key Dependencies (You can also run the files if you have these below dependencies):
+### Key Dependencies (You can also run the files if you have these dependencies below):
 - **PyTorch:**(neural network training)
 - **Opacus:** (differential privacy)
 - **Scikit-learn:**(preprocessing and metrics)
