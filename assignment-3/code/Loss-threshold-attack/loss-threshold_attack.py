@@ -88,19 +88,17 @@ def main():
         for xb, yb in dl:
             opt.zero_grad(); l = F.cross_entropy(model(xb), yb); l.backward(); opt.step()
         if time.time() - last > 1.0:
-            print(f"[OVERFIT-loss-threshold-attack] epoch {ep}/{args.epochs} (loss={float(l):.4f})", flush=True)
+           
             last = time.time()
 
     tr_acc = accuracy(model, Xtr_t, ytr_t)
     te_acc = accuracy(model, Xte_t, yte_t)
-    print(f"[OVERFIT-loss-threshold-attack train acc={tr_acc:.3f} | test acc={te_acc:.3f}")
 
     with torch.no_grad():
         p_in  = torch.softmax(model(Xtr_t), dim=1).cpu().numpy()
         p_out = torch.softmax(model(Xte_t), dim=1).cpu().numpy()
 
     res = loss_threshold_attack(p_in, ytr, p_out, yte)
-    print(f"[OVERFIT-loss-threshold-attack] {res['name']} AUC={res['auc']:.3f}")
 
     loss_in  = _nll_from_proba(p_in,  ytr)
     loss_out = _nll_from_proba(p_out, yte)
