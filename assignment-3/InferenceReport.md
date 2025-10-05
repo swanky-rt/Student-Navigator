@@ -42,6 +42,21 @@ This report presents a comprehensive analysis of differential privacy (DP) techn
   - [A: Membership-Inference: Yeom Loss-Threshold Attack](#a-membership-inference-yeom-loss-threshold-attack)
   - [B: Assignment Requirements](#b-assignment-requirements--verification--results)
 
+## Experimental Setup
+So how I went about it what was implemented in the Abadi et al. paper suggested. I went on to understand how the paremeters affected the utility. So classified the parameters into 2 parts:
+1. <b>Privacy focusing parameters: </b> The ones that are focused on enhancing the privacy budget (Clipping norm C and Noise Multiplier σ)
+2. <b>Model focusing parameters: </b>
+ The ones focused on model's ability to learn and produce good utility. (Learning rate, Lot Size - also helps with privacy tho, Hidden Layers)
+
+After completing the parameter tuning, I identified the optimal configuration for my differentially private (DP) model and proceeded to compare it with the non-DP baseline to evaluate the utility–privacy trade-off. I also did a small parameter Sweep asked in the website:  C ∈ {0.5, 1.0}; σ ∈ {0.5, 1.0, 2.0} and analysing the results.
+
+To further validate the privacy strength of my model, I conducted a Membership Inference Attack (MIA) to assess how well the DP mechanism protected sensitive training data from potential leakage.
+
+#### Other Experiment:
+- Apart from normal MIA threshold we also implemented Yeom Loss-Threshold Attack. (https://arxiv.org/abs/1709.01604)
+- Abadi et al. (2016). talks about DP on image data, we thought it would be a good idea to use a model that has CNN capabilities too. So we tried to implement Differential Privacy on a more complex model - **TextCNN** (https://arxiv.org/abs/1408.5882) as it sounded intresting.
+
+
 
 ## 1. Dataset Description
 
@@ -93,21 +108,6 @@ Input Layer (TF-IDF features) → Hidden Layer (ReLU) → Output Layer (Classes)
 ---
 
 ## 3. Differential Privacy Implementation
-
-### Experimental Setup
-So how I went about it what was implemented in the Abadi et al. paper suggested. I went on to understand how the paremeters affected the utility. So classified the parameters into 2 parts:
-1. <b>Privacy focusing parameters: </b> The ones that are focused on enhancing the privacy budget (Clipping norm C and Noise Multiplier σ)
-2. <b>Model focusing parameters: </b>
- The ones focused on model's ability to learn and produce good utility. (Learning rate, Lot Size - also helps with privacy tho, Hidden Layers)
-
-After completing the parameter tuning, I identified the optimal configuration for my differentially private (DP) model and proceeded to compare it with the non-DP baseline to evaluate the utility–privacy trade-off. I also did a small parameter Sweep asked in the website:  C ∈ {0.5, 1.0}; σ ∈ {0.5, 1.0, 2.0} and analysing the results.
-
-To further validate the privacy strength of my model, I conducted a Membership Inference Attack (MIA) to assess how well the DP mechanism protected sensitive training data from potential leakage.
-
-#### Other Experiment:
-- Apart from normal MIA threshold we also implemented Yeom Loss-Threshold Attack. (https://arxiv.org/abs/1709.01604)
-- Abadi et al. (2016). talks about DP on image data, we thought it would be a good idea to use a model that has CNN capabilities too. So we tried to implement Differential Privacy on a more complex model - **TextCNN** (https://arxiv.org/abs/1408.5882) as it sounded intresting.
-
 ### Module 1: Hyperparameter Tuning
 Our DP implementation is built using the Opacus library. I keep the following component fixed while varying other parameters (the specific configurations for each sweep are documented in the respective README files):
 - Delta (δ): set to 1/N, following the standard practice in differential privacy.
