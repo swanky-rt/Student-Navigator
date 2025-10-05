@@ -540,7 +540,7 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
 
 * **TextCNN Experiment:** Applied DP-SGD to TextCNN for text classification, tuning σ and C with a small grid sweep to compare against MLP. ChatGPT guided on implementing the CNN architecture we came up with setup (embeddings, 1D conv, pooling), Opacus integration, and Colab GPU optimization. All experiments and results were executed and interpreted by us.
 
-* **Documentation:** Authored eading Report, README and InferenceReport independently, including dataset details, DP analysis, and results. ChatGPT was used only for minor Markdown editing, and phrasing improvements - not for writing, analysis, or conclusions. We used LLM to verify if our theoritical understanding is right and clarified via ChatGPT for notation consistency.
+* **Documentation:** Authored eading Report, README and InferenceReport independently, including dataset details, DP analysis, and results. ChatGPT was used only for minor Markdown editing, and phrasing improvements - not for writing, analysis, or conclusions. We used LLM to verify if our theoritical understanding is right and clarified via ChatGPT for formula notations consistency.
 
 ---
 ### What We Did Ourselves
@@ -551,7 +551,7 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
 - Collected real experimental results (accuracy, ε per epoch) and generated all plots manually.  
 - Implemented our own per-example loss extraction for MIA analysis and used it in both baseline and DP models.  
 - Built the **Loss-Threshold Attack** pipeline and ran before/after-DP comparisons.  
-- Wrote all explanations, discussions, and interpretations for **InferenceReport.md** manually. Structured this **README.md** and finalized plots, charts, and results presentation.  
+- Wrote all explanations, discussions, and interpretations for **InferenceReport.md** manually. Structured this **README.md** and finalized plots, charts, and results presentation. The reading report insights was done by us.
 - Structured PyTorch + Opacus training loops, batch handling, and gradient clipping setup. Plotted results (ROC curves, TPR/FPR tables), analyzed vulnerabilities.  
 - Built the presentation and report. Added detailed comments describing the design choices, inference reports, and how each implementation step connects to the overall project.
 
