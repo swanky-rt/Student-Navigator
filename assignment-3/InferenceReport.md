@@ -411,7 +411,120 @@ This study demonstrates that differential privacy can provide meaningful protect
   near random guessing, which further indicates that DP mitigates membership leakage.
 
 ### B: Assignment Requirements — Verification & Results
+This section demonstrates how our submission fulfills each requirement for **DP-SGD implementation, experimentation, and reporting** using references to both the [`README.md`](./README.md) and the [`InferenceReport.md`](./InferenceReport.md).
+
+#### DP-SGD Implementation (Per-example Clipping + Gaussian Noise)
+
+**Requirement:**  
+Use per-example gradient clipping and Gaussian noise (Opacus/TF-Privacy). Compute ε(δ) using the library’s accountant (δ = 1/N).  
+
+**Our Implementation:**  
+- Implemented using **Opacus** (see `train_dp_model.py`).  
+- Enabled *per-example clipping* and *Gaussian noise injection* with  
+  `PrivacyEngine.make_private()` for our MLP and TextCNN models.  
+- Results validated in *Section 3: Differential Privacy Implementation* and  
+  *Section 5: Strong Composition vs Moments Accountant* in [`InferenceReport.md`](./InferenceReport.md).
+
+**References:**  
+- `README.md → [Main Training Module]`  
+- `InferenceReport.md → Section 3 (DP Implementation)`  
+- `InferenceReport.md → Section 5 (Accounting Comparison)`  
+
+---
+
+#### Baseline vs DP-SGD Comparison
+
+**Requirement:**  
+Compare DP-SGD model to non-DP baseline.
+
+**Our Implementation:**  
+- Built baseline model (standard SGD) and DP-SGD model with same architecture.  
+- Compared accuracy, ε(δ), and overfitting tendencies.  
+- Found baseline accuracy = 0.84 vs DP-SGD accuracy = 0.815 with ε = 2.53.  
+- DP model generalizes better and reduces privacy leakage (MIA AUC drop 0.812 → 0.632).
+
+**References:**  
+- `README.md → [Main_Baseline_Vs_BestDP/train_dp_model.py]`  
+- `InferenceReport.md → Section 3 (Module 2: Baseline vs DP Analysis)`  
+- `InferenceReport.md → Section 4 (MIA and Privacy–Utility Trade-off)`  
+
+---
+
+
+#### Grid Sweep Over Privacy Parameters
+
+**Requirement:**  
+Perform small grid sweep:  
+C ∈ {0.5, 1.0}, σ ∈ {0.5, 1.0, 2.0}.  
+Keep runtime modest (reasonable batch size & epochs).
+
+**Our Implementation:**  
+- Conducted full parameter sweep using `param_sweep.py`.  
+- Reported results in a **table and visualization** showing ε, accuracy, and privacy trade-offs.  
+- Identified best configuration **(C=1.0, σ=1.0)** from sweep and compared to our **tuned optimal** setting **(C=0.17, σ=1.5)** achieving 70.7% lower ε with negligible accuracy drop.
+
+**References:**  
+- `README.md → [Hyper Parameter Tuning Modules- 5. Parameter Sweep Utility]`
+- `InferenceReport.md → Section 3 (Module 3: Small Grid Sweep)`  
+
+---
+
+#### Report ε(δ), Accuracy, and Hyperparameter Effects
+
+**Requirement:**  
+Report privacy budget ε(δ) alongside performance metrics and hyperparameter effects.
+
+**Our Implementation:**  
+- Used Opacus Moments Accountant to compute ε for each training epoch.  
+- Plotted ε–accuracy trends and analyzed influence of σ, C, LR, L, and hidden units.  
+- Provided plots and tables (noise_vs_acc.png, clip_vs_acc.png, sweep_lr_smooth.png, etc.). 
+
+**References:**  
+- `InferenceReport.md → Section 3 (Hyperparameter Tuning)`  
+- `InferenceReport.md → Section 3 (Module 2: Baseline vs DP Analysis)`  
+- `InferenceReport.md → Section 7 (Key Findings and Insights)`  
+
+---
+
+#### (Optional) Membership Inference Attack (MIA)
+
+**Requirement:**  
+Re-run Week-3 MIA or extraction to demonstrate privacy impact.
+
+**Our Implementation:**  
+- Implemented **Threshold-based MIA** and **Yeom Loss-Threshold MIA**.  
+- Compared baseline vs DP models → MIA AUC reduced from 0.812 → 0.632 (Threshold) 
+- Demonstrates significant privacy improvement via DP-SGD.  
+- Complete workflow detailed under *Extra Credit #1* and *Supplementary Section A*.
+
+**References:**  
+- `README.md → [MIA Modules]`  
+- `InferenceReport.md → Section 4 (MIA Attack and Privacy–Utility Trade-off)`  
+- `InferenceReport.md → Supplementary Section A (Yeom Loss-Threshold Attack)`  
+
+---
+
+####  Deliverables — Repository Structure and Reproducibility
+
+**Requirement:**  
+Provide clear code, documentation, and results in GitHub repository.
+
+**Our Implementation:**  
+- Complete modular folder structure documented in `README.md`.  
+- Separate files for hyperparameter tuning, main training, and MIA attacks.  
+- `environment.yml` ensures reproducibility of Python dependencies.  
+- Clear instructions for running each script and reproducing plots.  
+- All results (figures, ε tables, accuracy logs) saved under `/artifacts/`.
+- AI Disclosure and module wise how AI was used and in reports.
+
+**References:**  
+- `README.md → [Folder Structure]` 
+- `README.md → [LLM Usage]` 
+- `README.md → [Setting Up the Conda Environment]`  
+- `InferenceReport.md → All result figures and tables`
 
 ---
 
 **Repository:** [proj-group-04](https://github.com/umass-CS690F/proj-group-04)
+
+---
