@@ -366,7 +366,7 @@ Note:
 **All clients, all rounds (5 clients, 100 rounds)**  
 `8 × 128,389 × 5 × 100 = 513,556,000 bytes ≈ 490 MB`
 
-References & Acknowledgments
+## References & Acknowledgments
 1.	Research papers: We consulted standard FL literature (e.g., McMahan et al. on FedAvg; Kairouz et al. survey) listed in the project’s main README.md.
 2.	Data partitioning: Guidance on constructing IID (StratifiedKFold) and label-skewed non-IID splits was informed by GPT prompts and verified against common FL setups.
 3.	Aggregator math: Update/aggregation formulas (FedAvg, FedMedian, FedSGD) were derived from the cited papers and clarified via ChatGPT for notation consistency.
