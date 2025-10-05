@@ -12,7 +12,7 @@
 
 This report presents a comprehensive analysis of differential privacy (DP) techniques applied to neural network models for job role classification. The study investigates the privacy-utility tradeoff using DP-SGD (Differentially Private Stochastic Gradient Descent) and evaluates privacy leakage through membership inference attacks (MIA). Our findings demonstrate that properly tuned DP-SGD can significantly reduce privacy vulnerabilities while maintaining reasonable model utility.
 
-### NOTE: This file represents our experimental setup, learnings and analysis. The README.md has the design choice justification and the details regarding each file and how to use them please refer to the [**README.md**](./README.md)..
+#### NOTE: This file represents our experimental setup, learnings and analysis. The README.md has the design choice justification and the details regarding each file and how to use them please refer to the [**README.md**](./README.md)..
 
 ---
 </div>
@@ -30,7 +30,7 @@ This report presents a comprehensive analysis of differential privacy (DP) techn
   - [Module 1: Hyperparameter Tuning](#module-1-hyperparameter-tuning)
   - [Module 2: Baseline vs DP - Model Analysis and Utility Tradeoff](#module-2-baseline-vs-dp---model-analysis-and-utility-tradeoff)
   - [Module 3: Small Grid Sweep](#module-3small-grid-sweep-c--05-10--σ--05-10-20)
-- [4. Membership Inference Attack and Privacy–Utility Trade-off](#4-membership-interference-attack-and-privacyutility-trade-off-extra-credit-1)
+- [4. Membership Inference Attack and Privacy–Utility Trade-off (Extra Credit #1)](#4-membership-interference-attack-and-privacyutility-trade-off-extra-credit-1)
 - [5. Additional Analytics (Extra Credit #2)](#5-additional-analytics-to-understand-differential-privacy-extra-credit-2)
   - [Strong Composition vs Moments Accountant](#strong-composition-vs-moments-accountant)
   - [Delta-Sensitivity Graph](#delta-sensitivity-graph)
@@ -282,7 +282,7 @@ The resulting plot shows the expected privacy–utility trade-off:
 - This pattern mirrors Abadi et al. (2016) (Figure 4 in the paper) and validates that δ can typically be fixed (e.g., 1/N or 1e-5) while reporting ε as the key privacy metric.
 
 ---
-### 6. Exploring the effects of implementing Differential Privacy on TextCNN (EXTRA CREDIT #3)
+## 6. Exploring the effects of implementing Differential Privacy on TextCNN (EXTRA CREDIT #3)
 This section analyzes how differentially private stochastic gradient descent (DP-SGD) affects a TextCNN model trained for text classification. The experiment explores how learning rate, noise multiplier (σ), clipping norm (C), and batch size influence both model accuracy and privacy.
 
 ### What is TextCNN?
@@ -350,7 +350,7 @@ Utility Privacy Tradeoff:
 | **DP-SGD Model**      | 0.7875        | 4.106        | 1 / N ≈ 0.00025 | Strong privacy guarantee |
 
 Comparing with our original MLP model:
-### 🧩 Comparison of Utility–Privacy Trade-offs (TextCNN vs MLP)
+### Comparison of Utility–Privacy Trade-offs (TextCNN vs MLP)
 
 | **Model Type** | **Architecture** | **Test Accuracy (Baseline)** | **Test Accuracy (DP)** | **ε (Epsilon)** | **δ (Delta)** | **Privacy Level** | **Observation** |
 |----------------|------------------|------------------------------:|-----------------------:|----------------:|---------------:|------------------:|-----------------|
