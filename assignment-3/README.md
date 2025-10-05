@@ -33,6 +33,7 @@ I have made this into two files for better structure and understandability.
   - [Threshold-based MIA](#1-threshold-based-mia--mia_attack_thresholdipynb)
   - [Loss Threshold Attack](#2-loss-threshold-attack-model)
 - [AI Usage Disclosure](#ai-usage-disclosure)
+- [References] (#references)
 
 ---
 
