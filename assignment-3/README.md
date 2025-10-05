@@ -27,19 +27,15 @@ I have made this into two files for better structure and understandability.
   - [3. Clipping Norm Sweep](#3-clipping-norm-sweep---analyze_clippy)
   - [4. Other Hyperparameters](#4-other-hyperparameters---analyze_miscellanous_paramspy)
   - [5. Parameter Sweep Utility](#5-parameter-sweep-utility---param_sweeppy)
-
 - [Main Training Module](#main-training-module)
   - [1. Baseline vs DP Training](#1-baseline-vs-dp-training-traindpmodelpy)
   - [2. Delta Sensitivity Plot](#2-delta-sensitivity-plot---integrated-in-traindpmodelpy)
-
 - [MIA Modules](#mia-modules)
   - [1. Threshold-based MIA](#1-threshold-based-mia-mia_attack_thresholdipynb)
   - [2. Loss Threshold Attack Model](#2-loss-threshold-attack-model)
-
 - [LLM Usage and References](#llm-usage-and-references)
   - [How We Used LLMs - script wise](#how-we-used-llms)
   - [What We Did Ourselves](#what-we-did-ourselves)
-
 - [References](#references)
 
 
