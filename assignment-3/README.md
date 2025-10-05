@@ -526,79 +526,29 @@ We kept in our mind to achieves a sweet spot between expressiveness and stabilit
 
 ---
 
-## LLM Usage and References
+## AI Disclosure and Reference
 
 ### How We Used LLMs
 
 We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of this assignment **for support, not substitution**. Our focus was on learning differential privacy concepts deeply and only using the LLM to accelerate repetitive or mechanical parts of coding and for errors. We used LLMs to clarify doubts, learn more, and structure our code better.
 
-
-Below is a module-wise summary of how the LLM was used and what was done by us.
-
-### Differential Privacy Implementation (DP-SGD Module)
-
-**What we did:**  
-We designed the DP-SGD training pipeline from scratch using Opacus , including TF-IDF preprocessing, per-example clipping, Gaussian noise injection, and ε–δ accounting. We also conducted hyperparameter sweeps across noise multiplier (σ), clipping norm (C), lot size (L), and learning rate (LR). All visualizations (ε-vs-epoch, accuracy-vs-noise, clipping curves) were generated from our experimental runs.
-
-**How LLM helped:**  
 We occasionally asked ChatGPT to explain how the Opacus `PrivacyEngine` computes ε internally via the Moments Accountant, how δ affects ε, and how to correctly re-initialize optimizers after privacy wrapping. The LLM also helped debug small tensor shape and plotting issues and suggested best practices for presenting privacy-utility curves.
 
----
+* **Baseline vs. DP Model Comparison:** Built baseline (non-private) and DP-SGD MLP models to track accuracy, ε evolution, and overfitting using Opacus’s Moments Accountant. Used ChatGPT to clarify theoretical differences between Strong Composition and Moments Accountant, ensure consistency with Abadi et al. (2016), and refine plots (axes, legends, layout). No training code or interpretation was AI-generated.
 
-### Baseline vs. DP Model Comparison
+* **Hyperparameter Tuning and Analysis:** Varied σ, clipping norm C, lot size L, and learning rate LR (δ = 1/N fixed), logging ε, accuracy, and runtime. Used ChatGPT to streamline sweep loops, refactor code into argparse scripts, and fix Opacus–DataLoader issues. Also used it to visualize ε growth smoothly via interpolation. All parameter selection, tuning, and insights were manual.
 
-**What we did:**  
-We built both the baseline (non-private) and DP-SGD versions of the MLP model and tracked accuracy, ε evolution, and overfitting behavior. We performed multiple runs to compare convergence speed, generalization, and privacy cost. All ε computations were done using Opacus’s Moments Accountant and validated manually.
+* **Membership Inference Attack (MIA):** Implemented threshold-based and Yeom loss-threshold MIAs from scratch, using ROC/AUC to measure privacy leakage before and after DP-SGD. ChatGPT was used to verify Yeom’s score formula (score = −NLL), correct ROC plotting, and fix TPR/FPR labeling. Attack logic and analysis were fully authored by us.
 
-**How LLM helped:**  
-The LLM assisted in clarifying theoretical differences between Strong Composition and Moments Accountant, ensuring our accounting matched the Abadi et al. (2016) paper. It also helped format the comparison plots cleanly but did not influence the results or interpretation.
+* **TextCNN Experiment:** Applied DP-SGD to TextCNN for text classification, tuning σ and C with a small grid sweep to compare against MLP. ChatGPT guided on implementing the CNN architecture we came up with setup (embeddings, 1D conv, pooling), Opacus integration, and Colab GPU optimization. All experiments and results were executed and interpreted by us.
 
----
-
-### Hyperparameter Tuning and Analysis
-
-**What we did:**  
-We manually conducted controlled experiments varying σ, C, L, and LR. Each run logged ε, training/test accuracy, and runtime. We analyzed these logs to identify optimal configurations balancing privacy and utility. Figures such as noise-vs-accuracy and clip-vs-accuracy were produced directly from our outputs.
-
-**How LLM helped:**  
-Used ChatGPT for code-organization suggestions (e.g., loop refactoring, argument parsing with argparse) and for guidance on plot smoothing and labeling conventions. All experiment logic, parameter ranges, and results were devised and interpreted by us. Helped to implement strong composition formula.
+* **Report Writing and Visualization:** Authored eading Report, README and InferenceReport independently, including dataset details, DP analysis, and results. ChatGPT was used only for minor Markdown editing, section organization, and phrasing improvements - not for writing, analysis, or conclusions. We used LLM to verify if our theoritical understanding is right. Formulas were derived from the cited papers and clarified via ChatGPT for notation consistency.
 
 ---
-
-### Membership Inference Attack (MIA) Module
-
-**What we did:**  
-We implemented two MIA variants ourselves , the standard threshold-based attack and the Yeom et al. loss-threshold attack. We computed per-example cross-entropy losses, built ROC/AUC curves, and compared attack performance before and after applying DP-SGD. These results were used to analyze privacy leakage reduction.
-
-**How LLM helped:**  
-We consulted ChatGPT to confirm the definition of Yeom’s loss-threshold score (score = − NLL) and to fix a few issues in plotting ROC curves and handling class imbalance. The attack logic, evaluation flow, and all results were implemented and run independently.
-
----
-
-### TextCNN Experiment
-
-**What we did:**  
-We extended our analysis by implementing DP-SGD on a TextCNN model for text classification, exploring privacy–utility trade-offs for deeper architectures. We tuned σ and C using a small grid sweep and compared the results against the MLP model. All experiments, parameter tuning, and interpretations were performed manually by our team.
-
-**How LLM helped:**  
-Because TextCNN was relatively new to us, we used ChatGPT for guidance on adapting CNN architectures for text data, handling embedding layers in PyTorch, and using GPU acceleration in Colab. 
-
----
-
-### Report Writing, Visualization, and Interpretation
-
-**What we did:**  
-We wrote all reports (README and InferenceReport) ourselves, describing experimental results, graphs, and theoretical takeaways in our own words. Every figure, ε value, and table was generated from our code outputs.
-
-**How LLM helped:**  
-Used for light editing and structure refinement , e.g., converting rough notes into polished Markdown, organizing sections (Results → Discussion → Takeaways), and ensuring technical clarity without changing content or conclusions.
-
----
-
 ### What We Did Ourselves
 
 - All the design choices and experimental setup were done by the Lead and the team.  
-- Wrote all training, evaluation, and DP integration code from scratch in Python + PyTorch. Implemented baseline and DP models independently, including TF-IDF preprocessing, model setup, and accuracy tracking.  
+- We designed the DP-SGD training pipeline from scratch using Opacus , including TF-IDF preprocessing, per-example clipping, Gaussian noise injection, and ε–δ accounting. We also conducted hyperparameter sweeps across noise multiplier (σ), clipping norm (C), lot size (L), and learning rate (LR). All visualizations (ε-vs-epoch, accuracy-vs-noise, clipping curves) were generated from our experimental runs.
 - Designed and ran all **hyperparameter tuning** experiments (σ, C, lot size, learning rate, δ sensitivity).  
 - Collected real experimental results (accuracy, ε per epoch) and generated all plots manually.  
 - Implemented our own per-example loss extraction for MIA analysis and used it in both baseline and DP models.  
