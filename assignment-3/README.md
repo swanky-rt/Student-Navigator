@@ -423,12 +423,10 @@ That's why I went with a subset of the the dataset that is given within the same
 #### Purpose
 - Demonstrate the effectiveness of membership inference attacks on machine learning models
 - Compare privacy leakage between baseline and DP-trained models
-- Evaluate the privacy-utility tradeoff quantitatively
 
 #### Features
 - Threshold-based membership inference attack implementation
 - ROC curve analysis and AUC calculation
-- Comparative analysis between models with different privacy settings
 - Visualization of attack success rates
 
 #### How to Use
@@ -445,26 +443,13 @@ Subset dataset for this IPYNB: assignment-3/code/Threshold_MIA_Colab/dataset.csv
 
 ### 2. Loss Threshold Attack Model
 
-**Membership-Inference: Yeom Loss-Threshold Attack**
+#### Purpose
+- Demonstrate the effectiveness of membership inference attacks on machine learning models
+- Compare privacy leakage between baseline and DP-trained models
 
-Goal. Given a trained classifier and a labeled example (x,y), decide whether (x,y) was in the training set(member) or held out (non-member)
-The attack relies on the observation that overfit models assign lower loss to training examples than to unseen ones.
-Reference: Yeom et al., *“Privacy Risk in Machine Learning: Analyzing the Connection to Overfitting (2018)“* ([arxiv.1709.01604](https://arxiv.org/abs/1709.01604)).
-
-#### **What the Yeom loss-threshold attack does**:
-
-1. Train or load a model.
-  PRE (non-DP): loss_threshold_attack.py trains a high-capacity MLP on a small train fraction to encourage memorization.
-  POST-DP: dp_train.py trains with DP; post_dp_attack.py evaluates the same attack on the DP model.
-2. Compute per-example loss.
-   For each example with true label 𝑦 and predicted class probabilities 𝑝:
-    ℓ(x,y)=−logpy
-3. Turn loss into a membership score.
-   s(x,y)=−ℓ(x,y). Higher score ⇒ more “member-like.”
-4. Evaluate separability (privacy leakage).
-      Concatenate scores for train (label 1) and test (label 0), then compute ROC-AUC.
-      AUC ≈ 0.5 → near random guessing (low leakage / better privacy)
-      AUC → 1.0 → strong leakage (poor privacy, typically due to overfitting)
+#### Features
+- Threshold-based membership inference attack implementation
+- ROC curve analysis and AUC calculation
 
 #### **Inputs, Outputs, and Artifacts**
 
@@ -484,19 +469,6 @@ python assignment-3/code/Loss-threshold-attack/loss_threshold_attack.py  #This f
 python assignment-3/code/Loss-threshold-attack/dp_train.py               #This file shows DP impl on dataset.
 python assignment-3/code/Loss-threshold-attack/post_rp_attack.py         #This file measures the performance before & after DP impl.
 ```
-
-#### **Interpretation**:
-PRE AUC ≈ 0.814 → strong membership leakage in the non-DP, overfit model.
-POST AUC ≈ 0.513 → near-random; DP substantially reduces leakage.
-
-![pre_vs_post_attack_comparison.png](artifacts/pre_vs_post_attack_comparison.png)
-
-We evaluate privacy leakage using the Yeom loss-threshold membership-inference attack (Yeom et al., 2018).
-For each example we compute the per-example cross-entropy loss and use its negative as a membership score; 
-low loss indicates “member-like”. We report ROC-AUC over "train" (members) vs "test" (non-members). Our non-DP model 
-yields AUC ≈ 0.814, showing clear leakage consistent with overfitting. With DP training, AUC drops to ≈ 0.513, 
-near random guessing, which further indicates that DP mitigates membership leakage.
-
 ---
 
 ## LLM Usage and References
