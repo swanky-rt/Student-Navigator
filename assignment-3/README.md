@@ -11,7 +11,7 @@
 
 ## File Overview  - IMPORTANT
 
-***This file only explains each script’s purpose, the parameters used, and how to execute them.***
+***This file only explains each script’s purpose, the parameters used along with the design choice explanation, and how to execute them.***
 For the analysis and interpretation of the experimental results, please refer to the [**InferenceReport.md**](./InferenceReport.md).
 I have made this into two files for better structure and understandability.
 
@@ -20,7 +20,7 @@ I have made this into two files for better structure and understandability.
 ## Quick Navigation
 - [Folder Structure](#folder-structure)
 - [Environment Setup](#setting-up-the-conda-environment)
-
+- [Design Choice for Model and Vectorization](#design-choice-for-model-and-vectorization)
 - [Hyperparameter Tuning Modules](#hyperparameter-tuning-modules)
   - [1. Privacy Accounting Comparison](#1-privacy-accounting-comparison-strong_vs_moments_accountantpy)
   - [2. Noise Sweep](#2-noise-sweep---analyze_noisepy)
@@ -116,11 +116,23 @@ You are now ready to run the scripts in this assignment.
 - **NumPy/Pandas:** Standard scientific computing
 
 ---
+## Design Choice for Model and vectorization:
+### NOTE: ***Parameter-specific design choices are detailed within each module’s section below.***
+- **Features**: TF-IDF (`max_features=258`, bigrams included).  
+  - We chose TF-IDF since it provides interpretable, sparse vector representations suitable for small to medium text datasets like ours.  
+  - Including bigrams helps capture short contextual patterns (e.g., “data analyst”, “software engineer”), which improves classification accuracy without heavy model complexity.  
+  - A `max_features` cap of 258 was determined empirically to balance model size and representational diversity.
 
+- **Model**: 2-layer feedforward NN with hidden size 128.  
+  - A small two-layer MLP was selected for simplicity and to minimize noise amplification under DP-SGD.  
+  - The hidden size of 128 provides sufficient expressive power for TF-IDF vectors while maintaining stability during noisy gradient updates.  
+  - Using ReLU activation ensures efficient training and stable gradient propagation even with differential privacy noise.
 
+---
 ## Hyperparameter Tuning Modules
 
 All hyperparameter tuning scripts are located in `code/Hyperparam_Tuning/`. These modules help identify optimal settings for DP-SGD training.
+
 
 ### 1. Privacy Accounting Comparison- strong_vs_moments_accountant.py
 
