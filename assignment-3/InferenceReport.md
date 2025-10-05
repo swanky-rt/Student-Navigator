@@ -350,7 +350,7 @@ Utility Privacy Tradeoff:
 | **DP-SGD Model**      | 0.7875        | 4.106        | 1 / N ≈ 0.00025 | Strong privacy guarantee |
 
 Comparing with our original MLP model:
-### 🧩 Comparison of Utility–Privacy Trade-offs (TextCNN vs MLP)
+### Comparison of Utility–Privacy Trade-offs (TextCNN vs MLP)
 
 | **Model Type** | **Architecture** | **Test Accuracy (Baseline)** | **Test Accuracy (DP)** | **ε (Epsilon)** | **δ (Delta)** | **Privacy Level** | **Observation** |
 |----------------|------------------|------------------------------:|-----------------------:|----------------:|---------------:|------------------:|-----------------|
