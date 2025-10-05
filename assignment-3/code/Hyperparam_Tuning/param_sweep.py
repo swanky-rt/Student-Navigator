@@ -11,57 +11,34 @@ from opacus import PrivacyEngine
 import matplotlib.pyplot as plt
 
 
-'''
-(690f) swethasaseendran@vl965-172-31-238-222 proj-group-04 % clear
-(690f) swethasaseendran@vl965-172-31-238-222 proj-group-04 % python assignment-3/param_sweep.py
-[split] train=3199 test=800
-[data] D=200 C=4
-
-[dp-grid] Running param sweep (sigma, epsilon)...
-/opt/homebrew/Caskroom/miniconda/base/envs/690f/lib/python3.9/site-packages/opacus/privacy_engine.py:96: UserWarning: Secure RNG turned off. This is perfectly fine for experimentation as it allows for much faster training performance, but remember to turn it on and retrain one last time before production with ``secure_mode`` turned on.
-  warnings.warn(
-09/30/2025 23:22:11:WARNING:Ignoring drop_last as it is not compatible with DPDataLoader.
-/Users/swethasaseendran/Documents/UMass/666 Theory of Crypto/proj-group-04/assignment-3/param_sweep.py:155: UserWarning: Full backward hook is firing when gradients are computed with respect to module outputs since no inputs require gradients. See https://docs.pytorch.org/docs/main/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_hook for more details.
-  loss.backward()
-[dp-grid] C=0.5, σ=0.5 -> train_acc=0.8422, test_acc=0.8163, ε=49.274
-09/30/2025 23:22:45:WARNING:Ignoring drop_last as it is not compatible with DPDataLoader.
-[dp-grid] C=0.5, σ=1.0 -> train_acc=0.8369, test_acc=0.8138, ε=8.629
-09/30/2025 23:23:03:WARNING:Ignoring drop_last as it is not compatible with DPDataLoader.
-[dp-grid] C=0.5, σ=2.0 -> train_acc=0.8418, test_acc=0.8112, ε=2.827
-09/30/2025 23:23:23:WARNING:Ignoring drop_last as it is not compatible with DPDataLoader.
-[dp-grid] C=1.0, σ=0.5 -> train_acc=0.8441, test_acc=0.8188, ε=49.274
-09/30/2025 23:24:02:WARNING:Ignoring drop_last as it is not compatible with DPDataLoader.
-[dp-grid] C=1.0, σ=1.0 -> train_acc=0.8535, test_acc=0.8225, ε=8.629
-09/30/2025 23:24:27:WARNING:Ignoring drop_last as it is not compatible with DPDataLoader.
-[dp-grid] C=1.0, σ=2.0 -> train_acc=0.8580, test_acc=0.8188, ε=2.827
-Saved: dp_param_sweep_results.csv
-Saved: dp_param_sweep_train_acc_vs_epoch.png
-Saved: dp_param_sweep_test_acc_vs_epoch.png
-(690f) swethasaseendran@vl965-172-31-238-222 proj-group-04 % 
-'''
-
 # ------------------ Paths & Seeds ------------------
-CSV_PATH = "assignment-3/code/data/dataset.csv"
-ART      = "assignment-3/artifacts"
-SEED            = 7867
+CSV_PATH = "assignment-3/code/data/dataset.csv"  # dataset path
+ART      = "assignment-3/artifacts"              # folder for saving artifacts/plots
+SEED     = 7867                                  # seed for reproducibility
+
 
 # ------------------ Model & Featurization ------------------
-MAX_FEATURES    = 200
-HIDDEN_UNITS    = 128
-LAMBDA          = 0.02
-MAX_GRAD_NORM   = 1.5
+MAX_FEATURES    = 200      # how many TF-IDF features to extract from text
+HIDDEN_UNITS    = 128      # size of the hidden layer
+LAMBDA          = 0.02     # (optional) weight decay
+MAX_GRAD_NORM   = 1.5      # gradient clipping bound (used by DP-SGD)
 
 # ------------------ Training (main DP run) ------------------
-EPOCHS_CENTRAL  = 60
-LR_CENTRAL      = 0.6
-BATCH_SIZE      = 60
+EPOCHS_CENTRAL  = 60       # training epochs for baseline model (unused here)
+LR_CENTRAL      = 0.6      # learning rate for central model
+BATCH_SIZE      = 60       # batch size for non-DP setup (used as a base)
 
+
+# ------------------ Utility Helpers ------------------
 def set_seed(seed: int):
+    # set all random seeds to make runs deterministic
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
 def build_text(df: pd.DataFrame) -> pd.Series:
+    # returns a text column for TF-IDF extraction
+    # uses job_description by default, or joins text columns if needed
     if "job_description" in df.columns:
         return df["job_description"].astype(str)
     cols = [c for c in ["job_description"] if c in df.columns]
@@ -70,6 +47,10 @@ def build_text(df: pd.DataFrame) -> pd.Series:
     return df[cols].astype(str).agg(" ".join, axis=1)
 
 def make_leak_cleaner(labels_lower: List[str]):
+    """
+    Creates a small cleaner that removes any words from job descriptions
+    that directly appear in the label names (to prevent label leakage).
+    """
     toks = set()
     for lbl in labels_lower:
         toks |= set(re.split(r"\s+", str(lbl).strip().lower()))
@@ -83,6 +64,7 @@ def make_leak_cleaner(labels_lower: List[str]):
     return clean
 
 def accuracy(model, Xte: torch.Tensor, yte: torch.Tensor) -> float:
+    # compute test accuracy — simple helper for evaluation
     model.eval()
     with torch.no_grad():
         logits = model(Xte)
@@ -90,52 +72,59 @@ def accuracy(model, Xte: torch.Tensor, yte: torch.Tensor) -> float:
         return (pred == yte).float().mean().item()
 
 def to_tensor(np_array, dtype=torch.float32, device="cpu"):
+    # wraps numpy arrays into PyTorch tensors on the correct device
     return torch.tensor(np_array, dtype=dtype, device=device)
 
 def make_model(input_dim: int, num_classes: int, device: str):
+    # simple 2-layer MLP classifier
     return nn.Sequential(
         nn.Linear(input_dim, HIDDEN_UNITS, bias=True),
         nn.ReLU(),
         nn.Linear(HIDDEN_UNITS, num_classes, bias=True),
     ).to(device)
 
+
+# ------------------ Main Entry Point ------------------
 def main():
     set_seed(SEED)
     os.makedirs(ART, exist_ok=True)
 
-    # ----------------- Load & clean -----------------
-    df = pd.read_csv(CSV_PATH)
-    df = df.drop_duplicates().reset_index(drop=True)
+    # ---------- Load & clean data ----------
+    df = pd.read_csv(CSV_PATH).drop_duplicates().reset_index(drop=True)
 
+    # Extract job descriptions and labels
     text_raw = build_text(df)
     labels = df["job_role"].astype(str)
 
+    # Clean text to remove label-related words (avoids leakage)
     cleaner = make_leak_cleaner(labels.str.lower().unique())
     text = text_raw.apply(cleaner)
 
+    # Split into train/test (stratified to preserve class balance)
     Xtr_txt, Xte_txt, ytr_raw, yte_raw = train_test_split(
         text, labels.values, test_size=0.20, random_state=SEED, stratify=labels.values
     )
     print(f"[split] train={len(Xtr_txt)} test={len(Xte_txt)}")
 
+    # ---------- TF-IDF vectorization ----------
     vec = TfidfVectorizer(max_features=MAX_FEATURES, ngram_range=(1, 2), stop_words="english")
     Xtr = vec.fit_transform(Xtr_txt).toarray().astype(np.float32)
     Xte = vec.transform(Xte_txt).toarray().astype(np.float32)
 
+    # ---------- Label encoding ----------
     le = LabelEncoder()
     ytr = le.fit_transform(ytr_raw).astype(np.int64)
     yte = le.transform(yte_raw).astype(np.int64)
-
     D, C = Xtr.shape[1], len(le.classes_)
     print(f"[data] D={D} C={C}")
 
-    # Save artifacts
+    # save TF-IDF and label encoder for reproducibility
     with open(os.path.join(ART, "tfidf_vectorizer.pkl"), "wb") as f:
         pickle.dump(vec, f)
     with open(os.path.join(ART, "label_encoder.pkl"), "wb") as f:
         pickle.dump(le, f)
 
-    # Torch tensors
+    # ---------- Convert to PyTorch ----------
     device = "cuda" if torch.cuda.is_available() else "cpu"
     Xtr_t = to_tensor(Xtr, dtype=torch.float32, device=device)
     ytr_t = to_tensor(ytr, dtype=torch.long, device=device)
@@ -145,25 +134,30 @@ def main():
     train_ds = TensorDataset(Xtr_t, ytr_t)
     base_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
 
-    # ----------------- Param Sweep: (sigma, epsilon) -----------------
-    print("\n[dp-grid] Running param sweep (sigma, epsilon)...")
+    # ----------------- Param Sweep: (clip, sigma) -----------------
+    # We'll test multiple combinations of gradient clipping norms (C)
+    # and noise multipliers (σ) to see how privacy affects accuracy.
+    print("\n[dp-grid] Running param sweep (clip, sigma)...")
+
+    DELTA = 1.0 / len(Xtr_t)    # DP delta = 1/N (common default)
+    SWEEP_CLIP  = [0.5, 1.0]    # try two clipping bounds
+    SWEEP_SIGMA = [0.5, 1.0, 2.0]  # test three noise levels
+    EPOCHS_GRID = 50            # fixed training epochs per combo
+    BATCH_SIZE  = 150            # batch size for DP runs
+
+    # containers to track results
     results = []
     acc_curves = {}
     train_curves = {}
     eps_curves = {}
-    DELTA = 1.0 / len(Xtr_t)
-    SWEEP_CLIP = [0.5, 1.0]
-    SWEEP_SIGMA = [0.5, 1.0, 2.0]
-    EPOCHS_GRID = 50
-    BATCH_SIZE  = 150
-    results = []
-    acc_curves = {}
-    train_curves = {}
-    eps_curves = {}
+
+    # loop over each (clip, sigma) combination
     for clip in SWEEP_CLIP:
         for sigma in SWEEP_SIGMA:
             model_g = make_model(D, C, device)
             opt_g = torch.optim.SGD(model_g.parameters(), lr=0.10)
+
+            # attach Opacus PrivacyEngine
             pe_g = PrivacyEngine()
             model_g, opt_g, loader_g = pe_g.make_private(
                 module=model_g,
@@ -172,9 +166,13 @@ def main():
                 noise_multiplier=sigma,
                 max_grad_norm=clip,
             )
+
+            # track metrics for this run
             acc_hist_g = []
             train_acc_hist_g = []
             eps_hist_g = []
+
+            # ---------- DP-SGD training loop ----------
             for ep in range(EPOCHS_GRID):
                 model_g.train()
                 correct = 0
@@ -185,24 +183,38 @@ def main():
                     loss = F.cross_entropy(logits, yb)
                     loss.backward()
                     opt_g.step()
+
+                    # track train accuracy manually
                     preds = logits.argmax(dim=1)
                     correct += (preds == yb).sum().item()
                     total += yb.shape[0]
+
+                # compute accuracy & epsilon each epoch
                 train_acc = correct / total if total > 0 else 0.0
                 train_acc_hist_g.append(train_acc)
                 acc_g = accuracy(model_g, Xte_t, yte_t)
                 acc_hist_g.append(acc_g)
                 eps_g = pe_g.get_epsilon(delta=DELTA)
                 eps_hist_g.append(eps_g)
-            results.append({"clip": clip, "sigma": sigma, "acc": acc_hist_g[-1], "eps": eps_hist_g[-1]})
+
+            # store results for this (clip, sigma)
+            results.append({
+                "clip": clip, "sigma": sigma,
+                "acc": acc_hist_g[-1],
+                "eps": eps_hist_g[-1]
+            })
             acc_curves[(clip, sigma)] = acc_hist_g
             train_curves[(clip, sigma)] = train_acc_hist_g
             eps_curves[(clip, sigma)] = eps_hist_g
-            print(f"[dp-grid] C={clip}, σ={sigma} -> train_acc={train_acc_hist_g[-1]:.4f}, test_acc={acc_hist_g[-1]:.4f}, ε={eps_hist_g[-1]:.3f}")
+
+            print(f"[dp-grid] C={clip}, σ={sigma} -> train_acc={train_acc_hist_g[-1]:.4f}, "
+                  f"test_acc={acc_hist_g[-1]:.4f}, ε={eps_hist_g[-1]:.3f}")
+
+    # save all numeric results
     pd.DataFrame(results).to_csv(os.path.join(ART,"dp_param_sweep_results.csv"), index=False)
     print("Saved: dp_param_sweep_results.csv")
 
-    # GRAPH 1: Train accuracy vs epoch for each (clip, sigma)
+    # ----------------- Plot 1: Train accuracy -----------------
     plt.figure(figsize=(10,7))
     for (clip, sigma) in train_curves:
         final_eps = eps_curves[(clip, sigma)][-1]
@@ -218,7 +230,7 @@ def main():
     plt.savefig(os.path.join(ART,"dp_param_sweep_train_acc_vs_epoch.png"))
     print("Saved: dp_param_sweep_train_acc_vs_epoch.png")
 
-    # GRAPH 2: Test accuracy vs epoch for each (clip, sigma), show final epsilon and final accuracy in legend
+    # ----------------- Plot 2: Test accuracy -----------------
     plt.figure(figsize=(10,7))
     for (clip, sigma) in acc_curves:
         final_eps = eps_curves[(clip, sigma)][-1]
@@ -234,5 +246,7 @@ def main():
     plt.savefig(os.path.join(ART,"dp_param_sweep_test_acc_vs_epoch.png"))
     print("Saved: dp_param_sweep_test_acc_vs_epoch.png")
 
+
+# ------------------ Run ------------------
 if __name__ == "__main__":
     main()
