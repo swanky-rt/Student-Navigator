@@ -11,7 +11,7 @@
 
 ## File Overview  - IMPORTANT
 
-***This file only explains each script’s purpose, the parameters used, and how to execute them.***
+***This file only explains each script’s purpose, the parameters used along with the design choice explanation, and how to execute them.***
 For the analysis and interpretation of the experimental results, please refer to the [**InferenceReport.md**](./InferenceReport.md).
 I have made this into two files for better structure and understandability.
 
@@ -20,20 +20,24 @@ I have made this into two files for better structure and understandability.
 ## Quick Navigation
 - [Folder Structure](#folder-structure)
 - [Environment Setup](#setting-up-the-conda-environment)
+- [Design Choice for Model and Vectorization](#design-choice-for-model-and-vectorization)
 - [Hyperparameter Tuning Modules](#hyperparameter-tuning-modules)
-  - [Privacy Accounting Comparison](#1-privacy-accounting-comparison--strong_vs_moments_accountantpy)
-  - [Noise Sweep](#2--noise-sweep---analyze_noisepy)
-  - [Clipping Norm Sweep](#3-clipping-norm-sweep---analyze_clippy)
-  - [Other Hyperparameters](#4-other-hyperparameters---analyze_miscellanous_paramspy)
-  - [Parameter Sweep Utility](#5-parameter-sweep-utility---param_sweeppy)
+  - [1. Privacy Accounting Comparison](#1-privacy-accounting-comparison-strong_vs_moments_accountantpy)
+  - [2. Noise Sweep](#2-noise-sweep---analyze_noisepy)
+  - [3. Clipping Norm Sweep](#3-clipping-norm-sweep---analyze_clippy)
+  - [4. Other Hyperparameters](#4-other-hyperparameters---analyze_miscellanous_paramspy)
+  - [5. Parameter Sweep Utility](#5-parameter-sweep-utility---param_sweeppy)
 - [Main Training Module](#main-training-module)
-  - [Baseline vs DP Training](#baseline-vs-dp-training-traindpmodelpy)
-  - [Delta Sensitivity Experiment](#delta-sensitivity-plot--integrated-in-traindpmodelpy)
-- [MIA Analysis](#mia-modules)
-  - [Threshold-based MIA](#1-threshold-based-mia--mia_attack_thresholdipynb)
-  - [Loss Threshold Attack](#2-loss-threshold-attack-model)
-- [AI Usage Disclosure](#ai-usage-disclosure)
-- [References] (#references)
+  - [1. Baseline vs DP Training](#1-baseline-vs-dp-training-traindpmodelpy)
+  - [2. Delta Sensitivity Plot](#2-delta-sensitivity-plot---integrated-in-traindpmodelpy)
+- [MIA Modules](#mia-modules)
+  - [1. Threshold-based MIA](#1-threshold-based-mia-mia_attack_thresholdipynb)
+  - [2. Loss Threshold Attack Model](#2-loss-threshold-attack-model)
+- [LLM Usage and References](#llm-usage-and-references)
+  - [How We Used LLMs - script wise](#how-we-used-llms)
+  - [What We Did Ourselves](#what-we-did-ourselves)
+- [References](#references)
+
 
 ---
 
@@ -112,11 +116,23 @@ You are now ready to run the scripts in this assignment.
 - **NumPy/Pandas:** Standard scientific computing
 
 ---
+## Design Choice for Model and vectorization:
+### NOTE: ***Parameter-specific design choices are detailed within each module’s section below.***
+- **Features**: TF-IDF (`max_features=258`, bigrams included).  
+  - We chose TF-IDF since it provides interpretable, sparse vector representations suitable for small to medium text datasets like ours.  
+  - Including bigrams helps capture short contextual patterns (e.g., “data analyst”, “software engineer”), which improves classification accuracy without heavy model complexity.  
+  - A `max_features` cap of 258 was determined empirically to balance model size and representational diversity.
 
+- **Model**: 2-layer feedforward NN with hidden size 128.  
+  - A small two-layer MLP was selected for simplicity and to minimize noise amplification under DP-SGD.  
+  - The hidden size of 128 provides sufficient expressive power for TF-IDF vectors while maintaining stability during noisy gradient updates.  
+  - Using ReLU activation ensures efficient training and stable gradient propagation even with differential privacy noise.
 
+---
 ## Hyperparameter Tuning Modules
 
 All hyperparameter tuning scripts are located in `code/Hyperparam_Tuning/`. These modules help identify optimal settings for DP-SGD training.
+
 
 ### 1. Privacy Accounting Comparison- strong_vs_moments_accountant.py
 
