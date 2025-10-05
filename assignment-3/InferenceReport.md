@@ -288,7 +288,7 @@ This study demonstrates that differential privacy can provide meaningful protect
 
 ---
 
-## APPENDIX
+## SUPPLEMENTARY SECTION
 ### A: Membership-Inference: Yeom Loss-Threshold Attack
   We implemented another type of MIA attack apart from the Threshold MIA
   - Given a trained classifier and a labeled example (x,y), decide whether (x,y) was in the training set(member) or held out (non-member)
