@@ -559,20 +559,6 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
   - Used ChatGPT to generate ROC curve, accuracy-vs-noise, and epsilon-vs-epoch plotting snippets with proper legends and styles.
   - Modified these boilerplate plot templates ourselves to match our datasets and naming conventions.
 
----
-
-### What We Referenced From Papers
-
-- From *Deep Learning with Differential Privacy* — Abadi et al. (2016):  
-  - Used their DP-SGD foundation, clipping, and noise calibration methodology.  
-  - Adopted their idea of using lot size ≈ √N to balance convergence and privacy.
-
-- From *Privacy Risk in Machine Learning* — Yeom et al. (2018):  
-  - Reproduced the loss-threshold MIA attack concept where lower per-example loss correlates with membership.
-
-- From *Membership Inference Attacks From First Principles* — Carlini et al. (2022):  
-  - Understood the evaluation of MIAs using TPR at low FPR thresholds (≤0.1%).  
-  - Reinforced our evaluation approach using ROC–AUC for both baseline and DP-trained models.
 
 ---
 
