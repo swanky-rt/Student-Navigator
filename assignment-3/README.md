@@ -491,7 +491,7 @@ python assignment-3/code/Loss-threshold-attack/post_rp_attack.py         #This f
 
 ### How We Used LLMs
 
-We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of this assignment **for support, not substitution**.  Our focus was on learning differential privacy concepts deeply and only use the LLM to accelerate repetitive or mechanical parts of coding and for errors.
+We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of this assignment **for support, not substitution**.  Our focus was on learning differential privacy concepts deeply and only use the LLM to accelerate repetitive or mechanical parts of coding and for errors. We used LLM to clarify doubts, learn more and structure our code better.
 
 - **Code Assistance and Debugging**
   - Asked clarifying questions about how Opacus tracks ε and δ internally via the Moments Accountant API. Used the model to debug errors related to tensor shape mismatches and optimizer re-initialization when using `PrivacyEngine.make_private()`. Occasionally requested help optimizing Matplotlib code for comparing privacy curves.
@@ -524,11 +524,11 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
       `Threshold_MIA_Colab/MIA_Attack_Threshold.ipynb`, `Loss-threshold-attack/loss_threshold_attack.py`, `dp_train.py`, `post_dp_attack.py`
   
       ##### **What we did:**  
-      We implemented the threshold-based and loss-threshold membership inference attacks to evaluate privacy leakage.   The first notebook focused on ROC-based threshold attacks, and the second directory handled pre- and post-DP comparison using Yeom’s loss threshold method.
+      We implemented the threshold-based and loss-threshold membership inference attacks to evaluate privacy leakage.   The first notebook focused on ROC-based threshold attacks, and the second directory handled pre- and post-DP comparison using Yeom’s loss threshold method. The overall functional flow was coded by us, but where ChatGPT was used was to enhance/ correct our code if any bugs.
   
       ##### **How AI helped:**  
       - For **MIA_Attack_Threshold.ipynb**, ChatGPT helped structure the ROC/AUC pipeline using `sklearn.metrics`, fix axis labeling, and improve figure readability.  
-      - For **loss_threshold_attack.py**, * ChatGPT Clarified Yeom loss-threshold MIA: use per-example cross-entropy as the signal, lower loss means more member-like. It also    helped me to understand the score definition used in code: score = -NLL(y_true) so that higher = member-like which is matching ROC conventions
+      - For **loss_threshold_attack.py**, * ChatGPT Clarified Yeom loss-threshold MIA: use per-example cross-entropy as the signal, lower loss means more member-like. It also helped me to understand the score definition used in code: score = -NLL(y_true) so that higher = member-like which is matching ROC conventions
       - For **dp_train.py** and **post_dp_attack.py**, * ChatGPT helped me to score the labels to compare pre and post attack i.e. post_loss_threshold_attack_scores_labels and helped me to plot the conventions for the comparisons. It also helped me to understand the evaluation flow. At different points it helped me to fix the AUC values for tuning the hyper parameters.
 
 - **Mathematical and Conceptual Guidance**
