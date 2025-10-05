@@ -488,7 +488,7 @@ Note: please execute in the sequence as it is mentioned below:
 ```
 python assignment-3/code/Loss-threshold-attack/loss_threshold_attack.py  #This file shows the attack on dataset before DP impl.
 python assignment-3/code/Loss-threshold-attack/dp_train.py               #This file shows DP impl on dataset.
-python assignment-3/code/Loss-threshold-attack/post_rp_attack.py         #This file measures the performance before & after DP impl.
+python assignment-3/code/Loss-threshold-attack/post_rp_attck.py         #This file measures the performance before & after DP impl.
 ```
 ---
 ## TextCNN Module
