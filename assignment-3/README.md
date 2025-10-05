@@ -99,14 +99,9 @@ To create the conda environment and install all dependencies for this assignment
   ```bash
   conda activate 690f
   ```
-5. All required dependencies will be installed automatically. If you add new packages, update the environment with:
-  ```bash
-  conda env update -f assignment-3\code\environment.yml --prune
-  ```
-
 You are now ready to run the scripts in this assignment.
 
-### Key Dependencies (You can also run the files if you have these dependencies below):
+### Alternate - You can also run the files if you have these dependencies below:
 - **PyTorch:**(neural network training)
 - **Opacus:** (differential privacy)
 - **Scikit-learn:**(preprocessing and metrics)
