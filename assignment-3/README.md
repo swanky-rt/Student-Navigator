@@ -84,7 +84,7 @@ code/
 
 ---
 
-## Setting Up the Conda Environment
+## Setting Up the Conda Environment and Run the code
 
 To create the conda environment and install all dependencies for this assignment:
 
