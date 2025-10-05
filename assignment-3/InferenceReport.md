@@ -20,6 +20,7 @@ This report presents a comprehensive analysis of differential privacy (DP) techn
 ## Quick Navigation
 
 - [Executive Summary](#executive-summary)
+- [Experimental Setup](#experimental-setup)
 - [1. Dataset Description](#1-dataset-description)
   - [1.1 Dataset Overview](#11-dataset-overview)
   - [1.2 Data Quality Considerations](#12-data-quality-considerations)
