@@ -199,7 +199,7 @@ It runs multiple DP models with varying σ values and compares their test accura
 #### Settings and Design Choice Reasoning
   
 - **Lot Size**: √N.  
-  - (Following Abadi et al., √N offers a balance between privacy and learning stability — smaller lots increase noise, larger ones reduce privacy.)  
+  - (Following Abadi et al., √N offers a balance between privacy and learning stability , smaller lots increase noise, larger ones reduce privacy.)  
 - **Epochs**: N / Lot Size.  
   - (Ensures each sample is seen about once, aligning privacy accounting with true data exposure.)  
 - **Clipping Norm (C)**: 1.0.  
@@ -295,7 +295,7 @@ After running all the above experiments, the following configuration was chosen 
 - **Model**: 2-layer feedforward NN with hidden size (swept or fixed).  
   - (Kept small to minimize parameter noise amplification under DP; 2 layers offer enough non-linearity without excessive complexity.)  
 - **Lot Size**: swept or fixed.  
-  - (Explored to study the trade-off between gradient averaging stability and privacy noise — smaller lots give higher noise, larger ones risk privacy loss.)  
+  - (Explored to study the trade-off between gradient averaging stability and privacy noise , smaller lots give higher noise, larger ones risk privacy loss.)  
 - **Learning Rate**: swept or fixed.  
   - (Tuned to maintain convergence across DP and non-DP runs; too high causes noise amplification, too low stalls learning.)  
 - **Delta (δ)**: 1/N.  
@@ -478,9 +478,9 @@ Subset dataset for this IPYNB: assignment-3/code/Threshold_MIA_Colab/dataset.csv
 2. Key outputs:
          Metrics: printed Train/Test accuracy; AUC of the attack.
               Artifacts (under artifacts/):
-                    *_scores_labels.npz — NumPy archives with scores, labels, auc.
-                    loss-threshold-attack.png, post_yeom_roc.png, pre_vs_post_attack_comparison.png — ROC plots.
-                    mia_pre_post_summary.json — compact PRE/POST AUC summary.
+                    *_scores_labels.npz , NumPy archives with scores, labels, auc.
+                    loss-threshold-attack.png, post_yeom_roc.png, pre_vs_post_attack_comparison.png , ROC plots.
+                    mia_pre_post_summary.json , compact PRE/POST AUC summary.
 
 #### **How to run**
 Activate the virtual env first if needed( please follow the step above to setup the environment).
@@ -527,85 +527,91 @@ We kept in our mind to achieves a sweet spot between expressiveness and stabilit
 ---
 
 ## LLM Usage and References
+
 ### How We Used LLMs
 
-We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of this assignment **for support, not substitution**.  Our focus was on learning differential privacy concepts deeply and only use the LLM to accelerate repetitive or mechanical parts of coding and for errors. We used LLM to clarify doubts, learn more and structure our code better.
+We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of this assignment **for support, not substitution**. Our focus was on learning differential privacy concepts deeply and only using the LLM to accelerate repetitive or mechanical parts of coding and for errors. We used LLMs to clarify doubts, learn more, and structure our code better.
 
-- **Code Assistance and Debugging**
-  - Asked clarifying questions about how Opacus tracks ε and δ internally via the Moments Accountant API. Used the model to debug errors related to tensor shape mismatches and optimizer re-initialization when using `PrivacyEngine.make_private()`. Occasionally requested help optimizing Matplotlib code for comparing privacy curves.
+**Code Assistance and Debugging**
+  - Asked clarifying questions about how Opacus tracks ε and δ internally via the Moments Accountant API. 
+  - Used the model to debug errors related to tensor shape mismatches and optimizer re-initialization when using `PrivacyEngine.make_private()`. 
+  - Occasionally requested help optimizing Matplotlib code for comparing privacy curves.
 
-  
-    #### Hyperparameter Tuning Modules  
-      ##### **Files:**  
-      `strong_vs_moments_accountant.py`, `analyze_noise.py`, `analyze_clip.py`, `analyze_miscellanous_params.py`, `param_sweep.py`
-  
-      - **strong_vs_moments_accountant.py** – We wrote the core code to compare Moments Accountant vs Strong Composition; ChatGPT helped me verify how Opacus tracks ε and δ internally and guided smoothing of ε-vs-epoch plots using `make_interp_spline()`.  
-      - **analyze_noise.py** – We implemented the noise sweep logic; AI helped me cleanly organize parameter loops, fix matplotlib scaling issues, and format accuracy plots.  
-      - **analyze_clip.py** – We wrote code to compute and visualize gradient norms; ChatGPT helped fix NaN gradient errors and suggested how to annotate the median clipping norm and peak accuracy on the plot.  
-      - **analyze_miscellanous_params.py** – We built a generic script to sweep hidden size, learning rate, and lot size; ChatGPT helped add argument parsing (`--sweep`, `--smooth`) and made the sweep results modular.  
-      - **param_sweep.py** – We wrote a grid search to combine clipping and noise sweeps; AI helped refactor loops for clarity and manage artifact outputs consistently.
+Below is a module-wise summary of how the LLM was used and what was done by us.
 
-    ####  Baseline vs Best DP Model Training Module
-      ##### **Files:**  
-      `train_dp_model.py` (includes delta sensitivity experiment)
-  
-      ##### **What we did:**  
-      We implemented the baseline vs DP model training pipeline using Opacus. This included exploring the privacy engine, tracking ε and δ over epochs, and plotting accuracy curves. We also added a secondary delta sensitivity experiment to visualize how δ values affect ε and accuracy.
-  
-      ##### **How AI helped:**  
-      - Enhanced my pipeline function in properly reinitializing the optimizer after calling `PrivacyEngine.make_private()` to avoid stale state issues.  
-      - Helped debug tensor shape mismatches and loss calculation errors.  
-      - For the delta sensitivity experiment, ChatGPT helped me structure the δ-sweep loop and store (ε, accuracy) pairs per epoch.
-  
+---
 
-    #### Membership Inference Attack (MIA) Module
-      ##### **Files:**  
-      `Threshold_MIA_Colab/MIA_Attack_Threshold.ipynb`, `Loss-threshold-attack/loss_threshold_attack.py`, `dp_train.py`, `post_dp_attack.py`
-  
-      ##### **What we did:**  
-      We implemented the threshold-based and loss-threshold membership inference attacks to evaluate privacy leakage.   The first notebook focused on ROC-based threshold attacks, and the second directory handled pre- and post-DP comparison using Yeom’s loss threshold method. The overall functional flow was coded by us, but where ChatGPT was used was to enhance/ correct our code if any bugs.
-  
-      ##### **How AI helped:**  
-      - For **MIA_Attack_Threshold.ipynb**, ChatGPT helped structure the ROC/AUC pipeline using `sklearn.metrics`, fix axis labeling, and improve figure readability.  
-      - For **loss_threshold_attack.py**, * ChatGPT Clarified Yeom loss-threshold MIA: use per-example cross-entropy as the signal, lower loss means more member-like. It also helped me to understand the score definition used in code: score = -NLL(y_true) so that higher = member-like which is matching ROC conventions
-      - For **dp_train.py** and **post_dp_attack.py**, * ChatGPT helped me to score the labels to compare pre and post attack i.e. post_loss_threshold_attack_scores_labels and helped me to plot the conventions for the comparisons. It also helped me to understand the evaluation flow.
+### Differential Privacy Implementation (DP-SGD Module)
 
+**What we did:**  
+We designed the DP-SGD training pipeline from scratch using Opacus , including TF-IDF preprocessing, per-example clipping, Gaussian noise injection, and ε–δ accounting. We also conducted hyperparameter sweeps across noise multiplier (σ), clipping norm (C), lot size (L), and learning rate (LR). All visualizations (ε-vs-epoch, accuracy-vs-noise, clipping curves) were generated from our experimental runs.
 
-    #### TextCNN Module
-      ##### **Files:**   ```TextCNN_Colab/dp_textcnn_experiments.ipynb```
-      ##### **What we did?**
-      We integrated the Opacus library to this model and analysed effect of differential privacy on a TextCNN model ourselves. We also implemented the small grid sweep.
-      ##### **How AI helped?**
-      TextCNN was relavently new to us, so we used ChatGPT to help us train our dataset on TextCNN. We also wanted to use the GPU in colab, so we used the LLM help to connect our code to GPU.
+**How LLM helped:**  
+We occasionally asked ChatGPT to explain how the Opacus `PrivacyEngine` computes ε internally via the Moments Accountant, how δ affects ε, and how to correctly re-initialize optimizers after privacy wrapping. The LLM also helped debug small tensor shape and plotting issues and suggested best practices for presenting privacy-utility curves.
 
-- **Mathematical and Conceptual Guidance**
-  - Queried ChatGPT to confirm the formulas for explaining the mathematical theorems in the paper and basically helping me learn the paper, ensuring we didn’t misinterpret theoretical claims.
-  - Asked for comparisons between *Strong Composition* and *Moments Accountant* in simple words to confirm understanding.
-  - Verified that our epsilon-delta accounting matched the equations from Abadi et al. (2016).
+---
 
-- **Report Writing and Explanations**
-  - Used LLMs to refine language and structure for explanations and convert rough notes into polished Markdown.
-  - Generated section skeletons for the README (Folder Structure).
-  - Asked the model to help structure our *InferenceReport.md* into Results → Discussion → Takeaways format.
+### Baseline vs. DP Model Comparison
 
+**What we did:**  
+We built both the baseline (non-private) and DP-SGD versions of the MLP model and tracked accuracy, ε evolution, and overfitting behavior. We performed multiple runs to compare convergence speed, generalization, and privacy cost. All ε computations were done using Opacus’s Moments Accountant and validated manually.
 
-- **Visualization and Presentation**
-  - Used ChatGPT to generate ROC curve, accuracy-vs-noise, and epsilon-vs-epoch plotting snippets with proper legends and styles.
-  - Modified these boilerplate plot templates ourselves to match our datasets and naming conventions.
+**How LLM helped:**  
+The LLM assisted in clarifying theoretical differences between Strong Composition and Moments Accountant, ensuring our accounting matched the Abadi et al. (2016) paper. It also helped format the comparison plots cleanly but did not influence the results or interpretation.
 
+---
+
+### Hyperparameter Tuning and Analysis
+
+**What we did:**  
+We manually conducted controlled experiments varying σ, C, L, and LR. Each run logged ε, training/test accuracy, and runtime. We analyzed these logs to identify optimal configurations balancing privacy and utility. Figures such as noise-vs-accuracy and clip-vs-accuracy were produced directly from our outputs.
+
+**How LLM helped:**  
+Used ChatGPT for code-organization suggestions (e.g., loop refactoring, argument parsing with argparse) and for guidance on plot smoothing and labeling conventions. All experiment logic, parameter ranges, and results were devised and interpreted by us. Helped to implement strong composition formula.
+
+---
+
+### Membership Inference Attack (MIA) Module
+
+**What we did:**  
+We implemented two MIA variants ourselves , the standard threshold-based attack and the Yeom et al. loss-threshold attack. We computed per-example cross-entropy losses, built ROC/AUC curves, and compared attack performance before and after applying DP-SGD. These results were used to analyze privacy leakage reduction.
+
+**How LLM helped:**  
+We consulted ChatGPT to confirm the definition of Yeom’s loss-threshold score (score = − NLL) and to fix a few issues in plotting ROC curves and handling class imbalance. The attack logic, evaluation flow, and all results were implemented and run independently.
+
+---
+
+### TextCNN Experiment
+
+**What we did:**  
+We extended our analysis by implementing DP-SGD on a TextCNN model for text classification, exploring privacy–utility trade-offs for deeper architectures. We tuned σ and C using a small grid sweep and compared the results against the MLP model. All experiments, parameter tuning, and interpretations were performed manually by our team.
+
+**How LLM helped:**  
+Because TextCNN was relatively new to us, we used ChatGPT for guidance on adapting CNN architectures for text data, handling embedding layers in PyTorch, and using GPU acceleration in Colab. 
+
+---
+
+### Report Writing, Visualization, and Interpretation
+
+**What we did:**  
+We wrote all reports (README and InferenceReport) ourselves, describing experimental results, graphs, and theoretical takeaways in our own words. Every figure, ε value, and table was generated from our code outputs.
+
+**How LLM helped:**  
+Used for light editing and structure refinement , e.g., converting rough notes into polished Markdown, organizing sections (Results → Discussion → Takeaways), and ensuring technical clarity without changing content or conclusions.
 
 ---
 
 ### What We Did Ourselves
-- All the design choices and expermental setup was done by the the Lead and the team.
-- Wrote all training, evaluation, and DP integration code from scratch in Python + PyTorch. Implemented baseline and DP models independently, including TF-IDF preprocessing, model setup, and accuracy tracking.
-- Designed and ran all **hyperparameter tuning** experiments (σ, C, lot size, learning rate, δ sensitivity).
-- Collected real experimental results (accuracy, ε per epoch) and generated all plots manually.
-- Implemented our own per-example loss extraction for MIA analysis and used it in both baseline and DP models.
-- Built the **Loss-Threshold Attack** pipeline and ran before/after-DP comparisons.
-- Wrote all explanations, discussions, and interpretations for **InferenceReport.md** manually. Structured this **README.md** and finalized plots, charts, and results presentation.
-- Structure PyTorch + Opacus training loops, batch handling, and gradient clipping setup. Plotted results (ROC curves, TPR/FPR tables), analyzed vulnerabilities.
-- Built the presentation + report. Added detailed comments, describing the design choices, inference reports, and how each implementation step connects to the overall project.
+
+- All the design choices and experimental setup were done by the Lead and the team.  
+- Wrote all training, evaluation, and DP integration code from scratch in Python + PyTorch. Implemented baseline and DP models independently, including TF-IDF preprocessing, model setup, and accuracy tracking.  
+- Designed and ran all **hyperparameter tuning** experiments (σ, C, lot size, learning rate, δ sensitivity).  
+- Collected real experimental results (accuracy, ε per epoch) and generated all plots manually.  
+- Implemented our own per-example loss extraction for MIA analysis and used it in both baseline and DP models.  
+- Built the **Loss-Threshold Attack** pipeline and ran before/after-DP comparisons.  
+- Wrote all explanations, discussions, and interpretations for **InferenceReport.md** manually. Structured this **README.md** and finalized plots, charts, and results presentation.  
+- Structured PyTorch + Opacus training loops, batch handling, and gradient clipping setup. Plotted results (ROC curves, TPR/FPR tables), analyzed vulnerabilities.  
+- Built the presentation and report. Added detailed comments describing the design choices, inference reports, and how each implementation step connects to the overall project.
 
 ---
 
