@@ -439,7 +439,7 @@ The Membership Inference Attack analysis is located in `code/Threshold_MIA_Colab
 ### 1. Threshold-based MIA: MIA_Attack_Threshold.ipynb
 
 This Jupyter notebook implements and evaluates membership inference attacks against both baseline and DP-trained models to assess privacy leakage. **The file was taking a lot of time to run in my system, hence I went with Google Colab which gave me a better runtime environment.**
-That's why I went with a subset of the the dataset that is given within the same directory.(assignment-3/code/Threshold_MIA_Colab/dataset.csv)
+That's why I went with a subset of the the dataset (1000 records) that is given within the same directory.(assignment-3/code/Threshold_MIA_Colab/dataset.csv)
 
 #### Purpose
 - Demonstrate the effectiveness of membership inference attacks on machine learning models
