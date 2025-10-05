@@ -532,14 +532,8 @@ We kept in our mind to achieves a sweet spot between expressiveness and stabilit
 
 We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of this assignment **for support, not substitution**. Our focus was on learning differential privacy concepts deeply and only using the LLM to accelerate repetitive or mechanical parts of coding and for errors. We used LLMs to clarify doubts, learn more, and structure our code better.
 
-**Code Assistance and Debugging**
-  - Asked clarifying questions about how Opacus tracks ε and δ internally via the Moments Accountant API. 
-  - Used the model to debug errors related to tensor shape mismatches and optimizer re-initialization when using `PrivacyEngine.make_private()`. 
-  - Occasionally requested help optimizing Matplotlib code for comparing privacy curves.
 
 Below is a module-wise summary of how the LLM was used and what was done by us.
-
----
 
 ### Differential Privacy Implementation (DP-SGD Module)
 
