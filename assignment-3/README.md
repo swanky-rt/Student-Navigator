@@ -92,7 +92,7 @@ To create the conda environment and install all dependencies for this assignment
 2. All the files will run from the root directory itself. Please don't go to other folders, since the paths are already set.
 3. Create the environment using the provided `environment.yml` file:
   ```bash
-  conda env create -f assignment-3\code\environment.yml
+  conda env create -f assignment-3/code/environment.yml  
   ```
 4. Activate the environment:
   ```bash
