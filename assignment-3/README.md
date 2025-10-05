@@ -84,6 +84,8 @@ code/
     └── MIA_Attack_Threshold.ipynb        # MIA analysis notebook
 
 └── TextCNN_Colab/                  # Membership Inference Attack analysis (EXTRA CREDIT)
+    ├── dataset.csv                       # Dataset to put in colab
+    └── dp_textcnn_experiments.ipynb        # MIA analysis notebook
 ```
 
 ---
@@ -503,7 +505,7 @@ Abadi et al. (2016). talks about DP on image data, we thought it would be a good
 We have this as an ipynb as TextCNN is a bit heavy and was taking a lot of time to run. Hence, we wanted to use Google Colab's T4 GPU runtime environment.
 
 ### How to Use
-- Open the notebook in Jupyter Lab or Google Colab
+- Open the notebook in Jupyter Lab or Google Colab (Path: assignment-3/code/TextCNN_Colab/dp_textcnn_experiments.ipynb)
 - Please add the same dataset that is given in the same directory: 'assignment-3/code/TextCNN_Colab/dataset.csv' (Same dataset as [Dataset Overview](#dataset-overview-datasetcsv))
 - Run all cells to perform the parameter analysis to get the best DP setting to compare with Non DP baseline.
 
