@@ -498,38 +498,38 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
 
   
     #### Hyperparameter Tuning Modules  
-    **Files:**  
-    `strong_vs_moments_accountant.py`, `analyze_noise.py`, `analyze_clip.py`, `analyze_miscellanous_params.py`, `param_sweep.py`
-
-    - **strong_vs_moments_accountant.py** – We wrote the core code to compare Moments Accountant vs Strong Composition; ChatGPT helped me verify how Opacus tracks ε and δ internally and guided smoothing of ε-vs-epoch plots using `make_interp_spline()`.  
-    - **analyze_noise.py** – We implemented the noise sweep logic; AI helped me cleanly organize parameter loops, fix matplotlib scaling issues, and format accuracy plots.  
-    - **analyze_clip.py** – We wrote code to compute and visualize gradient norms; ChatGPT helped fix NaN gradient errors and suggested how to annotate the median clipping norm and peak accuracy on the plot.  
-    - **analyze_miscellanous_params.py** – We built a generic script to sweep hidden size, learning rate, and lot size; ChatGPT helped add argument parsing (`--sweep`, `--smooth`) and made the sweep results modular.  
-    - **param_sweep.py** – We wrote a grid search to combine clipping and noise sweeps; AI helped refactor loops for clarity and manage artifact outputs consistently.
+      ##### **Files:**  
+      `strong_vs_moments_accountant.py`, `analyze_noise.py`, `analyze_clip.py`, `analyze_miscellanous_params.py`, `param_sweep.py`
+  
+      - **strong_vs_moments_accountant.py** – We wrote the core code to compare Moments Accountant vs Strong Composition; ChatGPT helped me verify how Opacus tracks ε and δ internally and guided smoothing of ε-vs-epoch plots using `make_interp_spline()`.  
+      - **analyze_noise.py** – We implemented the noise sweep logic; AI helped me cleanly organize parameter loops, fix matplotlib scaling issues, and format accuracy plots.  
+      - **analyze_clip.py** – We wrote code to compute and visualize gradient norms; ChatGPT helped fix NaN gradient errors and suggested how to annotate the median clipping norm and peak accuracy on the plot.  
+      - **analyze_miscellanous_params.py** – We built a generic script to sweep hidden size, learning rate, and lot size; ChatGPT helped add argument parsing (`--sweep`, `--smooth`) and made the sweep results modular.  
+      - **param_sweep.py** – We wrote a grid search to combine clipping and noise sweeps; AI helped refactor loops for clarity and manage artifact outputs consistently.
 
     ####  Baseline vs Best DP Model Training  
-    **Files:**  
-    `train_dp_model.py` (includes delta sensitivity experiment)
-
-    **What we did:**  
-    We implemented the baseline vs DP model training pipeline using Opacus. This included exploring the privacy engine, tracking ε and δ over epochs, and plotting accuracy curves. We also added a secondary delta sensitivity experiment to visualize how δ values affect ε and accuracy.
-
-    **How AI helped:**  
-    - Enhanced my pipeline function in properly reinitializing the optimizer after calling `PrivacyEngine.make_private()` to avoid stale state issues.  
-    - Helped debug tensor shape mismatches and loss calculation errors.  
-    - For the delta sensitivity experiment, ChatGPT helped me structure the δ-sweep loop and store (ε, accuracy) pairs per epoch, confirming expected trends (higher δ → smaller ε and slightly better accuracy).
+      ##### **Files:**  
+      `train_dp_model.py` (includes delta sensitivity experiment)
+  
+      ##### **What we did:**  
+      We implemented the baseline vs DP model training pipeline using Opacus. This included exploring the privacy engine, tracking ε and δ over epochs, and plotting accuracy curves. We also added a secondary delta sensitivity experiment to visualize how δ values affect ε and accuracy.
+  
+      ##### **How AI helped:**  
+      - Enhanced my pipeline function in properly reinitializing the optimizer after calling `PrivacyEngine.make_private()` to avoid stale state issues.  
+      - Helped debug tensor shape mismatches and loss calculation errors.  
+      - For the delta sensitivity experiment, ChatGPT helped me structure the δ-sweep loop and store (ε, accuracy) pairs per epoch, confirming expected trends (higher δ → smaller ε and slightly better accuracy).
 
     #### Membership Inference Attack (MIA)  
-    **Files:**  
-    `Threshold_MIA_Colab/MIA_Attack_Threshold.ipynb`, `Loss-threshold-attack/loss_threshold_attack.py`, `dp_train.py`, `post_dp_attack.py`
-
-    **What we did:**  
-    We implemented the threshold-based and loss-threshold membership inference attacks to evaluate privacy leakage.   The first notebook focused on ROC-based threshold attacks, and the second directory handled pre- and post-DP comparison using Yeom’s loss threshold method.
-
-    **How AI helped:**  
-    - For **MIA_Attack_Threshold.ipynb**, ChatGPT helped structure the ROC/AUC pipeline using `sklearn.metrics`, fix axis labeling, and improve figure readability.  
-    - For **loss_threshold_attack.py**, TODO: Aarti
-    - For **dp_train.py** and **post_dp_attack.py**, TODO: Aarti
+      ##### **Files:**  
+      `Threshold_MIA_Colab/MIA_Attack_Threshold.ipynb`, `Loss-threshold-attack/loss_threshold_attack.py`, `dp_train.py`, `post_dp_attack.py`
+  
+      ##### **What we did:**  
+      We implemented the threshold-based and loss-threshold membership inference attacks to evaluate privacy leakage.   The first notebook focused on ROC-based threshold attacks, and the second directory handled pre- and post-DP comparison using Yeom’s loss threshold method.
+  
+      ##### **How AI helped:**  
+      - For **MIA_Attack_Threshold.ipynb**, ChatGPT helped structure the ROC/AUC pipeline using `sklearn.metrics`, fix axis labeling, and improve figure readability.  
+      - For **loss_threshold_attack.py**, TODO: Aarti
+      - For **dp_train.py** and **post_dp_attack.py**, TODO: Aarti
 
 
 
