@@ -15,6 +15,32 @@ This report presents a comprehensive analysis of differential privacy (DP) techn
 ---
 </div>
 
+## Quick Navigation
+
+- [Executive Summary](#executive-summary)
+- [1. Dataset Description](#1-dataset-description)
+  - [1.1 Dataset Overview](#11-dataset-overview)
+  - [1.2 Data Quality Considerations](#12-data-quality-considerations)
+- [2. Model Architecture](#2-model-architecture)
+  - [2.1 Base Model Design](#21-base-model-design)
+  - [2.2 Model Variants](#22-model-variants)
+- [3. Differential Privacy Implementation](#3-differential-privacy-implementation)
+  - [Module 1: Hyperparameter Tuning](#module-1-hyperparameter-tuning)
+  - [Module 2: Baseline vs DP - Model Analysis and Utility Tradeoff](#module-2-baseline-vs-dp---model-analysis-and-utility-tradeoff)
+  - [Module 3: Small Grid Sweep](#module-3small-grid-sweep-c--05-10--σ--05-10-20)
+- [4. Membership Inference Attack and Privacy–Utility Trade-off](#4-membership-interference-attack-and-privacyutility-trade-off-extra-credit-1)
+- [5. Additional Analytics (Extra Credit #2)](#5-additional-analytics-to-understand-differential-privacy-extra-credit-2)
+  - [Strong Composition vs Moments Accountant](#strong-composition-vs-moments-accountant)
+  - [Delta-Sensitivity Graph](#delta-sensitivity-graph)
+- [6. Differential Privacy on TextCNN (Extra Credit #3)](#6-exploring-the-effects-of-implementing-differential-privacy-on-textcnn-extra-credit-3)
+- [7. Key Findings and Insights](#7-key-findings-and-insights)
+- [8. Limitations and Future Work](#8-limitations-and-future-work)
+- [9. Conclusions](#9-conclusions)
+- [Supplementary Section](#supplementary-section)
+  - [A: Membership-Inference: Yeom Loss-Threshold Attack](#a-membership-inference-yeom-loss-threshold-attack)
+  - [B: Assignment Requirements — Verification & Results](#b-assignment-requirements--verification--results)
+
+
 ## 1. Dataset Description
 
 ### 1.1 Dataset Overview
