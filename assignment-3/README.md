@@ -85,6 +85,7 @@ code/
 ---
 
 ## Setting Up the Conda Environment and Run the code
+### NOTE: Please stay in the root directory of this project, all paths are set for your convinence to run from the root itself.
 
 To create the conda environment and install all dependencies for this assignment:
 
