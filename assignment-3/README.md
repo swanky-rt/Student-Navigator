@@ -55,7 +55,7 @@ MIA ATTACK:
 - ```Loss-threshold-attack/``` <br/>
 
 We also testing a new model (more complex model) so see how it has affect on privacy:
-- ```test```
+- ```TextCNN_Colab/  ```
 
 
 #### Folder Structure
