@@ -198,7 +198,7 @@ The test accuracy curves (see figure) show that all models converge to similar f
 | **My Tuned Model (C = 0.17, σ = 1.5)** |        **0.8150** |        **2.53** |          **−0.5%** |               **−70.7%** |
 
 
-This demonstrates that dataset-specific tuning of both privacy and model parameters can substantially improve the privacy–utility trade-off, outperforming general default settings from the parameter sweep. I still stand with my original analysis that my best DP setting is:
+This demonstrates that tuning of both privacy and model parameters can substantially improve the privacy–utility trade-off, outperforming general default settings from the parameter sweep. I still stand with my original analysis that my best DP setting is:
 |   **Hyperparameter** | **Best Value** |
 | -------------------: | -------------: |
 |         Hidden Units |            128 |
