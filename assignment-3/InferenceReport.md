@@ -30,7 +30,7 @@ This report presents a comprehensive analysis of differential privacy (DP) techn
   - [Module 1: Hyperparameter Tuning](#module-1-hyperparameter-tuning)
   - [Module 2: Baseline vs DP - Model Analysis and Utility Tradeoff](#module-2-baseline-vs-dp---model-analysis-and-utility-tradeoff)
   - [Module 3: Small Grid Sweep](#module-3small-grid-sweep-c--05-10--σ--05-10-20)
-- [4. Membership Inference Attack and Privacy–Utility Trade-off](#4-membership-interference-attack-and-privacyutility-trade-off-extra-credit-1)
+- [4. Membership Inference Attack and Privacy–Utility Trade-off (Extra Credit #1)](#4-membership-interference-attack-and-privacyutility-trade-off-extra-credit-1)
 - [5. Additional Analytics (Extra Credit #2)](#5-additional-analytics-to-understand-differential-privacy-extra-credit-2)
   - [Strong Composition vs Moments Accountant](#strong-composition-vs-moments-accountant)
   - [Delta-Sensitivity Graph](#delta-sensitivity-graph)
