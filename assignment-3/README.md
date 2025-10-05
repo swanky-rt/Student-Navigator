@@ -134,18 +134,17 @@ It helps visualize how the privacy budget **ε (epsilon)** grows across training
 - Serve as a reference plot for how important Moments Accountant is.
 
 ---
-#### Settings
+#### Settings and Design Choice Reasoning
 
-- **Model**: 2-layer feedforward NN with ReLU, hidden size = 128  
-- **Features**: TF-IDF vectors from job descriptions (`max_features=258`)  
 - **Optimizer**: SGD, lr=0.05  
 - **Lot Size**: √N.  
   - Following literature (Abadi et al., Opacus examples), using lot size ~√N balances privacy and utility.  
 - **Noise multiplier (σ)**: 1.0  
+  - (A moderate noise level providing noticeable privacy effects while maintaining model learnability.)
 - **Clipping Norm (C)**: 1.0.  
-  - Standard practice, keeps gradients bounded without over-clipping. 
+  - (A standard clipping norm to prevent gradient explosions while not overly clipping small gradients.)
 - **Delta (δ)**: 1/N  
-- **Optimizer**: SGD, `lr=0.1`.   
+  - (Standard value recommended for DP analyses, meaning a 1-in-N chance of privacy failure.)
 
 ---
 #### Inputs & Outputs
@@ -175,21 +174,18 @@ It runs multiple DP models with varying σ values and compares their test accura
 - Provide intuition for choosing the right noise multiplier in practice.  
 
 ---
-
-#### Settings
+#### Settings and Design Choice Reasoning
   
-- **Features**: TF-IDF (`max_features=258`, bigrams included).  
-- **Model**: 2-layer feedforward NN with hidden size 128.  
 - **Lot Size**: √N.  
-  - Following literature (Abadi et al., Opacus examples), using lot size ~√N balances privacy and utility.  
+  - (Following Abadi et al., √N offers a balance between privacy and learning stability — smaller lots increase noise, larger ones reduce privacy.)  
 - **Epochs**: N / Lot Size.  
-  - Ensures each record is expected to be seen about once.  
+  - (Ensures each sample is seen about once, aligning privacy accounting with true data exposure.)  
 - **Clipping Norm (C)**: 1.0.  
-  - Standard practice, keeps gradients bounded without over-clipping.  
+  - (Standard choice that prevents gradient explosion while retaining learning signal; avoids over-clipping small gradients.)  
 - **Noise Grid**: `[0.1, 0.5, 1, 2, 3, 4, 5]`.  
-  - Covers low → high noise regimes, to visualize the accuracy dropoff.  
+  - (Covers a full privacy–utility spectrum from low to high noise; helps visualize where model performance degrades.)  
 - **Delta (δ)**: 1/N.  
-  - Widely used setting for DP guarantees.
+  - (Standard DP constant, meaning at most a 1-in-N probability of violating privacy guarantees.)  
 
 ---
 
@@ -222,14 +218,16 @@ This module evaluates how the **gradient clipping norm (C)** affects the perform
 
 ---
 
-#### Settings
+#### Settings and Design Choice Reasoning
   
 - **Features**: TF-IDF (`max_features=258`, bigrams included).  
 - **Model**: 2-layer feedforward NN with hidden size 128.  
 - **Lot Size**: √N.  
   - Following literature (Abadi et al., Opacus examples), using lot size ~√N balances privacy and utility.  
 - **Epochs**: N / Lot Size.  
+  - (Ensures each sample is seen about once, aligning privacy accounting with true data exposure.)  
 - **Noise Multiplier (σ)**: 1.0.  
+  - (A moderate noise level providing noticeable privacy effects while maintaining model learnability.)
 - **Clipping Grid**: `[0.5×, ..., 2×]` estimated median grad norm (8 values).  
   - Median is estimated from the training data and snapped to the nearest tested value for annotation.  
 - **Delta (δ)**: 1/N.  
@@ -268,15 +266,21 @@ So after I analyzed how clipping norm and noise multiplier affected my DP model,
 
 ---
 
-#### Settings
-After running all the above code I was able to finalize the best clipping norm and noise multiplier.
-- **Features**: TF-IDF (`max_features=258`, bigrams included).
-- **Model**: 2-layer feedforward NN with hidden size (swept or fixed).
-- **Lot Size**: swept or fixed.
-- **Learning Rate**: swept or fixed.
-- **Clipping Norm (C)**: 0.17 (default - best value from previous analysis).
-- **Noise Multiplier (σ)**: 1.5 (default - best value from previous analysis).
-- **Delta (δ)**: 1/N.
+#### Settings and Design Choice Reasoning  
+After running all the above experiments, the following configuration was chosen as the most balanced in terms of privacy and accuracy:
+
+- **Features**: TF-IDF (`max_features=258`, bigrams included).  
+- **Model**: 2-layer feedforward NN with hidden size (swept or fixed).  
+  - (Kept small to minimize parameter noise amplification under DP; 2 layers offer enough non-linearity without excessive complexity.)  
+- **Lot Size**: swept or fixed.  
+  - (Explored to study the trade-off between gradient averaging stability and privacy noise — smaller lots give higher noise, larger ones risk privacy loss.)  
+- **Learning Rate**: swept or fixed.  
+  - (Tuned to maintain convergence across DP and non-DP runs; too high causes noise amplification, too low stalls learning.)  
+- **Delta (δ)**: 1/N.  
+  - (Used as standard practice to represent an acceptably small privacy failure probability per individual in the dataset.)  
+- **Clipping Norm (C)**: 0.17 (default - best value from previous analysis).  
+- **Noise Multiplier (σ)**: 1.5 (default - best value from previous analysis).  
+
 
 ---
 
@@ -321,7 +325,7 @@ python assignment-3/code/Hyperparam_Tuning/param_sweep.py
 
 The main training comparison is located in `code/Main_Baseline_Vs_BestDP/`.
 
-### Baseline vs DP Training: train_dp_model.py
+### 1. Baseline vs DP Training: train_dp_model.py
 
 This module compares the training and test accuracy of a non-private (baseline) model and a differentially private (DP-SGD) model on the job role classification task. It supports flexible privacy settings via command-line arguments.
 
@@ -335,7 +339,7 @@ This module compares the training and test accuracy of a non-private (baseline) 
 
 ---
 
-#### Settings (Best Params)
+#### Settings (Best Params) and Design Choice Reasoning  
 After all the hyperparam analysis I have gotten these values below which works best on my dataset and DP setting.
 - **Features**: TF-IDF (`max_features=258`, bigrams included).
 - **Model**: 2-layer feedforward NN with hidden size 128.
@@ -345,6 +349,8 @@ After all the hyperparam analysis I have gotten these values below which works b
 - **Noise Multiplier (σ)**: 1.5 (default value- best from tuning) configurable via `--sigma` argument.
 - **Delta (δ)**: configurable via `--target_delta` argument (default: 1/N).
 - **Epsilon (ε)**: configurable via `--target_eps` argument (optional).
+
+***The choice of design was derived from previous analysis***
 
 ---
 
@@ -373,7 +379,7 @@ python assignment-3/code/Main_Baseline_Vs_BestDP/train_dp_model.py --target_delt
 
 ---
 
-### Delta Sensitivity Plot — Integrated in train_dp_model.py
+### 2. Delta Sensitivity Plot - Integrated in train_dp_model.py
 After training the Baseline and Differentially Private models, we also conducted a Delta Sensitivity experiment inside the same script (train_dp_model.py) to visualize how varying δ values affect the privacy–utility trade-off while keeping the noise multiplier (σ) fixed.
 
 ---
@@ -385,12 +391,16 @@ After training the Baseline and Differentially Private models, we also conducted
   
 ___
 
-#### Implementation Details
+#### Design Choice and Implementation Details  
 
-- Implemented within the main() function of train_dp_model.py.
-- Uses the same trained model architecture and hyperparameters as the baseline–DP comparison.
-- For each δ in {1/N, 1e-3, 5e-4, 1e-4, 5e-5}, the function train_dp_for_delta() retrains a DP model using the same σ = 1.5, C = 0.17, and Lot Size = 60.
-- At every epoch, it records the (ε, test accuracy) pair and saves them for plotting.
+- **Implementation Location**: Integrated inside the `main()` function of `train_dp_model.py`.  
+  - (Keeping it within the main script ensures the δ-sensitivity test runs on the same data and model setup, providing consistent comparison.)  
+- **Model and Parameters**: Reuses the same MLP architecture and tuned hyperparameters from the Baseline–DP comparison.  
+  - (Ensures that the only variable factor is δ, isolating its direct effect on privacy and accuracy.)  
+- **Delta Sweep**: Evaluated for δ ∈ {1/N, 1e-3, 5e-4, 1e-4, 5e-5}.  
+  - (Chosen range covers both theoretical (1/N) and practical (1e−3–1e−5) DP regimes, helping visualize how sensitive ε–accuracy is to δ.)  
+- **Fixed Parameters**: σ = 1.5, C = 0.17, Lot Size = 60.  
+  - (These values were selected from prior tuning as the most balanced for stability and strong privacy.)  
 
 #### Outputs (Saved under artifacts/)
 
@@ -402,7 +412,7 @@ ___
 
 ## MIA Modules:
 
-The Membership Inference Attack analysis is located in `code/Threshold_MIA_Colab/`.
+The Membership Inference Attack analysis is located in `code/Threshold_MIA_Colab/`. The MIA attack is done on our best DP setting model and ***has same design choices as mentioned above for ```train_dp_model.py```.***
 
 ### 1. Threshold-based MIA: MIA_Attack_Threshold.ipynb
 
@@ -487,4 +497,98 @@ yields AUC ≈ 0.814, showing clear leakage consistent with overfitting. With DP
 near random guessing, which further indicates that DP mitigates membership leakage.
 
 ---
+
+## LLM Usage and References
+
+### How We Used LLMs
+
+We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of this assignment **for support, not substitution**.  Our focus was on learning differential privacy concepts deeply and only use the LLM to accelerate repetitive or mechanical parts of coding and for errors.
+
+- **Code Assistance and Debugging**
+  - Asked clarifying questions about how Opacus tracks ε and δ internally via the Moments Accountant API. Used the model to debug errors related to tensor shape mismatches and optimizer re-initialization when using `PrivacyEngine.make_private()`. Occasionally requested help optimizing Matplotlib code for comparing privacy curves.
+
+  
+    #### Hyperparameter Tuning Modules  
+    **Files:**  
+    `strong_vs_moments_accountant.py`, `analyze_noise.py`, `analyze_clip.py`, `analyze_miscellanous_params.py`, `param_sweep.py`
+
+    - **strong_vs_moments_accountant.py** – We wrote the core code to compare Moments Accountant vs Strong Composition; ChatGPT helped me verify how Opacus tracks ε and δ internally and guided smoothing of ε-vs-epoch plots using `make_interp_spline()`.  
+    - **analyze_noise.py** – We implemented the noise sweep logic; AI helped me cleanly organize parameter loops, fix matplotlib scaling issues, and format accuracy plots.  
+    - **analyze_clip.py** – We wrote code to compute and visualize gradient norms; ChatGPT helped fix NaN gradient errors and suggested how to annotate the median clipping norm and peak accuracy on the plot.  
+    - **analyze_miscellanous_params.py** – We built a generic script to sweep hidden size, learning rate, and lot size; ChatGPT helped add argument parsing (`--sweep`, `--smooth`) and made the sweep results modular.  
+    - **param_sweep.py** – We wrote a grid search to combine clipping and noise sweeps; AI helped refactor loops for clarity and manage artifact outputs consistently.
+
+    ####  Baseline vs Best DP Model Training  
+    **Files:**  
+    `train_dp_model.py` (includes delta sensitivity experiment)
+
+    **What we did:**  
+    We implemented the baseline vs DP model training pipeline using Opacus. This included exploring the privacy engine, tracking ε and δ over epochs, and plotting accuracy curves. We also added a secondary delta sensitivity experiment to visualize how δ values affect ε and accuracy.
+
+    **How AI helped:**  
+    - Enhanced my pipeline function in properly reinitializing the optimizer after calling `PrivacyEngine.make_private()` to avoid stale state issues.  
+    - Helped debug tensor shape mismatches and loss calculation errors.  
+    - For the delta sensitivity experiment, ChatGPT helped me structure the δ-sweep loop and store (ε, accuracy) pairs per epoch, confirming expected trends (higher δ → smaller ε and slightly better accuracy).
+
+    #### Membership Inference Attack (MIA)  
+    **Files:**  
+    `Threshold_MIA_Colab/MIA_Attack_Threshold.ipynb`, `Loss-threshold-attack/loss_threshold_attack.py`, `dp_train.py`, `post_dp_attack.py`
+
+    **What we did:**  
+    We implemented the threshold-based and loss-threshold membership inference attacks to evaluate privacy leakage.   The first notebook focused on ROC-based threshold attacks, and the second directory handled pre- and post-DP comparison using Yeom’s loss threshold method.
+
+    **How AI helped:**  
+    - For **MIA_Attack_Threshold.ipynb**, ChatGPT helped structure the ROC/AUC pipeline using `sklearn.metrics`, fix axis labeling, and improve figure readability.  
+    - For **loss_threshold_attack.py**, TODO: Aarti
+    - For **dp_train.py** and **post_dp_attack.py**, TODO: Aarti
+
+
+
+- **Mathematical and Conceptual Guidance**
+  - Queried ChatGPT to confirm the formulas for explaining the mathematical theorems in the paper and basically helping me learn the paper, ensuring we didn’t misinterpret theoretical claims.
+  - Asked for comparisons between *Strong Composition* and *Moments Accountant* in simple words to confirm understanding.
+  - Verified that our epsilon-delta accounting matched the equations from Abadi et al. (2016).
+
+- **Report Writing and Explanations**
+  - Used LLMs to refine language and structure for explanations and convert rough notes into polished Markdown.
+  - Generated section skeletons for the README (Folder Structure).
+  - Asked the model to help structure our *InferenceReport.md* into Results → Discussion → Takeaways format.
+
+
+- **Visualization and Presentation**
+  - Used ChatGPT to generate ROC curve, accuracy-vs-noise, and epsilon-vs-epoch plotting snippets with proper legends and styles.
+  - Modified these boilerplate plot templates ourselves to match our datasets and naming conventions.
+
+---
+
+### What We Referenced From Papers
+
+- From *Deep Learning with Differential Privacy* — Abadi et al. (2016):  
+  - Used their DP-SGD foundation, clipping, and noise calibration methodology.  
+  - Adopted their idea of using lot size ≈ √N to balance convergence and privacy.
+
+- From *Privacy Risk in Machine Learning* — Yeom et al. (2018):  
+  - Reproduced the loss-threshold MIA attack concept where lower per-example loss correlates with membership.
+
+- From *Membership Inference Attacks From First Principles* — Carlini et al. (2022):  
+  - Understood the evaluation of MIAs using TPR at low FPR thresholds (≤0.1%).  
+  - Reinforced our evaluation approach using ROC–AUC for both baseline and DP-trained models.
+
+---
+
+### What We Did Ourselves
+
+- Wrote all training, evaluation, and DP integration code from scratch in Python + PyTorch. Implemented baseline and DP models independently, including TF-IDF preprocessing, model setup, and accuracy tracking.
+- Designed and ran all **hyperparameter tuning** experiments (σ, C, lot size, learning rate, δ sensitivity).
+- Collected real experimental results (accuracy, ε per epoch) and generated all plots manually.
+- Implemented our own per-example loss extraction for MIA analysis and used it in both baseline and DP models.
+- Built the **Loss-Threshold Attack** pipeline and ran before/after-DP comparisons.
+- Wrote all explanations, discussions, and interpretations for **InferenceReport.md** manually. Structured this **README.md** and finalized plots, charts, and results presentation.
+- Structure PyTorch + Opacus training loops, batch handling, and gradient clipping setup. Plotted results (ROC curves, TPR/FPR tables), analyzed vulnerabilities.
+- Built the presentation + report. Added detailed comments, describing the design choices, inference reports, and how each implementation step connects to the overall project.
+
+---
+
+
+
 
