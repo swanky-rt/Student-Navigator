@@ -40,7 +40,7 @@ This report presents a comprehensive analysis of differential privacy (DP) techn
 - [9. Conclusions](#9-conclusions)
 - [Supplementary Section](#supplementary-section)
   - [A: Membership-Inference: Yeom Loss-Threshold Attack](#a-membership-inference-yeom-loss-threshold-attack)
-  - [B: Assignment Requirements — Verification & Results](#b-assignment-requirements--verification--results)
+  - [B: Assignment Requirements](#b-assignment-requirements--verification--results)
 
 
 ## 1. Dataset Description
@@ -438,7 +438,7 @@ This study demonstrates that differential privacy can provide meaningful protect
   yields AUC ≈ 0.814, showing clear leakage consistent with overfitting. With DP training, AUC drops to ≈ 0.513, 
   near random guessing, which further indicates that DP mitigates membership leakage.
 
-### B: Assignment Requirements — Verification & Results
+### B: Assignment Requirements
 This section demonstrates how our submission fulfills each requirement for **DP-SGD implementation, experimentation, and reporting** using references to both the [`README.md`](./README.md) and the [`InferenceReport.md`](./InferenceReport.md).
 
 #### DP-SGD Implementation (Per-example Clipping + Gaussian Noise)
