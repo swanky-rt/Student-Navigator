@@ -572,7 +572,7 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
 
 
     #### TextCNN Module
-      ##### **Files:**   
+      ##### **Files:**   ```TextCNN_Colab/dp_textcnn_experiments.ipynb```
       ##### **What we did?**
       We integrated the Opacus library to this model and analysed effect of differential privacy on a TextCNN model ourselves. We also implemented the small grid sweep.
       ##### **How AI helped?**
