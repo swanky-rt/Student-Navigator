@@ -514,7 +514,7 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
       ##### **How AI helped:**  
       - Enhanced my pipeline function in properly reinitializing the optimizer after calling `PrivacyEngine.make_private()` to avoid stale state issues.  
       - Helped debug tensor shape mismatches and loss calculation errors.  
-      - For the delta sensitivity experiment, ChatGPT helped me structure the δ-sweep loop and store (ε, accuracy) pairs per epoch, confirming expected trends (higher δ → smaller ε and slightly better accuracy).
+      - For the delta sensitivity experiment, ChatGPT helped me structure the δ-sweep loop and store (ε, accuracy) pairs per epoch.
 
     #### Membership Inference Attack (MIA)  
       ##### **Files:**  
@@ -526,7 +526,7 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
       ##### **How AI helped:**  
       - For **MIA_Attack_Threshold.ipynb**, ChatGPT helped structure the ROC/AUC pipeline using `sklearn.metrics`, fix axis labeling, and improve figure readability.  
       - For **loss_threshold_attack.py**, * ChatGPT Clarified Yeom loss-threshold MIA: use per-example cross-entropy as the signal, lower loss means more member-like. It also helped me to understand the score definition used in code: score = -NLL(y_true) so that higher = member-like which is matching ROC conventions
-      - For **dp_train.py** and **post_dp_attack.py**, * ChatGPT helped me to score the labels to compare pre and post attack i.e. post_loss_threshold_attack_scores_labels and helped me to plot the conventions for the comparisons. It also helped me to understand the evaluation flow. At different points it helped me to fix the AUC values for tuning the hyper parameters.
+      - For **dp_train.py** and **post_dp_attack.py**, * ChatGPT helped me to score the labels to compare pre and post attack i.e. post_loss_threshold_attack_scores_labels and helped me to plot the conventions for the comparisons. It also helped me to understand the evaluation flow.
 
 - **Mathematical and Conceptual Guidance**
   - Queried ChatGPT to confirm the formulas for explaining the mathematical theorems in the paper and basically helping me learn the paper, ensuring we didn’t misinterpret theoretical claims.
