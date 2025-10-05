@@ -575,6 +575,15 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
 
 ---
 
+## References
+
+- *Deep Learning with Differential Privacy* - Abadi et al. (2016) [https://arxiv.org/abs/1607.00133](https://arxiv.org/abs/1607.00133)
+
+- *Privacy Risk in Machine Learning: Analyzing the Connection to Overfitting* - Yeom et al. (2018) [https://arxiv.org/abs/1709.01604](https://arxiv.org/abs/1709.01604)
+
+- *Membership Inference Attacks From First Principles* - Carlini et al. (2022) [https://arxiv.org/abs/2112.03570](https://arxiv.org/abs/2112.03570)
+
+
 
 
 
