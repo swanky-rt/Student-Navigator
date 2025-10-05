@@ -222,10 +222,7 @@ I implemnted the MIA attack on the DP model from my best settings and these were
 </p>
 
 
-| **Configuration** | **Test Accuracy** | **Privacy Budget (ε)** | **MIA AUC** |                     **Privacy Gain** |                                                     **Utility–Privacy Trade-off** |
-| ----------------- | ----------------: | ---------------------: | ----------: | -----------------------------------: | --------------------------------------------------------------------------------: |
-| **Baseline**      |             84.0% |         ∞ (No privacy) |   **0.812** |                                    – |                                            High utility, **no privacy guarantee** |
-| **DP (σ = 1.5)**  |             81.5% |               **2.53** |   **0.632** | **+22% reduction in attack success** | Small accuracy drop (**−2.5%**) for **strong privacy guarantee (finite ε vs. ∞)** |
+| **Configuration** | **Test Accuracy** | **Privacy Budget (ε)** | **MIA AUC** |                     **Privacy Gain** |                                                     x
 
 The privacy–utility trade-off observed in this above table highlights how differential privacy can effectively protect sensitive information with only a minimal impact on model performance. The DP-SGD model achieved a test accuracy of 81.5%, compared to 84% for the baseline, demonstrating that enforcing privacy led to just a ~2.5% drop in utility. At the same time, the privacy budget improved dramatically, from no protection (ε = ∞) in the baseline to a strongly private ε = 2.53, while the MIA AUC decreased from 0.812 to 0.632, indicating a significant reduction in an attacker’s ability to infer training membership. The injected Gaussian noise and gradient clipping acted as implicit regularizers, reducing overfitting and improving generalization. This demonstrates that although the trade-off cannot be completely eliminated, it can be strategically managed to extract the best possible balance between model utility and data privacy.
 
@@ -281,8 +278,63 @@ This was a heavier model and it took a lot of time and computation to run, so we
 
 The following 3D landscape shows how different combinations of clipping norm (C) and noise multiplier (σ) affect model accuracy and privacy ε. Each point represents a trained model configuration. We are trying to tune our privacy parameters to achieve best accuracy-privacy balance:
 
+<p align="center"> 
+ <img src="/assignment-3/artifacts/TextCNN_3D_Landscape.png" width="500" height="600"> <br/>
+  Figure: 3D Landscape portraying the acc and epsilon budget for each model varied by C and σ
+</p>
 
 
+| Clip Norm (C) | Noise Multiplier (σ) |   Accuracy | Epsilon (ε) |
+| ------------: | -------------------: | ---------: | ----------: |
+|           0.5 |                  0.5 |     0.8238 |       26.56 |
+|           1.0 |                  0.5 |     0.8300 |       26.56 |
+|           0.5 |                  1.0 |     0.7950 |        4.11 |
+|           1.0 |                  1.0 |     0.7850 |        4.11 |
+|           0.5 |                  2.0 |     0.6663 |        1.38 |
+|           1.0 |                  2.0 |     0.6313 |        1.38 |
+
+From the above table, we want to find a good balance of utility degradation to increase in epsilon privacy budget:
+
+| Range                                  | What happens                                   | Explanation                                                                                                                                                                                       |
+| -------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **σ = 0.5 (low noise, high ε ≈ 26.6)** | High accuracy (0.82–0.83) but weak privacy   | A low noise multiplier means less randomization added to gradients → better model learning → higher accuracy. But the corresponding ε is large (≈ 26), meaning weaker privacy guarantees.         |
+| **σ = 1.0 (medium noise, ε ≈ 4.1)**    | Balanced performance (0.78–0.80)            | This level adds enough noise to meaningfully improve privacy (ε ≈ 4 → good DP guarantee) while still maintaining decent accuracy. This is often considered the *sweet spot* for practical DP-SGD. |
+| **σ = 2.0 (high noise, ε ≈ 1.4)**      | Strong privacy but poor accuracy (0.63–0.67) | Large noise dominates the gradient updates, harming learning. You gain strong DP guarantees (small ε ≈ 1.4 → very private) but at a major cost to utility.    
+
+So the best DP setting for us was:
+| Parameter                | Value   | Justification                                                                                          |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------------------------ |
+| **Clip Norm (C)**        | **0.5** | Provides sufficient gradient control without degrading learning. Keeps noise scaling stable.           |
+| **Noise Multiplier (σ)** | **1.0** | Strikes a solid balance between acceptable accuracy (~79–80%) and good privacy (ε ≈ 4).                |
+| **ε(δ)**                 | ≈ 4.1   | A practical level of differential privacy, commonly cited in research papers as a good privacy budget. 
+
+We now compared the best DP setting to the baseline model to see how the Test accuracy curve looks for 35 epochs:
+
+<p align="center"> 
+ <img src="/assignment-3/artifacts/TextCNN_baseline_vs_DP.png" width="500" height="600"> <br/>
+  Figure: Test Accuracy vs Epoch: Baseline Non DP Vs Best DP setting - TextCNN 
+</p>
+
+Utility Privacy Tradeoff:
+| Model Type           | Test Accuracy | ε (Epsilon) | δ (Delta) | Privacy Level |
+|----------------------|---------------|--------------|------------|----------------|
+| **Baseline (Non-DP)** | 0.8420        | ∞            | 0          | No privacy (unbounded) |
+| **DP-SGD Model**      | 0.7875        | 4.106        | 1 / N ≈ 0.00025 | Strong privacy guarantee |
+
+Comparing with our original MLP model:
+### 🧩 Comparison of Utility–Privacy Trade-offs (TextCNN vs MLP)
+
+| **Model Type** | **Architecture** | **Test Accuracy (Baseline)** | **Test Accuracy (DP)** | **ε (Epsilon)** | **δ (Delta)** | **Privacy Level** | **Observation** |
+|----------------|------------------|------------------------------:|-----------------------:|----------------:|---------------:|------------------:|-----------------|
+| **MLP** | 2-layer, 128 hidden units, TF-IDF (bigrams) | 84.0% | **81.5%** | **2.53** | 1 / N ≈ 0.00025 | Strong privacy guarantee | Minimal accuracy loss (**−2.5%**) for strong privacy; performs best overall due to simpler model and synthetic data. |
+| **TextCNN** | Embedding + Conv(3,4,5) + Global Pool + FC | 84.2% | **78.8%** | **4.11** | 1 / N ≈ 0.00025 | Moderate privacy guarantee | Slightly larger accuracy drop; higher ε due to more parameters amplifying DP noise. |
+
+
+The **MLP model** provides a **better utility–privacy balance** with achieving higher accuracy and a lower privacy budget (ε) compared to TextCNN.  What we understand from this is that that for simpler, synthetic datasets, **lightweight models like MLP** handle DP-SGD noise more effectively than deeper architectures. 
+
+
+### Key Takeaway from implementing TextCNN:
+Like how with the dataset domain (Image, text, voice) one must tune parameters, a different model architecture also demands proper hyperparam tuning.
 
 
 ---
