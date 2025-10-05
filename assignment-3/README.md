@@ -552,7 +552,7 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
 ---
 
 ### What We Did Ourselves
-
+- All the design choices and expermental setup was done by the the Lead and the team.
 - Wrote all training, evaluation, and DP integration code from scratch in Python + PyTorch. Implemented baseline and DP models independently, including TF-IDF preprocessing, model setup, and accuracy tracking.
 - Designed and ran all **hyperparameter tuning** experiments (σ, C, lot size, learning rate, δ sensitivity).
 - Collected real experimental results (accuracy, ε per epoch) and generated all plots manually.
