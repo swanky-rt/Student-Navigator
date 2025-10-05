@@ -1,8 +1,10 @@
+<div align="center">
+
 # Inference Report: EduPilot - Analysis of Differential Privacy Techniques on Balanced Synthetic Job Data  
 
-**Author:** Swetha Saseendran  
-**Date:** October 2025  
-**Course:** CS 690F - Theory of Cryptography  
+```Author: Swetha Saseendran```<br>
+**Date:** 5th October 2025  <br>
+**Course:** CS 690F - Trustworthy and Responsible AI
 
 ---
 
@@ -11,6 +13,7 @@
 This report presents a comprehensive analysis of differential privacy (DP) techniques applied to neural network models for job role classification. The study investigates the privacy-utility tradeoff using DP-SGD (Differentially Private Stochastic Gradient Descent) and evaluates privacy leakage through membership inference attacks (MIA). Our findings demonstrate that properly tuned DP-SGD can significantly reduce privacy vulnerabilities while maintaining reasonable model utility.
 
 ---
+</div>
 
 ## 1. Dataset Description
 
