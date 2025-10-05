@@ -1,0 +1,40 @@
+{
+  "baseline_best_acc": 0.82875,
+  "dp_best_acc": 0.81875,
+  "dp_best_eps": 26.350565184986216,
+  "label_classes": [
+    "Data Scientist",
+    "Product Manager",
+    "Software Engineer",
+    "UX Designer"
+  ],
+  "vocab_size": 171,
+  "best_params": {
+    "lr": 0.002,
+    "sigma": 0.5,
+    "clip_C": 0.5,
+    "batch_size": 32
+  },
+  "sweep_bests": {
+    "lr": {
+      "value": 0.002,
+      "best_test_acc": 0.815,
+      "eps": 5.620169231891394
+    },
+    "sigma": {
+      "value": 0.5,
+      "best_test_acc": 0.8325,
+      "eps": 37.120554842291945
+    },
+    "clip": {
+      "value": 0.5,
+      "best_test_acc": 0.81875,
+      "eps": 5.620169231891394
+    },
+    "batch": {
+      "value": 32,
+      "best_test_acc": 0.84125,
+      "eps": 26.350565184986216
+    }
+  }
+}
