@@ -24,20 +24,20 @@ ART.mkdir(parents=True, exist_ok=True)
 
 def set_seed(s):
     """Ensure reproducibility by setting all relevant random seeds."""
-    torch.manual_seed(s)
-    np.random.seed(s)
+    torch.manual_seed(s)  # PyTorch random seed
+    np.random.seed(s)     # NumPy random seed
 
 @torch.no_grad()
 def accuracy(model, X_t, y_t):
     """Compute model accuracy on a dataset."""
-    model.eval()
-    return (model(X_t).argmax(1) == y_t).float().mean().item()
+    model.eval()  # Set to eval mode
+    return (model(X_t).argmax(1) == y_t).float().mean().item()  # Calculate accuracy
 
 def _nll_from_proba(proba, y):
     """Compute per-sample negative log-likelihood (cross-entropy loss)."""
-    eps = 1e-12
-    p = np.take_along_axis(np.clip(proba, eps, 1 - eps), y.reshape(-1, 1), axis=1).ravel()
-    return -np.log(p)
+    eps = 1e-12  # Prevent log(0)
+    p = np.take_along_axis(np.clip(proba, eps, 1 - eps), y.reshape(-1, 1), axis=1).ravel()  # Get true class prob
+    return -np.log(p)  # Return NLL
 
 def loss_threshold_attack(proba_in, y_in, proba_out, y_out, name="Yeom-Loss"):
     """
@@ -45,19 +45,19 @@ def loss_threshold_attack(proba_in, y_in, proba_out, y_out, name="Yeom-Loss"):
     Train (members) → expect lower loss
     Test (non-members) → expect higher loss
     """
-    loss_in  = _nll_from_proba(proba_in,  y_in)
-    loss_out = _nll_from_proba(proba_out, y_out)
+    loss_in  = _nll_from_proba(proba_in,  y_in)   # Loss on training data
+    loss_out = _nll_from_proba(proba_out, y_out)  # Loss on test data
     scores   = np.concatenate([-loss_in, -loss_out])  # higher score ⇒ more "member-like"
-    labels   = np.concatenate([np.ones_like(loss_in), np.zeros_like(loss_out)])
-    auc = roc_auc_score(labels, scores) if len(np.unique(labels)) > 1 else float("nan")
+    labels   = np.concatenate([np.ones_like(loss_in), np.zeros_like(loss_out)])  # 1=member, 0=non-member
+    auc = roc_auc_score(labels, scores) if len(np.unique(labels)) > 1 else float("nan")  # Calculate AUC
     return {"name": name, "auc": float(auc)}
 
 def make_big_model(d, c, device):
     """Define a large MLP to encourage overfitting for stronger privacy leakage."""
     m = nn.Sequential(
-        nn.Linear(d, 4096), nn.ReLU(),
-        nn.Linear(4096, 1024), nn.ReLU(),
-        nn.Linear(1024, c)
+        nn.Linear(d, 4096), nn.ReLU(),    # First hidden layer
+        nn.Linear(4096, 1024), nn.ReLU(), # Second hidden layer
+        nn.Linear(1024, c)                # Output layer
     ).to(device)
     return m
 
@@ -97,56 +97,56 @@ def main():
 
     # Encode job roles as integers
     le = LabelEncoder()
-    ytr = le.fit_transform(ytr_raw)
+    ytr = le.fit_transform(ytr_raw)  # Convert labels to integers
     yte = le.transform(yte_raw)
 
-    d, c = Xtr.shape[1], len(le.classes_)
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    d, c = Xtr.shape[1], len(le.classes_)  # d=features, c=num_classes
+    device = "cuda" if torch.cuda.is_available() else "cpu"  # Use GPU if available
 
     # Convert data to PyTorch tensors
-    Xtr_t = torch.tensor(Xtr, dtype=torch.float32, device=device)
-    ytr_t = torch.tensor(ytr, dtype=torch.long, device=device)
-    Xte_t = torch.tensor(Xte, dtype=torch.float32, device=device)
-    yte_t = torch.tensor(yte, dtype=torch.long, device=device)
+    Xtr_t = torch.tensor(Xtr, dtype=torch.float32, device=device)  # Training features
+    ytr_t = torch.tensor(ytr, dtype=torch.long, device=device)     # Training labels
+    Xte_t = torch.tensor(Xte, dtype=torch.float32, device=device)  # Test features
+    yte_t = torch.tensor(yte, dtype=torch.long, device=device)     # Test labels
 
     # Create DataLoader for batching
     dl = DataLoader(TensorDataset(Xtr_t, ytr_t), batch_size=args.batch, shuffle=True, num_workers=0)
 
     # Build and train model
-    model = make_big_model(d, c, device)
-    opt = torch.optim.SGD(model.parameters(), lr=args.lr)
-    model.train()
+    model = make_big_model(d, c, device)  # Create large model for overfitting
+    opt = torch.optim.SGD(model.parameters(), lr=args.lr)  # SGD optimizer
+    model.train()  # Set to training mode
 
     last = time.time()
-    for ep in range(1, args.epochs + 1):
-        for xb, yb in dl:
-            opt.zero_grad()
-            loss = F.cross_entropy(model(xb), yb)
-            loss.backward()
-            opt.step()
+    for ep in range(1, args.epochs + 1):  # Training loop
+        for xb, yb in dl:  # For each batch
+            opt.zero_grad()  # Clear gradients
+            loss = F.cross_entropy(model(xb), yb)  # Compute loss
+            loss.backward()  # Backpropagation
+            opt.step()      # Update weights
 
         # Print status periodically
         if time.time() - last > 1.0:
             last = time.time()
 
     # --- Evaluation phase ---
-    tr_acc = accuracy(model, Xtr_t, ytr_t)
-    te_acc = accuracy(model, Xte_t, yte_t)
+    tr_acc = accuracy(model, Xtr_t, ytr_t)  # Training accuracy
+    te_acc = accuracy(model, Xte_t, yte_t)  # Test accuracy
 
-    with torch.no_grad():
-        p_in  = torch.softmax(model(Xtr_t), dim=1).cpu().numpy()
-        p_out = torch.softmax(model(Xte_t), dim=1).cpu().numpy()
+    with torch.no_grad():  # No gradient computation needed
+        p_in  = torch.softmax(model(Xtr_t), dim=1).cpu().numpy()  # Probabilities for training data
+        p_out = torch.softmax(model(Xte_t), dim=1).cpu().numpy()  # Probabilities for test data
 
     # Run the loss-threshold membership inference attack
-    res = loss_threshold_attack(p_in, ytr, p_out, yte)
+    res = loss_threshold_attack(p_in, ytr, p_out, yte)  # Perform attack
 
     # Save attack data (scores and labels)
-    loss_in  = _nll_from_proba(p_in,  ytr)
-    loss_out = _nll_from_proba(p_out, yte)
-    scores   = np.concatenate([-loss_in, -loss_out])
-    labels   = np.concatenate([np.ones_like(loss_in), np.zeros_like(loss_out)])
+    loss_in  = _nll_from_proba(p_in,  ytr)   # Training losses
+    loss_out = _nll_from_proba(p_out, yte)   # Test losses
+    scores   = np.concatenate([-loss_in, -loss_out])  # Attack scores
+    labels   = np.concatenate([np.ones_like(loss_in), np.zeros_like(loss_out)])  # Ground truth
 
-    np.savez(ART / "pre_attack_scores_labels.npz", scores=scores, labels=labels, auc=res["auc"])
+    np.savez(ART / "pre_attack_scores_labels.npz", scores=scores, labels=labels, auc=res["auc"])  # Save results
 
     # Plot ROC curve for visualization
     fpr, tpr, _ = roc_curve(labels, scores)
