@@ -129,7 +129,7 @@ You are now ready to run the scripts in this assignment.
 - **Features**: TF-IDF (`max_features=258`, bigrams included).  
   - We chose TF-IDF since it provides interpretable, sparse vector representations suitable for small to medium text datasets like ours.  
   - Including bigrams helps capture short contextual patterns (e.g., “data analyst”, “software engineer”), which improves classification accuracy without heavy model complexity.  
-  - A `max_features` cap of 258 was determined empirically to balance model size and representational diversity.
+  - A `max_features` cap of 258 was determined to balance model size and representational diversity. But as per our analysis has no effect on DP accuracy (and based on the paper)
 
 - **Model**: 2-layer feedforward NN with hidden size 128.  
   - A small two-layer MLP was selected for simplicity and to minimize noise amplification under DP-SGD.  
