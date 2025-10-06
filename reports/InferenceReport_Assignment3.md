@@ -218,7 +218,7 @@ The results I got from the sweep were:
 |               0.5 |                      2.0 |            2.83 |             0.8418 |            0.8112 |           Strong privacy, slower convergence |
 |               1.0 |                      0.5 |           49.27 |             0.8441 |            0.8188 |       Weak privacy, slightly better accuracy |
 |               1.0 |                      1.0 |            8.63 |             0.8535 |        **0.8225** | **Best balance** between privacy and utility |
-|               1.0 |                      2.0 |            2.83 |             0.8580 |            0.81 |           Strong privacy, mild accuracy loss |
+|               1.0 |                      2.0 |            2.83 |             0.8580 |            0.81 |           Strong privacy, mild accuracy loss, more noise |
 
 <p align="center"> 
  <img src="/assignment-3/artifacts/dp_param_sweep_test_acc_vs_epoch.png" width="500" height="600"> <br/>
