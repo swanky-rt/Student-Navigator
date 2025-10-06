@@ -161,7 +161,7 @@ It helps visualize how the privacy budget **ε (epsilon)** grows across training
 #### Settings and Design Choice Reasoning
 
 - **Optimizer**: SGD, lr=0.05  
-- **Lot Size**: √N ≈ 62 (for N=4000) ≈ 62 (for N=4000).  
+- **Lot Size**: √N ≈ 62 (for N=4000).  
   - Following literature (Abadi et al., Opacus examples), using lot size ~√N ≈ 62 (for N=4000) balances privacy and utility.  
 - **Noise multiplier (σ)**: 1.0  
   - (A moderate noise level providing noticeable privacy effects while maintaining model learnability.)
