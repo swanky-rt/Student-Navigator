@@ -4,7 +4,7 @@
 
 ### Analysis of Differential Privacy Techniques on Balanced Synthetic Job Data
 
-*This study investigates the trade-off between privacy and utility in differentially private neural network training for job role classification, leveraging a balanced synthetic dataset and a lightweight two-layer MLP design.*
+*This study investigates the trade-off between privacy and utility in differentially private neural network training for job role classification, leveraging a balanced synthetic dataset and a lightweight two-layer MLP design.* This page contains all the design choices, what each file does, and how to run the code.
 
 **Team Lead:** Swetha Saseendran  
 </div>
