@@ -534,9 +534,9 @@ We kept in our mind to achieves a sweet spot between expressiveness and stabilit
 
 We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of this assignment **for support, not substitution**. Our focus was on learning differential privacy concepts deeply and only using the LLM to accelerate repetitive or mechanical parts of coding and for errors. We used LLMs to clarify doubts, learn more, correctness, and structure our code better.
 
-* **Baseline vs. DP Model Comparison:**Used ChatGPT to clarify theoretical differences between Strong Composition and Moments Accountant, ensure consistency with Abadi et al. (2016), and refine plots (axes, legends, layout). No training code or interpretation was AI-generated. GPT also helped debug small tensor shape and plotting issues and suggested best practices for presenting privacy-utility curves.
+* **Baseline vs. DP Model Comparison:** Used ChatGPT to clarify theoretical differences between Strong Composition and Moments Accountant, ensure consistency with Abadi et al. (2016), and refine plots (axes, legends, layout). No training code or interpretation was AI-generated. GPT also helped debug small tensor shape and plotting issues and suggested best practices for presenting privacy-utility curves.
 
-* **Hyperparameter Tuning and Analysis:**Used ChatGPT to streamline sweep loops, refactor code into argparse scripts, and fix Opacus–DataLoader issues.
+* **Hyperparameter Tuning and Analysis:** Used ChatGPT to streamline sweep loops, refactor code into argparse scripts, and fix Opacus–DataLoader issues.
 
 * **Membership Inference Attack (MIA):** ChatGPT was used to verify Yeom’s score formula (score = −NLL), correct ROC plotting, and fix TPR/FPR labeling.
 
