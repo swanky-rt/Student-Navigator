@@ -395,9 +395,14 @@ DP-SGD significantly improved privacy, reducing the budget from ∞ to **ε = 2.
 * **Learning Rate (LR):** **0.1** gave stable convergence; higher values amplified noise.
 * **Model Capacity:** Accuracy stayed constant (~0.81–0.83); noise diluted with more parameters.
 
+Hyper parameter tuning is extremely important, not just the privacy related params like C and σ, we also need to tune params like lot size, LR to get a higher utility model *with a good privacy*. This assignment shows the same.
+
+
 ### Privacy Accounting Insights
 
 Using the **Moments Accountant**, ε grew sublinearly and stabilized near **2.53** after 50 epochs. This confirmed the theoretical √T scaling. The chosen **δ = 1/N** was suitable for the dataset size (~4k).
+
+
 
 ---
 
