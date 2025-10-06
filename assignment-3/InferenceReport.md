@@ -227,7 +227,7 @@ The results I got from the sweep were:
   Figure: Small Grid sweep: Test Acc Vs. Epoch and ε values
 </p>
 
-The test accuracy curves (see figure) show that all models converge to similar final accuracies (~0.81–0.82), but their privacy losses (ε) differ dramatically. *From the give ranges*, the configuration (C = 1.0, σ = 1.0) achieved the best overall trade-off, reaching the highest test accuracy (0.8225) at a higher privacy cost (ε ≈ 8.63). But by paramteter tuning specifically based on my datset (median of gradients, specific range of C and σ, tune LR and lot size) I was able to get a way lesser privacy budget with just a mere 0.7% decrement in accuracy.
+The test accuracy curves (see figure) show that all models converge to similar final accuracies (~0.81–0.82), but their privacy losses (ε) differ dramatically. *From the give ranges*, the configuration (C = 1.0, σ = 1.0) achieved the best overall trade-off, reaching the highest test accuracy (0.81) at a higher privacy cost (ε ≈ 8.63). But by paramteter tuning specifically based on my datset (median of gradients, specific range of C and σ, tune LR and lot size) I was able to get a way lesser privacy budget with just a mere 0.7% decrement in accuracy.
 
 | **Model Configuration**                | **Test Accuracy** | **ε (Epsilon)** | **Δ Accuracy (%)** | **Δ ε (Privacy Gain %)** |
 | -------------------------------------- | ----------------: | --------------: | -----------------: | -----------------------: |
