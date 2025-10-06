@@ -551,8 +551,7 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
 - We designed the DP-SGD training pipeline from scratch using Opacus , including TF-IDF preprocessing, per-example clipping, Gaussian noise injection, and ε–δ accounting. We also conducted hyperparameter sweeps across noise multiplier (σ), clipping norm (C), lot size (L), and learning rate (LR). All visualizations (ε-vs-epoch, accuracy-vs-noise, clipping curves) were generated from our experimental runs.
 - Designed and ran all **hyperparameter tuning** experiments (σ, C, lot size, learning rate, δ sensitivity). Varied σ, clipping norm C, lot size L, and learning rate LR (δ = 1/N fixed), logging ε, accuracy, and runtime.
 - Collected real experimental results (accuracy, ε per epoch) and generated all plots manually.  
-- Implemented our own per-example loss extraction for MIA analysis and used it in both baseline and DP models.  
-- Built the **Loss-Threshold Attack** and Threshold MIA pipeline and ran before/after-DP comparisons.  
+- Implemented our own per-example loss extraction for MIA analysis and used it in both baseline and DP models and ran before/after-DP comparisons.  
 - Wrote all explanations, discussions, and interpretations for **InferenceReport.md** manually. Structured this **README.md** and finalized plots, charts, and results presentation. The reading report insights was done by us.
 - Structured PyTorch + Opacus training loops, batch handling, and gradient clipping setup. Plotted results (ROC curves, TPR/FPR tables), analyzed vulnerabilities.
 - Applied DP-SGD to TextCNN for text classification, tuning σ and C with a small grid sweep to compare against MLP. 
