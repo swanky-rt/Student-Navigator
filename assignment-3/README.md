@@ -161,8 +161,8 @@ It helps visualize how the privacy budget **ε (epsilon)** grows across training
 #### Settings and Design Choice Reasoning
 
 - **Optimizer**: SGD, lr=0.05  
-- **Lot Size**: √N.  
-  - Following literature (Abadi et al., Opacus examples), using lot size ~√N balances privacy and utility.  
+- **Lot Size**: √N ≈ 62 (for N=4000) ≈ 62 (for N=4000).  
+  - Following literature (Abadi et al., Opacus examples), using lot size ~√N ≈ 62 (for N=4000) balances privacy and utility.  
 - **Noise multiplier (σ)**: 1.0  
   - (A moderate noise level providing noticeable privacy effects while maintaining model learnability.)
 - **Clipping Norm (C)**: 1.0.  
@@ -200,9 +200,9 @@ It runs multiple DP models with varying σ values and compares their test accura
 ---
 #### Settings and Design Choice Reasoning
   
-- **Lot Size**: √N.  
-  - (Following Abadi et al., √N offers a balance between privacy and learning stability , smaller lots increase noise, larger ones reduce privacy.)  
-- **Epochs**: N / Lot Size.  
+- **Lot Size**: √N ≈ 62 (for N=4000).  
+  - (Following Abadi et al., √N ≈ 62 (for N=4000) offers a balance between privacy and learning stability , smaller lots increase noise, larger ones reduce privacy.)  
+- **Epochs**: N / Lot Size ≈ 64.  
   - (Ensures each sample is seen about once, aligning privacy accounting with true data exposure.)  
 - **Clipping Norm (C)**: 1.0.  
   - (Standard choice that prevents gradient explosion while retaining learning signal; avoids over-clipping small gradients.)  
@@ -246,9 +246,9 @@ This module evaluates how the **gradient clipping norm (C)** affects the perform
   
 - **Features**: TF-IDF (`max_features=258`, bigrams included).  
 - **Model**: 2-layer feedforward NN with hidden size 128.  
-- **Lot Size**: √N.  
-  - Following literature (Abadi et al., Opacus examples), using lot size ~√N balances privacy and utility.  
-- **Epochs**: N / Lot Size.  
+- **Lot Size**: √N ≈ 62 (for N=4000).  
+  - Following literature (Abadi et al., Opacus examples), using lot size ~√N ≈ 62 (for N=4000) balances privacy and utility.  
+- **Epochs**: N / Lot Size ≈ 64.  
   - (Ensures each sample is seen about once, aligning privacy accounting with true data exposure.)  
 - **Noise Multiplier (σ)**: 1.0.  
   - (A moderate noise level providing noticeable privacy effects while maintaining model learnability.)
@@ -367,8 +367,8 @@ This module compares the training and test accuracy of a non-private (baseline) 
 After all the hyperparam analysis I have gotten these values below which works best on my dataset and DP setting.
 - **Features**: TF-IDF (`max_features=258`, bigrams included).
 - **Model**: 2-layer feedforward NN with hidden size 128.
-- **Lot Size**: 60 (from hyper-param tuning (close to √N of N i.e 62); can be changed in code).
-- **Epochs**: N / Lot Size.
+- **Lot Size**: 60 (from hyper-param tuning (close to √N ≈ 62 (for N=4000) of N i.e 62); can be changed in code).
+- **Epochs**: 55 (Aprox convergence here)
 - **Clipping Norm (C)**: 0.17 (from hyper-param tuning; can be changed in code).
 - **Noise Multiplier (σ)**: 1.5 (default value- best from tuning) configurable via `--sigma` argument.
 - **Delta (δ)**: configurable via `--target_delta` argument (default: 1/N).
