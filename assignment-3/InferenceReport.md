@@ -197,13 +197,13 @@ In the Figure on the LEFT, baseline model (blue and orange curves) converges qui
   <b>Figure:</b> Privacy Consumption (ε) over Epochs with my tuned settings (left) and  Abadi et al. empirical settings(right)
 </p>
 
-In the Figure on the RIGHT which uses the settings from Abadi et al.,(clip = 0.15, lot size = 62, σ = 1.0), the DP model achieved decent accuracy but still lagged slightly behind my tuned configuration. The key difference, however, lies in the privacy budget (ε). While the paper’s model reached ε ≈ 5.04, my optimized setup achieved ε = 2.53, representing nearly a 50% reduction in privacy loss while also improving test accuracy by ~2.8%. This clearly demonstrates that fine-tuning both privacy-related parameters (σ, C) and model-specific hyperparameters (lot size, LR, hidden units) for a given dataset can significantly improve the privacy–utility balance. In smaller or synthetic datasets like mine, tighter clipping and moderate noise levels provide stronger privacy guarantees without compromising accuracy.
+In the Figure on the RIGHT which uses the settings from Abadi et al.,(clip = 0.15, lot size = 62, σ = 1.0), the DP model achieved decent accuracy but still lagged slightly behind my tuned configuration. The key difference, however, lies in the privacy budget (ε). While the paper’s model reached ε ≈ 5.04, my optimized setup achieved ε = 2.53, representing nearly a 50% reduction in privacy loss while also improving test accuracy by ~2.25%. This clearly demonstrates that fine-tuning both privacy-related parameters (σ, C) and model-specific hyperparameters (lot size, LR, hidden units) for a given dataset can significantly improve the privacy–utility balance. In smaller or synthetic datasets like mine, tighter clipping and moderate noise levels provide stronger privacy guarantees without compromising accuracy.
 
 | **Model**                       | **Source**            | **Final Test Accuracy** | **ε (Epsilon)** | **Δ Accuracy (%)** | **Δ ε (Privacy Gain %)** |
 | ------------------------------- | --------------------- | ----------------------- | --------------- | ------------------ | ------------------------ |
 | Baseline (Non-private)          | -                     | 0.8400                  | –               | –                  | –                        |
 | DP-SGD (Differentially Private) | *Abadi et al. (2016)* | 0.7925                  | 5.04            | –                  | –                        |
-| DP-SGD (Differentially Private) | **My Experiment**     | **0.8150**              | **2.53**        | **+2.8%**          | **−49.8%**               |
+| DP-SGD (Differentially Private) | **My Experiment**     | **0.8150**              | **2.53**        | **+2.25%**  from Abadi et al.       | **−49.8%**    from Abadi et al.           |
 
 ### ***Module 3:Small Grid Sweep C ∈ {0.5, 1.0}; σ ∈ {0.5, 1.0, 2.0}:***
 I also wanted to analyse the ranges given in the website, so I conducted a grid search over C ∈ {0.5, 1.0} and σ ∈ {0.5, 1.0, 2.0}, keeping all other hyperparameters fixed (learning rate = 0.1, lot size = 60, δ = 1/N). Each configuration was trained for 50 epochs, and both training/test accuracies and the corresponding ε values were recorded using the Opacus PrivacyEngine.
@@ -225,15 +225,15 @@ The results I got from the sweep were:
   Figure: Small Grid sweep: Test Acc Vs. Epoch and ε values
 </p>
 
-The test accuracy curves (see figure) show that all models converge to similar final accuracies (~0.81–0.82), but their privacy losses (ε) differ dramatically. *From the give ranges*, the configuration (C = 1.0, σ = 1.0) achieved the best overall trade-off, reaching the highest test accuracy (0.8225) at a higher privacy cost (ε ≈ 8.63). But by paramteter tuning specifically based on my datset (median of gradients, specific range of C and σ, tune LR and lot size) I was able to get a way lesser privacy budget with just a mere 0.5% decrement in accuracy.
+The test accuracy curves (see figure) show that all models converge to similar final accuracies (~0.81–0.82), but their privacy losses (ε) differ dramatically. *From the give ranges*, the configuration (C = 1.0, σ = 1.0) achieved the best overall trade-off, reaching the highest test accuracy (0.8225) at a higher privacy cost (ε ≈ 8.63). But by paramteter tuning specifically based on my datset (median of gradients, specific range of C and σ, tune LR and lot size) I was able to get a way lesser privacy budget with just a mere 0.7% decrement in accuracy.
 
 | **Model Configuration**                | **Test Accuracy** | **ε (Epsilon)** | **Δ Accuracy (%)** | **Δ ε (Privacy Gain %)** |
 | -------------------------------------- | ----------------: | --------------: | -----------------: | -----------------------: |
 | **Best from Sweep (C = 1.0, σ = 1.0)** |            0.8225 |            8.63 |                  – |                        – |
-| **My Tuned Model (C = 0.17, σ = 1.5)** |        **0.8150** |        **2.53** |          **−0.5%** |               **−70.7%** |
+| **My Tuned Model (C = 0.17, σ = 1.5)** |        **0.8150** |        **2.53** |          **−0.7%** |               **−70.7%** |
 
 
-This demonstrates that tuning of both privacy and model parameters can substantially improve the privacy–utility trade-off, outperforming general default settings from the parameter sweep. I still stand with my original analysis that my best DP setting is:
+This demonstrates that tuning of both privacy and model parameters can substantially improve the privacy–utility trade-off, outperforming general default settings from the parameter sweep. I still stand with my original analysis that my best DP setting, as I feel the degradation is 0.7% is acceptable for such a good improvement in privacy budget:
 |   **Hyperparameter** | **Best Value** |
 | -------------------: | -------------: |
 |         Hidden Units |            128 |
@@ -251,7 +251,10 @@ I implemnted the MIA attack on the DP model from my best settings and these were
 </p>
 
 
-| **Configuration** | **Test Accuracy** | **Privacy Budget (ε)** | **MIA AUC** |                     **Privacy Gain** |                                                     x
+| **Configuration** | **Test Accuracy** | **Privacy Budget (ε)** | **MIA AUC** |                     **Privacy Gain** |                                                     **Utility–Privacy Trade-off** |
+| ----------------- | ----------------: | ---------------------: | ----------: | -----------------------------------: | --------------------------------------------------------------------------------: |
+| **Baseline**      |             84.0% |         ∞ (No privacy) |   **0.812** |                                    – |                                            High utility, **no privacy guarantee** |
+| **DP (σ = 1.5)**  |             81.5% |               **2.53** |   **0.632** | **+22% reduction in attack success** | Small accuracy drop (**−2.5%**) for **strong privacy guarantee (finite ε vs. ∞)** |
 
 The privacy–utility trade-off observed in this above table highlights how differential privacy can effectively protect sensitive information with only a minimal impact on model performance. The DP-SGD model achieved a test accuracy of 81.5%, compared to 84% for the baseline, demonstrating that enforcing privacy led to just a ~2.5% drop in utility. At the same time, the privacy budget improved dramatically, from no protection (ε = ∞) in the baseline to a strongly private ε = 2.53, while the MIA AUC decreased from 0.812 to 0.632, indicating a significant reduction in an attacker’s ability to infer training membership. The injected Gaussian noise and gradient clipping acted as implicit regularizers, reducing overfitting and improving generalization. This demonstrates that although the trade-off cannot be completely eliminated, it can be strategically managed to extract the best possible balance between model utility and data privacy.
 
