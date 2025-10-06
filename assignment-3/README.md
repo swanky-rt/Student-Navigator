@@ -542,7 +542,7 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
 
 * **TextCNN Experiment:** Applied DP-SGD to TextCNN for text classification, tuning σ and C with a small grid sweep to compare against MLP. ChatGPT guided on implementing the CNN architecture we came up with setup (embeddings, 1D conv, pooling), Opacus integration, and Colab GPU optimization. All experiments and results were executed and interpreted by us.
 
-* **Documentation:** Authored Reading Report, README and InferenceReport by ourselves, including dataset details, DP analysis, and results. ChatGPT was used only for minor Markdown editing, and phrasing improvements - not for writing, analysis, or conclusions. We used LLM to verify if our theoritical understanding is right and clarified via ChatGPT for formula notations consistency.
+* **Documentation:** Authored Reading Report, README and InferenceReport by ourselves, including dataset details, DP analysis, and results. ChatGPT was used only for minor Markdown editing, and phrasing improvements - not for writing, analysis, or conclusions. We used LLM to verify if our theoritical understanding is right and clarified via ChatGPT for formula notations and grammatical consistency.
 
 ---
 ### What We Did Ourselves
