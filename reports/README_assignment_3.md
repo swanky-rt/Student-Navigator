@@ -12,7 +12,7 @@
 ## File Overview  - IMPORTANT
 
 ***This file only explains each script’s purpose, the parameters used along with the design choice explanation, and how to execute them.***
-For the analysis and interpretation of the experimental results, please refer to the [**InferenceReport.md**](./InferenceReport.md).
+For the analysis and interpretation of the experimental results, please refer to the [**InferenceReport.md**](./reports/InferenceReport_assignment_3.md).
 I have made this into two files for better structure and understandability.
 
 ---
