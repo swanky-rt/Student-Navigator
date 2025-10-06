@@ -166,7 +166,7 @@ To study how network capacity interacts with privacy noise, I varied the number 
 This behavior is consistent with the findings in Abadi et al. (2016), where increasing network size did not significantly change accuracy under DP-SGD. The reason is that, although larger networks introduce more parameters, the injected Gaussian noise is added per gradient step rather than per parameter. As a result, when gradients are averaged over many weights, the relative noise per parameter becomes smaller, effectively diluting the impact of privacy noise. 
 
 ### Module 2: Baseline Vs DP - Model Analysis and Utility Tradeoff
-My best DP setting derieved from above analysis are: (Fixed: δ = 1/N and 50 epochs)
+My best DP setting derieved from above analysis are: (Fixed: δ = 1/N and 55 epochs)
 |   **Hyperparameter** | **Best Value** |
 | -------------------: | -------------: |
 |         Hidden Units |            128 |
