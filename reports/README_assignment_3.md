@@ -15,6 +15,8 @@
 For the analysis and interpretation of the experimental results, please refer to the [**InferenceReport.md**](./InferenceReport_Assignment3.md).
 I have made this into two files for better structure and understandability.
 
+Results Intepretation: [**InferenceReport.md**](./InferenceReport_Assignment3.md)
+
 ---
 
 ## Quick Navigation
