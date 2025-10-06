@@ -12,7 +12,7 @@
 
 This report presents a comprehensive analysis of differential privacy (DP) techniques applied to neural network models for job role classification. The study investigates the privacy-utility tradeoff using DP-SGD (Differentially Private Stochastic Gradient Descent) and evaluates privacy leakage through membership inference attacks (MIA). Our findings demonstrate that properly tuned DP-SGD can significantly reduce privacy vulnerabilities while maintaining reasonable model utility.
 
-#### NOTE: This file represents our experimental setup, learnings and analysis. The README.md has the design choice justification and the details regarding each file and how to use them please refer to the [**README.md**](./README.md)..
+#### NOTE: This file represents our experimental setup, learnings and analysis. The README.md has the design choice justification, AI disclosure and the details regarding each file and how to use them please refer to the [**README.md**](./README.md)..
 
 ---
 </div>
