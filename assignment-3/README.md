@@ -1,6 +1,6 @@
 <div align="center">
 
-# GROUP 4: EduPilot - Assignment 3
+# GROUP 4: EduPilot - Assignment 3 (Design Choices and How to Run?)
 
 ### Analysis of Differential Privacy Techniques on Balanced Synthetic Job Data
 
