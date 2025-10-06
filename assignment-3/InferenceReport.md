@@ -260,6 +260,16 @@ I implemnted the MIA attack on the DP model from my best settings and these were
 
 The privacy–utility trade-off observed in this above table highlights how differential privacy can effectively protect sensitive information with only a minimal impact on model performance. The DP-SGD model achieved a test accuracy of 81.5%, compared to 84% for the baseline, demonstrating that enforcing privacy led to just a ~2.5% drop in utility. At the same time, the privacy budget improved dramatically, from no protection (ε = ∞) in the baseline to a strongly private ε = 2.53, while the MIA AUC decreased from 0.812 to 0.632, indicating a significant reduction in an attacker’s ability to infer training membership. The injected Gaussian noise and gradient clipping acted as implicit regularizers, reducing overfitting and improving generalization. This demonstrates that although the trade-off cannot be completely eliminated, it can be strategically managed to extract the best possible balance between model utility and data privacy.
 
+| **Model**        | **TPR @ FPR ≤ 0.100** | **TPR @ FPR ≤ 0.010** | **TPR @ FPR ≤ 0.001** | **AUC** |
+|------------------:|----------------------:|----------------------:|----------------------:|--------:|
+| **Baseline MLP** | 0.2843               | 0.0129               | 0.0014               | **0.812** |
+| **DP MLP**       | 0.1671               | 0.0057               | 0.0029               | **0.632** |
+
+- The **Baseline MLP** achieves higher true positive rates across all false positive thresholds, indicating that an attacker can more easily distinguish members from non-members.  
+- The **DP MLP** trained with DP-SGD exhibits much lower TPR values, with its ROC curve moving closer to the diagonal (AUC reduced from 0.812 → 0.632).  
+- This reflects a **~22% reduction in attack success**, confirming that differential privacy effectively limits membership inference capability, especially under strict FPR thresholds (0.01 and 0.001).
+
+
 ---
 ## 5. Additional Analytics to understand Differential Privacy (EXTRA CREDIT #2)
 ### Strong Composition Vs. Moments Accountant
