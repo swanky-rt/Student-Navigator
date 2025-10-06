@@ -288,69 +288,69 @@ def main():
     def train_dp_for_delta(delta, sigma):
         """Trains one DP model for a given delta and returns (eps_hist, acc_hist)."""
         model = make_model(D, C, device)
-        optimizer = torch.optim.SGD(model.parameters(), lr=LR)
-        privacy_engine = PrivacyEngine()
-        model, optimizer, train_loader = privacy_engine.make_private(
+        optimizer = torch.optim.SGD(model.parameters(), lr=LR)  # Fresh optimizer
+        privacy_engine = PrivacyEngine()  # Fresh privacy engine
+        model, optimizer, train_loader = privacy_engine.make_private(  # Make private with given delta
             module=model,
             optimizer=optimizer,
             data_loader=base_loader,
-            noise_multiplier=sigma,
+            noise_multiplier=sigma,  # Use same noise level
             max_grad_norm=MAX_GRAD_NORM,
         )
-        eps_hist, acc_hist = [], []
+        eps_hist, acc_hist = [], []  # Track epsilon and accuracy for this delta
         for _ in range(EPOCHS):
-            model.train()
-            for xb, yb in train_loader:
-                optimizer.zero_grad(set_to_none=True)
-                logits = model(xb)
-                loss = F.cross_entropy(logits, yb) + l2_weight_decay(model, LAMBDA)
-                loss.backward()
+            model.train()  # Training mode
+            for xb, yb in train_loader:  # Train for one epoch
+                optimizer.zero_grad(set_to_none=True)  # Clear gradients
+                logits = model(xb)  # Forward pass
+                loss = F.cross_entropy(logits, yb) + l2_weight_decay(model, LAMBDA)  # Loss + regularization
+                loss.backward()  # Backprop with DP noise
                 optimizer.step()
             eps_hist.append(privacy_engine.get_epsilon(delta=delta))
             acc_hist.append(accuracy(model, Xte_t, yte_t))
         return eps_hist, acc_hist
 
-    delta_list = [1.0/len(Xtr_t), 1e-3, 5e-4, 1e-4, 5e-5]
-    rows = []
-    plt.figure(figsize=(8,6))
+    delta_list = [1.0/len(Xtr_t), 1e-3, 5e-4, 1e-4, 5e-5]  # Different delta values to test
+    rows = []  # Store results for CSV
+    plt.figure(figsize=(8,6))  # Create plot
     for delta in delta_list:
         eps_hist, acc_hist = train_dp_for_delta(delta, SIGMA)
         rows += [{"delta": delta, "epoch": i+1, "epsilon": e, "test_acc": a,
                   "sigma": SIGMA, "clip": MAX_GRAD_NORM, "lot_size": LOT_SIZE}
-                 for i,(e,a) in enumerate(zip(eps_hist, acc_hist))]
-        plt.plot(eps_hist, acc_hist, marker="o", label=f"δ={delta:g}")
+                 for i,(e,a) in enumerate(zip(eps_hist, acc_hist))]  # Store data
+        plt.plot(eps_hist, acc_hist, marker="o", label=f"δ={delta:g}")  # Plot epsilon vs accuracy
     plt.xlabel("Epsilon (ε)")
     plt.ylabel("Test Accuracy")
     plt.title("Delta Sensitivity: Accuracy vs Epsilon (σ fixed)")
     plt.grid(True)
     plt.legend()
     pd.DataFrame(rows).to_csv(os.path.join(ART,"delta_sweep.csv"), index=False)
-    plt.savefig(os.path.join(ART,"delta_sensitivity_acc_vs_eps.png"), bbox_inches="tight")
+    plt.savefig(os.path.join(ART,"delta_sensitivity_acc_vs_eps.png"), bbox_inches="tight")  # Save plot
     plt.show()
 
     # ------------------ Final Evaluation ------------------
-    print(f"Final baseline model test accuracy: {test_hist_base[-1]:.4f}")
-    print(f"Final DP model test accuracy: {test_hist_dp[-1]:.4f}")
+    print(f"Final baseline model test accuracy: {test_hist_base[-1]:.4f}")  # Print baseline final accuracy
+    print(f"Final DP model test accuracy: {test_hist_dp[-1]:.4f}")          # Print DP final accuracy
 
     # ------------------ Compare Baseline vs DP ------------------
-    plt.figure(figsize=(8,6))
-    epochs = np.arange(1, EPOCHS+1)
-    plt.plot(epochs, train_hist_base, label="Baseline Train", color="blue", linestyle="--")
-    plt.plot(epochs, test_hist_base, label="Baseline Test", color="orange")
-    plt.plot(epochs, train_hist_dp, label="DP Train", color="green")
-    plt.plot(epochs, test_hist_dp, label="DP Test", color="red")
-    plt.xlabel("Epoch")
-    plt.ylabel("Accuracy")
-    plt.title(f"Baseline vs DP Accuracy\nclip={MAX_GRAD_NORM:.2f}, lot={LOT_SIZE}, δ=1/N, σ={sigma_used}")
-    plt.grid(True)
-    plt.legend()
-    plt.show()
+    plt.figure(figsize=(8,6))  # Create comparison plot
+    epochs = np.arange(1, EPOCHS+1)  # Epoch numbers for x-axis
+    plt.plot(epochs, train_hist_base, label="Baseline Train", color="blue", linestyle="--")  # Baseline training curve
+    plt.plot(epochs, test_hist_base, label="Baseline Test", color="orange")                  # Baseline test curve
+    plt.plot(epochs, train_hist_dp, label="DP Train", color="green")                         # DP training curve
+    plt.plot(epochs, test_hist_dp, label="DP Test", color="red")                             # DP test curve
+    plt.xlabel("Epoch")     # X-axis label
+    plt.ylabel("Accuracy")  # Y-axis label
+    plt.title(f"Baseline vs DP Accuracy\nclip={MAX_GRAD_NORM:.2f}, lot={LOT_SIZE}, δ=1/N, σ={sigma_used}")  # Title with params
+    plt.grid(True)   # Add grid
+    plt.legend()     # Add legend
+    plt.show()       # Display plot
 
     # ------------------ Privacy Tracking (ε over epochs) ------------------
-    if plot_eps:
-        plt.figure(figsize=(8,5))
-        plt.plot(epochs, eps_hist, label=f"ε (δ=1/N)", color="green")
-        plt.text(epochs[-1], eps_hist[-1]+0.1, f"Final: {eps_hist[-1]:.2f}",
+    if plot_eps:  # Only if we're tracking epsilon
+        plt.figure(figsize=(8,5))  # Create epsilon tracking plot
+        plt.plot(epochs, eps_hist, label=f"ε (δ=1/N)", color="green")  # Plot privacy budget consumption
+        plt.text(epochs[-1], eps_hist[-1]+0.1, f"Final: {eps_hist[-1]:.2f}",  # Add final epsilon text
                  fontsize=9, ha='center', color="green")
         plt.xlabel("Epoch")
         plt.ylabel("Epsilon (ε)")
