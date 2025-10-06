@@ -266,7 +266,7 @@ The privacy–utility trade-off observed in this above table highlights how diff
 | **DP MLP**       | 0.1671               | 0.0057               | 0.0029               | **0.632** |
 
 - The **Baseline MLP** achieves higher true positive rates across all false positive thresholds, indicating that an attacker can more easily distinguish members from non-members.
-- **slightly higher TPR at FPR ≤ 0.001** for the DP model is due to random variation and the small number of samples at that extreme threshold—it does **not** contradict the overall privacy improvement.
+- **slightly higher TPR at FPR ≤ 0.001** for the DP model is due to random variation and the small number of samples at that extreme threshold—it does **not** contradict the overall privacy improvement. Sometimes when a narrow sample are taken, the gradientclipping can make then model learn better.
 - The **DP MLP** trained with DP-SGD exhibits much lower TPR values, with its ROC curve moving closer to the diagonal (AUC reduced from 0.812 → 0.632).
 - This reflects a **~22% reduction in attack success**, confirming that differential privacy effectively limits membership inference capability, especially under strict FPR thresholds (0.01 and 0.001).
 
