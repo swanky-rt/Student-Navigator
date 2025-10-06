@@ -15,6 +15,8 @@
 For the analysis and interpretation of the experimental results, please refer to the [**InferenceReport.md**](./InferenceReport.md).
 I have made this into two files for better structure and understandability.
 
+### Resut Intepretation: [**InferenceReport.md**](./InferenceReport.md)
+
 ---
 
 ## Quick Navigation
