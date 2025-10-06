@@ -35,7 +35,7 @@ I have made this into two files for better structure and understandability.
   - [1. Threshold-based MIA](#1-threshold-based-mia-mia_attack_thresholdipynb)
   - [2. Loss Threshold Attack Model](#2-loss-threshold-attack-model)
 - [TextCNN Module](#textcnn-module)
-- [AI Disclosure and References](#ai-disclosure-and-references)
+- [AI Disclosure and References](#ai-disclosure-and-reference)
   - [How We Used LLMs](#how-we-used-llms)
   - [What We Did Ourselves](#what-we-did-ourselves)
 - [References](#references)
