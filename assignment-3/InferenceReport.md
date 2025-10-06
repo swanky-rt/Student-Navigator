@@ -199,7 +199,7 @@ In the Figure on the LEFT, baseline model (blue and orange curves) converges qui
 
 In the Figure on the RIGHT which uses the settings from Abadi et al.,(clip = 0.15, lot size = 62, σ = 1.0), the DP model achieved decent accuracy but still lagged slightly behind my tuned configuration. The key difference, however, lies in the privacy budget (ε). While the paper’s model reached ε ≈ 5.04, my optimized setup achieved ε = 2.53, representing nearly a 50% reduction in privacy loss while also improving test accuracy by ~2.25%. This clearly demonstrates that fine-tuning both privacy-related parameters (σ, C) and model-specific hyperparameters (lot size, LR, hidden units) for a given dataset can significantly improve the privacy–utility balance. In smaller or synthetic datasets like mine, tighter clipping and moderate noise levels provide stronger privacy guarantees without compromising accuracy.
 
-```My best DP setting has a privacy budget of 2.53 and a privacy degradation from baseline of only -2.5% ```
+```My best DP setting has a privacy budget of 2.53 and a privacy degradation from baseline of only -2.5% This shows the utility-rpivacy tradeoff, where some information is lost because of implementing differential privacy as seen in the lessened accuracy, but this tradeoff has given rise to the a way better privacy budget.```
 
 | **Model**                       | **Source**            | **Final Test Accuracy** | **ε (Epsilon)** | **Δ Accuracy (%)** | **Δ ε (Privacy Gain %)** |
 | ------------------------------- | --------------------- | ----------------------- | --------------- | ------------------ | ------------------------ |
