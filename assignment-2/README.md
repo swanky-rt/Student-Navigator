@@ -78,7 +78,7 @@ assignment-2/
     ├── federated_learning_fedAvg/          # (FL Implementation using Fed Avg aggregator)
     │   └── centralize_global_file.py       # Pipeline (centralized, non-FL)
     │   └── federated_learning_iid.py       # Federated Averaging (FedAvg) on IID, stratified client splits.
-    │   └── federated_learning_non_iid      # FedAvg with label-skewed (NON_IID) client partitions
+    │   └── federated_learning_non_iid.py   # FedAvg with label-skewed (NON_IID) client partitions
     │   └── federated_learning_run.py       # Utilities class
     │   └── graph_plotting.py               # Plot FL (IID vs Non-IID) accuracy vs. rounds alongside centralized accuracy vs. epochs.
     │   └── neural_network_model.py         # Neural Network implementation class
@@ -86,8 +86,8 @@ assignment-2/
 
     ├── federated_learning_fedMedian/       # (FL Implementation using Fed Median aggregator)
     │   └── centralize_global_file.py       # Pipeline (centralized, non-FL)
-    │   └── fedMedian_iid.py                # Federated Median (coordinate-wise median of client weights) on IID, stratified spl
-    │   └── fedMedian_non_iid               # Federated Median on label-skewed (NON_IID) client splits
+    │   └── fedMedian_iid.py                # Federated Median (coordinate-wise median of client weights) on IID, stratified splits
+    │   └── fedMedian_non_iid.py            # Federated Median on label-skewed (NON_IID) client splits
     │   └── federated_learning_run.py       # Utilities class
     │   └── graph_plotting.py               # Plot FL (IID vs Non-IID) accuracy vs. rounds alongside centralized accuracy vs. epochs.
     │   └── neural_network_model.py         # Neural Network implementation class
@@ -347,6 +347,7 @@ OR
 STEP-1: Run script directly "run_fed_median.py" which is at this location "assignment-2/code/federated_learning_fedMedian"
 
 STEP-2: Run script directly "run_fed_sgd.py" which we is at this location "assignment-2/code/federated_learning_fedSgd"
+
 ---
 
 Note:
