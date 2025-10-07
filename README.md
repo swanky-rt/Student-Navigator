@@ -5,4 +5,4 @@ There are individual README.md files for all assignment which we can find under 
 
 
 ## Latest Update:
-assignment-3 folder - has all the related files (Codes, README, Inference Report)
+assignment-3 folder - has all the related files (Codes, README, Inference Report, AI Disclosure, Design Choices)
