@@ -269,10 +269,19 @@ Here are the graphs to show the comparison visually:
 
 ### Interpretation (What these results mean for EduPilot).
 
-- On IID client data, FedAvg ≈ centralized accuracy (≈0.82–0.83 vs ~0.85), so FL can replace centralized training with minimal loss.
-- On non-IID data, accuracy drops (~0.74–0.75). This indicates EduPilot will need personalization or data-balancing strategies if client distributions are skewed.
-- FedMedian stability didn’t translate to higher utility here; under label-skew it can collapse (observed ~0.3175 in our worst case), so we prefer FedAvg absent adversaries.
-- FedSGD is round-inefficient for this task; FedAvg is the practical choice unless communication rounds are cheap and vast.
+- Utility: On IID-like cohorts, FedAvg ≈ centralized (~0.82–0.83 vs ~0.85) → FL is production ready with minimal quality loss.
+
+- Skewed users: Under Non-IID, accuracy drops (~0.74–0.75) we can expect weaker relevance for niche roles/companies unless we personalize.
+
+- What to do: we can add light local adapters (last-layer fine-tune), client clustering (by role/company/region), and re-balancing for underrepresented rounds; we can consider a FedProx term to reduce drift.
+
+- Aggregator choice: we should use FedAvg by default. we can enable FedMedian only for adversarial/Byzantine scenarios (it can fail under natural heterogeneity). FedSGD is round-inefficient → we should keep for baselines only.
+
+- Ops: Prefer fewer, richer rounds (e.g., 5 local epochs/round). Track segment accuracy, drift, and time-to-useful-accuracy.
+
+- Privacy: Keep raw text on device; add secure aggregation. Consider DP-SGD opt-in for sensitive cohorts (small utility trade-off).
+
+- Comms: With max_features=2000, hidden=64, payload ≈ 1.03 MB/client/round → fine on Wi-Fi; throttle on cellular.
 
 ---
 
