@@ -429,7 +429,7 @@ While useful for controlled evaluation, it doesn’t fully represent complex rea
 
 Going forward, it would be valuable to:
 - Experiment with **real-world datasets** and **larger architectures** like Transformers.
-- Extend to **other attack types** and other DP optimizers like DP-Adam (e.g., attribute or gradient inference).  
+- Extend to **other attack types** (e.g., attribute or gradient inference) and other DP optimizers like DP-Adam.  
 - Explore combining **Differential Privacy with Federated Learning** for stronger, distributed privacy protection.
 
 ---
