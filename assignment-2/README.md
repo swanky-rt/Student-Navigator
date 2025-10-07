@@ -267,6 +267,15 @@ Here are the graphs to show the comparison visually:
 
 ---
 
+### Interpretation (What these results mean for EduPilot).
+
+- On IID client data, FedAvg ≈ centralized accuracy (≈0.82–0.83 vs ~0.85), so FL can replace centralized training with minimal loss.
+- On non-IID data, accuracy drops (~0.74–0.75). This indicates EduPilot will need personalization or data-balancing strategies if client distributions are skewed.
+- FedMedian stability didn’t translate to higher utility here; under label-skew it can collapse (observed ~0.3175 in our worst case), so we prefer FedAvg absent adversaries.
+- FedSGD is round-inefficient for this task; FedAvg is the practical choice unless communication rounds are cheap and vast.
+
+---
+
 ## Vulnerabilities & Implications
 
 * **Privacy advantage:** Raw candidate text never leaves clients — only weight updates are shared. This is a major step forward compared to centralized training, because sensitive information such as resumes, personal job queries, or role-specific interview experiences never leave the user’s local device. By restricting communication to model updates, EduPilot avoids exposing plain text data to a central server. In a realistic deployment, this would reduce the risk of data breaches, insider threats, or accidental leaks from a centralized database. In short, FL ensures that user data stays with the user.
