@@ -22,7 +22,6 @@
 * [Performance Comparison](#performance-comparison)
 * [Vulnerabilities & Implications](#vulnerabilities--implications)
 * [How to Run the Code](#how-to-run-the-code)
-* [References](#references)
 * [Verification & Results](#assignment-requirements--verification--results)
 * [Communication Overhead](#communication-overhead)
 * [AI Disclosure and Reference](#ai-disclosure-and-reference)
