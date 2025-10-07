@@ -535,21 +535,21 @@ We kept in our mind to achieves a sweet spot between expressiveness and stabilit
 
 We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of this assignment **for support, not substitution**. Our focus was on learning differential privacy concepts deeply and only using the LLM to accelerate repetitive or mechanical parts of coding and for errors. We used LLMs to clarify doubts, learn more, correctness, and structure our code better.
 
-* **Baseline vs. DP Model Comparison:** Used ChatGPT to clarify theoretical differences between Strong Composition and Moments Accountant, ensure consistency with Abadi et al. (2016), and refine plots (axes, legends, layout). No training code or interpretation was AI-generated. GPT also helped debug small tensor shape and plotting issues and suggested best practices for presenting privacy-utility curves.
+* **Baseline vs. DP Model Comparison:** Used ChatGPT to clarify theoretical differences between Strong Composition (help with math to code) and Moments Accountant, ensure consistency with Abadi et al. (2016), and refine plots. GPT also helped debug small tensor shape and plotting issues and suggested best practices for presenting privacy-utility curves.
 
-* **Hyperparameter Tuning and Analysis:** Used ChatGPT to streamline sweep loops, refactor code into argparse scripts, and fix Opacus–DataLoader issues.
+* **Hyperparameter Tuning and Analysis:** Used ChatGPT to streamline sweep loops, refactor code into argparse scripts, and fix Opacus–DataLoader issues. Help understand the library.
 
 * **Membership Inference Attack (MIA):** ChatGPT was used to verify Yeom’s score formula (score = −NLL), correct ROC plotting, and fix TPR/FPR labeling.
 
 * **TextCNN Experiment:** ChatGPT guided on implementing the CNN architecture we came up with setup (embeddings, 1D conv, pooling), Opacus integration, and Colab GPU optimization. All experiments and results were executed and interpreted by us.
 
-* **Documentation:**  ChatGPT was used only for minor Markdown editing, and phrasing improvements - not for writing, analysis, or conclusions. We used LLM to verify if our theoritical understanding is right and clarified via ChatGPT for formula notations and grammatical consistency.
+* **Documentation:**  ChatGPT was used only for minor Markdown editing, and phrasing improvements, not for writing, analysis, or conclusions. We used LLM to verify if our theoritical understanding is right and clarified via ChatGPT for formula notations and grammatical consistency.
 
 ---
 ### What We Did Ourselves
 
-- All the design choices and experimental setup were done by the Lead and the team.  
-- We designed the DP-SGD training pipeline from scratch using Opacus , including TF-IDF preprocessing, per-example clipping, Gaussian noise injection, and ε–δ accounting. We also conducted hyperparameter sweeps across noise multiplier (σ), clipping norm (C), lot size (L), and learning rate (LR). All visualizations (ε-vs-epoch, accuracy-vs-noise, clipping curves) were generated from our experimental runs.
+- All the design choices, interpretation and experimental setup were done by the Lead and the team.  
+- We designed the DP-SGD training pipeline using Opacus , including TF-IDF preprocessing, per-example clipping, Gaussian noise injection, and ε–δ accounting. We also conducted hyperparameter sweeps across noise multiplier (σ), clipping norm (C), lot size (L), and learning rate (LR). All visualizations (ε-vs-epoch, accuracy-vs-noise, clipping curves) were generated from our experimental runs.
 - Designed and ran all **hyperparameter tuning** experiments (σ, C, lot size, learning rate, δ sensitivity). Varied σ, clipping norm C, lot size L, and learning rate LR (δ = 1/N fixed), logging ε, accuracy, and runtime.
 - Collected real experimental results (accuracy, ε per epoch) and generated all plots manually.  
 - Implemented our own per-example loss extraction for MIA analysis and used it in both baseline and DP models and ran before/after-DP comparisons.  
