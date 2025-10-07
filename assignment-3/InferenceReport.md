@@ -12,7 +12,7 @@
 
 This report presents a comprehensive analysis of differential privacy (DP) techniques applied to neural network models for job role classification. The study investigates the privacy-utility tradeoff using DP-SGD (Differentially Private Stochastic Gradient Descent) and evaluates privacy leakage through membership inference attacks (MIA). Our findings demonstrate that properly tuned DP-SGD can significantly reduce privacy vulnerabilities while maintaining reasonable model utility.
 
-#### NOTE: This file represents our experimental setup, learnings and analysis. The README.md has the design choice justification and the details regarding each file and how to use them please refer to the [**README.md**](./README.md)..
+#### NOTE: This file represents our experimental setup, learnings and analysis. The README.md has the design choice justification, AI disclosure and the details regarding each file and how to use them please refer to the [**README.md**](./README.md)..
 
 ---
 </div>
@@ -166,7 +166,7 @@ To study how network capacity interacts with privacy noise, I varied the number 
 This behavior is consistent with the findings in Abadi et al. (2016), where increasing network size did not significantly change accuracy under DP-SGD. The reason is that, although larger networks introduce more parameters, the injected Gaussian noise is added per gradient step rather than per parameter. As a result, when gradients are averaged over many weights, the relative noise per parameter becomes smaller, effectively diluting the impact of privacy noise. 
 
 ### Module 2: Baseline Vs DP - Model Analysis and Utility Tradeoff
-My best DP setting derieved from above analysis are: (Fixed: δ = 1/N and 50 epochs)
+My best DP setting derieved from above analysis are: (Fixed: δ = 1/N and 55 epochs)
 |   **Hyperparameter** | **Best Value** |
 | -------------------: | -------------: |
 |         Hidden Units |            128 |
@@ -266,7 +266,7 @@ The privacy–utility trade-off observed in this above table highlights how diff
 | **DP MLP**       | 0.1671               | 0.0057               | 0.0029               | **0.632** |
 
 - The **Baseline MLP** achieves higher true positive rates across all false positive thresholds, indicating that an attacker can more easily distinguish members from non-members.
-- **slightly higher TPR at FPR ≤ 0.001** for the DP model is due to random variation and the small number of samples at that extreme threshold—it does **not** contradict the overall privacy improvement.
+- **slightly higher TPR at FPR ≤ 0.001** for the DP model is due to random variation and the small number of samples at that extreme threshold—it does **not** contradict the overall privacy improvement. Sometimes when a narrow sample are taken, the gradientclipping can make then model learn better.
 - The **DP MLP** trained with DP-SGD exhibits much lower TPR values, with its ROC curve moving closer to the diagonal (AUC reduced from 0.812 → 0.632).
 - This reflects a **~22% reduction in attack success**, confirming that differential privacy effectively limits membership inference capability, especially under strict FPR thresholds (0.01 and 0.001).
 
