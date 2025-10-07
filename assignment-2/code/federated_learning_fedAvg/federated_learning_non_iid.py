@@ -1,5 +1,16 @@
+"""
+fl_train_non_iid.py
+
+FedAvg with label-skewed (NON_IID) client partitions:
+1) Load vectorizer/encoder + centralized splits from artifacts_centralized/
+2) Create label-skew splits (each client sees a subset of classes)
+3) Run FedAvg for ROUNDS: local train EPOCHS_LOCAL, sample-weighted param avg
+4) Log test accuracy per round to fl_non_iid_accuracy.csv
+"""
+
 import os, pickle, numpy as np, pandas as pd
 from pathlib import Path
+from typing import List, Tuple
 
 from sklearn.metrics import accuracy_score
 from neural_network_model import NeuralNetwork
@@ -17,10 +28,12 @@ WARM_START   = False
 
 MODE = "NON_IID"
 
-def make_label_skew_splits(y, k=5, seed=42, labels_per_client=1):
+
+def make_label_skew_splits(y, k: int = 5, seed: int = 42, labels_per_client: int = 1) -> List[List[int]]:
+    """Build k non-IID splits by assigning each client up to labels_per_client classes (label skew)."""
     rng = np.random.default_rng(seed)
     y = np.asarray(y); classes = np.unique(y)
-    buckets = {c: list(np.where(y==c)[0]) for c in classes}
+    buckets = {c: list(np.where(y == c)[0]) for c in classes}
     for b in buckets.values(): rng.shuffle(b)
 
     splits = [[] for _ in range(k)]
@@ -38,13 +51,17 @@ def make_label_skew_splits(y, k=5, seed=42, labels_per_client=1):
 
     return [sorted(s) for s in splits]
 
-def main():
-    np.random.seed(SEED)
-    with open(os.path.join(ART,"tfidf_vectorizer.pkl"),"rb") as f: vec = pickle.load(f)
-    with open(os.path.join(ART,"label_encoder.pkl"),"rb") as f:  le  = pickle.load(f)
-    tr = pd.read_csv(os.path.join(ART,"centralized_train_text_labels.csv"))
-    te = pd.read_csv(os.path.join(ART,"centralized_test_text_labels.csv"))
 
+def main() -> None:
+    np.random.seed(SEED)
+
+    # Load preprocessing artifacts + text/label splits
+    with open(os.path.join(ART, "tfidf_vectorizer.pkl"), "rb") as f: vec = pickle.load(f)
+    with open(os.path.join(ART, "label_encoder.pkl"), "rb") as f:  le  = pickle.load(f)
+    tr = pd.read_csv(os.path.join(ART, "centralized_train_text_labels.csv"))
+    te = pd.read_csv(os.path.join(ART, "centralized_test_text_labels.csv"))
+
+    # Vectorize + encode
     Xtr = vec.transform(tr["text"].astype(str)).toarray().astype(np.float64)
     ytr = le.transform(tr["label"].astype(str).values)
     Xte = vec.transform(te["text"].astype(str)).toarray().astype(np.float64)
@@ -53,14 +70,16 @@ def main():
     Xte_T = Xte.T
     print(f"[{MODE}] data  Ntr={len(Xtr)} Nte={len(Xte)} D={D} C={C}")
 
+    # Non-IID (label-skew) splits
     splits = make_label_skew_splits(ytr, k=NUM_CLIENTS, seed=SEED, labels_per_client=2)
 
     import collections
-    for i, idxs in enumerate(splits,1):
+    for i, idxs in enumerate(splits, 1):
         cnt = collections.Counter(ytr[idxs])
         print(f"[{MODE}] client {i}: N={len(idxs)} hist={dict(cnt)}")
 
-    def client_data(idxs):
+    def client_data(idxs: List[int]) -> Tuple[np.ndarray, np.ndarray]:
+        """Return (D×Ni) features and labels for given indices."""
         Xi = Xtr[idxs]; yi = ytr[idxs]
         return Xi.T, yi
 
@@ -72,7 +91,8 @@ def main():
     base_pred = global_model.predict_multiclass(Xte_T)
     print(f"[{MODE}] pre-round acc={accuracy_score(yte, base_pred):.4f}")
 
-    def fedavg_round(gvec):
+    def fedavg_round(gvec: np.ndarray) -> np.ndarray:
+        """One FedAvg round: local train per client; sample-weighted average of params."""
         total, accum = 0, np.zeros_like(gvec)
         for idxs in splits:
             Xi, yi = client_data(idxs)
@@ -84,16 +104,19 @@ def main():
             accum += n_i * wi; total += n_i
         return accum / max(1, total)
 
+    # FedAvg loop + evaluation
     acc_hist = []
-    for r in range(1, ROUNDS+1):
+    for r in range(1, ROUNDS + 1):
         global_vec = fedavg_round(global_vec)
         global_model.set_params_vector(global_vec.copy())
         acc = accuracy_score(yte, global_model.predict_multiclass(Xte_T))
         acc_hist.append(float(acc))
         print(f"[{MODE} | Round {r:02d}] acc={acc:.4f}")
 
-    pd.DataFrame({"round": np.arange(1, len(acc_hist)+1), "acc": acc_hist}).to_csv(ART/"fl_non_iid_accuracy.csv", index=False)
+    # Save accuracy curve
+    pd.DataFrame({"round": np.arange(1, len(acc_hist) + 1), "acc": acc_hist}).to_csv(ART / "fl_non_iid_accuracy.csv", index=False)
     print("Saved: fl_non_iid_accuracy.csv")
+
 
 if __name__ == "__main__":
     main()

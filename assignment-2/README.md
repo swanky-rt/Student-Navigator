@@ -93,6 +93,58 @@ assignment-2/
 * **Hidden units:** 64 for FL (to reduce comms cost); 128 for centralized baseline.
 * **Regularization:** L2 with λ = 1e-4, excluding bias terms.
 
+## Design Choices: Vectorization & Model (with Rationale)
+
+Note: Parameter-specific settings are implemented in the code and briefly justified here.
+
+Features (TF-IDF with bigrams, max_features=2000)
+
+Why TF-IDF? Sparse, interpretable representations work well on small/medium text; they’re fast to train and easy to audit in FL.
+
+Bigrams (ngram_range=(1,2)) capture short phrases like “software engineer” or “data analyst” that are highly predictive for interview round classification without adding heavy model complexity.
+
+Stopwords (stop_words="english") reduce noise and help the model focus on content-bearing tokens.
+
+max_features=2000 balances representational power and communication cost in FL (fewer parameters to ship per round). In quick ablations, going much larger increased model size with marginal accuracy gains, while smaller caps started to hurt recall on rarer phrases.
+
+Leakage cleaner: before vectorization, we remove exact round tokens (e.g., “technical”, “system design”) from the text to prevent trivial label leakage.
+
+**Model (Custom NumPy MLP)**
+
+*This Neural network was customized by me as part of my coursework COMSCII-589 course.*
+
+- Centralized baseline: 2-layer MLP with hidden size = 128 and sigmoid activations; softmax output over 5 classes, cross-entropy loss, L2 regularization λ=1e-4 (bias excluded).
+
+- Federated runs: same architecture family, but hidden size = 64 to reduce parameter count and lower per-round communication.
+
+Why this size/shape? A single hidden layer is sufficient for TF-IDF, keeps training stable, and avoids overfitting on a 2k-dimensional sparse input. The smaller FL hidden layer trades a tiny amount of capacity for far lower bandwidth each round.
+
+Training & Hyperparameters (Chosen for Stability + FL Efficiency)
+
+Optimizer: plain SGD (simple, transparent, and easy to reproduce).
+
+Learning rates:
+
+Centralized: LR_CENTRAL = 0.10
+
+Federated local: LR_LOCAL = 0.05
+These values gave fast early progress without oscillations.
+
+**Epochs** :
+
+Centralized: 100 outer loops (each inner call trains for 3 epochs)
+
+Federated: 5 local epochs per client per round (good utility per communication round).
+
+Rounds: 100 federated rounds to observe convergence under IID and label-skew Non-IID.
+
+Batching: full-batch on each client per local epoch (consistent with the NumPy MLP and small dataset size).
+
+Seed: SEED = 42 for reproducibility.
+
+Regularization: L2 = 1e-4 (excluding bias) to temper overfitting on sparse inputs without damping useful signal.
+
+Why these choices? We prioritized: (1) simple, auditable baselines; (2) fast convergence with small models; and (3) sane bandwidth use in FL (parameter count scales with max_features × hidden size). The final settings were validated across multiple runs for both IID and Non-IID partitions.
 ---
 
 ## Model & Training Details
@@ -365,3 +417,49 @@ Note:
 
 **All clients, all rounds (5 clients, 100 rounds)**  
 `8 × 128,389 × 5 × 100 = 513,556,000 bytes ≈ 490 MB`
+
+## AI Disclosure and Reference
+
+# How We Used LLMs
+
+- We used a Large Language Model (ChatGPT-4/GPT-5) as a development aid, not a substitute for our work.
+
+- Aggregator math → code: Helped translate the mathematical update rules for FedAvg, FedMedian, and FedSGD into clean code (shape handling, vectorization, edge-case guards). We reviewed and validated everything against papers and tests.
+
+- Partitioning assistance: Helped us segregate IID vs. Non-IID data (sanity-checking strategies for StratifiedKFold IID and label-skew Non-IID, plus quick checks for client histograms).
+
+- Plotting & parameters: Assisted with graph plotting, choosing readable plot parameters (labels, legends, axes, layout), and fixing a plotting error due to parameter/shape mismatch.
+
+- Editing & minor refactors: Shortened comments/docstrings and improved CLI ergonomics (argparse flags/help text).
+
+- Concept checks: Quick sanity checks on expected behavior under IID vs. Non-IID and relative robustness of aggregators.
+
+- Not done by LLMs: experiment design, hyperparameter selection, training/evaluation runs, results, or conclusions. All numbers, plots, and interpretations are ours.
+
+# What We Did Ourselves
+
+- Neural network implementation: Wrote the NumPy MLP from scratch (inspired by ML-589): He init, sigmoid hidden, softmax output, cross-entropy + L2 (bias excluded), forward/backward passes, parameter packing/unpacking, training loop.
+
+- All the design choices and experimental setup were done by the Lead and the team.
+
+- Data pipeline & leakage control: Built text column fallback, label-token leakage cleaner (word-boundary removal), TF-IDF (1–2 grams, max 2000 features), label encoding; performed and verified stratified train/test split.
+
+- Federated learning system: Implemented client partitioners (StratifiedKFold for IID; label-skew for Non-IID), FL loops for FedAvg, FedMedian, FedSGD, and end-to-end runners with artifact writing (CSVs/PNGs).
+
+- Hyperparameters: Selected and tuned hyperparameters ourselves, iterating through multiple runs (5 clients, 100 rounds; local epochs, LR schedules) and validating stability/accuracy trade-offs.
+
+- Analysis & reporting: Generated curves, computed communication overhead, and authored the Vulnerabilities & Implications discussion (why FL helps; why secure aggregation/DP may still be needed).
+
+# References & Acknowledgments
+
+McMahan et al., 2017 — Communication-Efficient Learning of Deep Networks from Decentralized Data (FedAvg):
+Link: https://proceedings.mlr.press/v54/mcmahan17a/mcmahan17a.pdf
+
+Yin et al., 2018 — Byzantine-Robust Distributed Learning: Towards Optimal Statistical Rates (FedMedian):
+Link: https://proceedings.mlr.press/v80/yin18a/yin18a.pdf
+
+Carlini et al., 2022 — Membership Inference Attacks from First Principles:
+Link: https://arxiv.org/pdf/2112.03570
+
+Kairouz et al., 2021 — Advances and Open Problems in Federated Learning (survey):
+Link: https://arxiv.org/pdf/1912.04977

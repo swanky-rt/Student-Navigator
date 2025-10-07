@@ -1,10 +1,22 @@
+"""
+central_train.py
+
+Centralized (non-FL) text classification pipeline:
+1) Load CSV, build text (or concat selected cols)
+2) Remove label tokens (leakage guard)
+3) Stratified split
+4) TF–IDF + label encode
+5) Train simple NN; log test accuracy per outer epoch
+6) Save artifacts (vectorizer, encoder, splits, acc curve, weights)
+"""
+
 import os, re, pickle, numpy as np, pandas as pd
 from pathlib import Path
 
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score  # (imported but unused; kept for parity)
 from neural_network_model import NeuralNetwork
 
 CSV_PATH        = "../data/EduPilot_dataset_2000.csv"
@@ -17,23 +29,33 @@ LR_CENTRAL      = 0.10
 ART = (Path(__file__).resolve().parent / "artifacts_centralized")
 ART.mkdir(parents=True, exist_ok=True)
 
+
 def build_text(df: pd.DataFrame) -> pd.Series:
-    if "text" in df.columns: return df["text"].astype(str)
+    """Return 'text' if present; else join {user_query,mock_question,job_role,company,location}."""
+    if "text" in df.columns:
+        return df["text"].astype(str)
     cols = [c for c in ["user_query","mock_question","job_role","company","location"] if c in df.columns]
-    if not cols: raise ValueError("No text-like columns found.")
+    if not cols:
+        raise ValueError("No text-like columns found.")
     return df[cols].astype(str).agg(" ".join, axis=1)
 
+
 def make_leak_cleaner(labels_lower):
+    """Strip exact label tokens from text (word-boundary, case-insensitive)."""
     toks = set()
     for lbl in labels_lower:
         toks |= set(re.split(r"\s+", str(lbl).strip().lower()))
     toks = {t for t in toks if t}
     pats = [re.compile(rf"\b{re.escape(t)}\b", re.I) for t in toks]
+
     def clean(s: str):
         s = str(s).lower()
-        for p in pats: s = p.sub(" ", s)
+        for p in pats:
+            s = p.sub(" ", s)
         return re.sub(r"\s+", " ", s).strip()
+
     return clean
+
 
 def main():
     np.random.seed(SEED)
@@ -63,25 +85,28 @@ def main():
     D, C = Xtr.shape[1], len(le.classes_)
     print(f"[data] D={D} C={C}")
 
-    # save artifacts & split for FL scripts
+    # Save preprocessing artifacts + raw splits for FL scripts
     with open(os.path.join(ART,"tfidf_vectorizer.pkl"),"wb") as f: pickle.dump(vec,f)
     with open(os.path.join(ART,"label_encoder.pkl"),"wb") as f: pickle.dump(le,f)
     pd.DataFrame({"text": Xtr_txt, "label": ytr_raw}).to_csv(os.path.join(ART,"centralized_train_text_labels.csv"), index=False)
     pd.DataFrame({"text": Xte_txt, "label": yte_raw}).to_csv(os.path.join(ART,"centralized_test_text_labels.csv"), index=False)
 
+    # Train NN (expects D×N inputs)
     nn = NeuralNetwork(layer_sizes=[D, HIDDEN_UNITS, C], lambd=LAMBDA)
     acc_hist = []
     Xtr_T, Xte_T = Xtr.T, Xte.T
 
     for ep in range(1, EPOCHS_CENTRAL + 1):
-        nn.train_multiclass(Xtr_T, ytr, lr=LR_CENTRAL, max_epochs=3, verbose=False)  # was 1
+        nn.train_multiclass(Xtr_T, ytr, lr=LR_CENTRAL, max_epochs=3, verbose=False)
         acc = (nn.predict_multiclass(Xte_T) == yte).mean()
         acc_hist.append(float(acc))
 
-    pd.DataFrame({"epoch": np.arange(1, EPOCHS_CENTRAL+1), "acc": acc_hist}).to_csv(ART/"central_accuracy.csv", index=False)
+    # Persist metrics + flattened weights
+    pd.DataFrame({"epoch": np.arange(1, EPOCHS_CENTRAL+1), "acc": acc_hist}).to_csv(ART / "central_accuracy.csv", index=False)
     flat = np.concatenate([w.ravel() for w in nn.weights])
     np.save(os.path.join(ART,"nn_weights.npy"), flat)
     print("Saved: central_accuracy.csv and artifacts in", ART)
+
 
 if __name__ == "__main__":
     main()

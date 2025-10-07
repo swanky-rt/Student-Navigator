@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+"""
+run_fed_median.py
+
+Thin runner for the FedMedian pipeline:
+- central : train centralized baseline
+- iid     : FedMedian on IID splits
+- non_iid : FedMedian on label-skew (non-IID) splits
+- plot    : generate comparison plots
+"""
+
 import argparse, subprocess, sys
 from pathlib import Path
 from datetime import datetime
@@ -13,7 +23,8 @@ SCRIPTS = {
     "plot":    "graph_fed_median.py",
 }
 
-def run(cmd, cwd: Path, keep_going: bool):
+def run(cmd: list[str], cwd: Path, keep_going: bool) -> None:
+    """Run a command; optionally continue on failure."""
     stamp = datetime.now().strftime("%H:%M:%S")
     print(f"[{stamp}] ▶ {' '.join(cmd)}  (cwd={cwd})")
     try:
@@ -23,7 +34,7 @@ def run(cmd, cwd: Path, keep_going: bool):
         if not keep_going:
             sys.exit(e.returncode)
 
-def main():
+def main() -> None:
     ap = argparse.ArgumentParser(description="Run FedMedian pipeline (location-agnostic)")
     ap.add_argument("--mode", choices=["all","iid","non-iid"], default="all",
                     help="Run IID, Non-IID, or all")
@@ -37,18 +48,20 @@ def main():
         print(f" directory not found: {WORKDIR}")
         sys.exit(1)
 
-    steps = []
+    # Build execution plan
+    steps: list[str] = []
     if not args.skip_central: steps.append(SCRIPTS["central"])
     if args.mode in ("all","iid"):     steps.append(SCRIPTS["iid"])
     if args.mode in ("all","non-iid"): steps.append(SCRIPTS["non_iid"])
     if not args.no_plot:               steps.append(SCRIPTS["plot"])
 
-
+    # Verify files exist
     missing = [s for s in steps if not (WORKDIR / s).exists()]
     if missing:
         print(" missing scripts in this folder:\n  " + "\n  ".join(missing))
         sys.exit(1)
 
+    # Summary
     print("=== FedMedian Runner ===")
     print(f"Folder     : {WORKDIR}")
     print(f"Python     : {args.python_path}")
@@ -58,6 +71,7 @@ def main():
     print(f"Keep going : {args.keep_going}")
     print("=" * 26)
 
+    # Execute
     for s in steps:
         run([args.python_path, s], WORKDIR, args.keep_going)
 

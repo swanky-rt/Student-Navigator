@@ -1,4 +1,13 @@
-# FedSGD Non-IID implementation (self-contained)
+"""
+fedsgd_non_iid.py
+
+Federated SGD on label-skewed (NON_IID) client splits:
+1) Load vectorizer/encoder + centralized splits from artifacts_centralized/
+2) Create NON_IID partitions via class buckets (labels_per_client per client)
+3) Each round: clients compute gradients; server averages and updates
+4) Save round-wise test accuracy -> fl_non_iid_fedsgd_accuracy.csv
+"""
+
 import os, pickle, numpy as np, pandas as pd
 from pathlib import Path
 
@@ -15,6 +24,7 @@ LAMBDA       = 1e-4
 MODE = "NON_IID"
 
 def make_label_skew_splits(y, k=5, seed=42, labels_per_client=2):
+	"""Build k non-IID splits by assigning each client up to `labels_per_client` classes."""
 	rng = np.random.default_rng(seed)
 	y = np.asarray(y); classes = np.unique(y)
 	buckets = {c: list(np.where(y==c)[0]) for c in classes}
@@ -33,7 +43,10 @@ def make_label_skew_splits(y, k=5, seed=42, labels_per_client=2):
 	return [sorted(s) for s in splits]
 
 class NeuralNetwork:
+	"""Tiny MLP with sigmoid hidden layers and softmax output; column-major inputs (D×N)."""
+
 	def __init__(self, layer_sizes, seed=42, lambd=0.0):
+		"""Initialize He weights; store L2 strength `lambd`."""
 		np.random.seed(seed)
 		self.layer_sizes = layer_sizes
 		self.num_layers = len(layer_sizes)
@@ -44,18 +57,22 @@ class NeuralNetwork:
 			self.weights.append(w)
 
 	def sigmoid_function(self, z):
+		"""σ(z) elementwise."""
 		z = np.array(z, dtype=np.float64)
 		return 1.0 / (1.0 + np.exp(-z))
 
 	def sigmoid_derivative_function(self, a):
+		"""σ'(z) given a=σ(z)."""
 		return a * (1.0 - a)
 
 	def softmax_function(self, z):
+		"""Stable softmax per column."""
 		z = z - z.max(axis=0, keepdims=True)
 		ez = np.exp(z)
 		return ez / np.clip(ez.sum(axis=0, keepdims=True), 1e-12, None)
 
 	def forward_pass(self, X, use_softmax_output=True):
+		"""Return (pre_acts, acts) over layers; softmax output by default."""
 		pre_acts, acts = [], []
 		A = X
 		for l, W in enumerate(self.weights[:-1]):
@@ -74,6 +91,7 @@ class NeuralNetwork:
 		return pre_acts, acts
 
 	def backward_pass_multiclass(self, acts, X, Y_onehot):
+		"""Backprop for softmax+CE; return grads shaped like self.weights."""
 		N = X.shape[1]
 		grads = [np.zeros_like(W) for W in self.weights]
 		H_list = acts[:-1]
@@ -100,10 +118,12 @@ class NeuralNetwork:
 		return grads
 
 	def get_params_vector(self):
+		"""Flatten all weight matrices (bias-inclusive)."""
 		flats = [W.reshape(-1) for W in self.weights]
 		return np.concatenate(flats, axis=0)
 
 	def set_params_vector(self, vec):
+		"""Load weights from a flat vector with stored shapes."""
 		offset = 0
 		for l in range(len(self.weights)):
 			shape = self.weights[l].shape
@@ -112,10 +132,12 @@ class NeuralNetwork:
 			offset += size
 
 	def predict_multiclass(self, X):
+		"""Argmax over softmax outputs -> (N,)."""
 		_, acts = self.forward_pass(X, use_softmax_output=True)
 		return np.argmax(acts[-1], axis=0)
 
 	def compute_multiclass_gradient(self, X, Y_labels):
+		"""Compute gradient vector for softmax CE on a shard."""
 		C = int(np.max(Y_labels)) + 1
 		Y_onehot = np.zeros((C, Y_labels.shape[0]), dtype=np.float64)
 		Y_onehot[Y_labels, np.arange(Y_labels.shape[0])] = 1.0
@@ -146,6 +168,7 @@ def main():
 		print(f"[{MODE}] client {i}: N={len(idxs)} hist={dict(cnt)}")
 
 	def client_data(idxs):
+		"""Return (D×Ni features, labels) for client indices."""
 		Xi = Xtr[idxs]; yi = ytr[idxs]
 		return Xi.T, yi
 
