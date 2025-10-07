@@ -85,6 +85,7 @@ assignment-2/
     │   └── graph_plotting.py               # Plot FL (IID vs Non-IID) accuracy vs. rounds alongside centralized accuracy vs. epochs.
     │   └── neural_network_model.py         # Neural Network implementation class
     │   └── run_fedAvg.py                   # runner file for the full pipeline
+
     ├── federated_learning_fedMedian/       # (FL Implementation using Fed Median aggregator)
     │   └── centralize_global_file.py       # Pipeline (centralized, non-FL)
     │   └── fedMedian_iid.py                # Federated Median (coordinate-wise median of client weights) on IID, stratified spl
@@ -93,6 +94,7 @@ assignment-2/
     │   └── graph_plotting.py               # Plot FL (IID vs Non-IID) accuracy vs. rounds alongside centralized accuracy vs. epochs.
     │   └── neural_network_model.py         # Neural Network implementation class
     │   └── run_fedAvg.py                   # runner file for the full pipeline
+
     ├── federated_learning_fedSgd/          # (FL Implementation using Fed SGD aggregator)
     │   └── centralize_global_file.py       # Pipeline (centralized, non-FL)
     │   └── fedsgd_iid.py                   # Federated SGD on IID, stratified client splits
