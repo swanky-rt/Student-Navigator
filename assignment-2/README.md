@@ -27,6 +27,7 @@
 * [Verification & Results](#assignment-requirements--verification--results)
 * [Communication Overhead](#communication-overhead)
 * [AI Disclosure and Reference](#ai-disclosure-and-reference)
+* [References](#references)
 
 ---
 
@@ -384,7 +385,7 @@ Note:
 
 ## AI Disclosure and Reference
 
-# How We Used LLMs
+### How We Used LLMs
 
 - We used a Large Language Model (ChatGPT-4/GPT-5) as a development aid, not a substitute for our work.
 
@@ -400,7 +401,9 @@ Note:
 
 - Not done by LLMs: experiment design, hyperparameter selection, training/evaluation runs, results, or conclusions. All numbers, plots, and interpretations are ours.
 
-# What We Did Ourselves
+---
+
+### What We Did Ourselves
 
 - Neural network implementation: Wrote the NumPy MLP from scratch (inspired by ML-589): He init, sigmoid hidden, softmax output, cross-entropy + L2 (bias excluded), forward/backward passes, parameter packing/unpacking, training loop.
 
@@ -414,7 +417,9 @@ Note:
 
 - Analysis & reporting: Generated curves, computed communication overhead, and authored the Vulnerabilities & Implications discussion (why FL helps; why secure aggregation/DP may still be needed).
 
-# References & Acknowledgments
+---
+
+# References
 
 - McMahan et al., 2017 — *Communication-Efficient Learning of Deep Networks from Decentralized Data (FedAvg).*  
   PDF: https://arxiv.org/pdf/1602.05629
