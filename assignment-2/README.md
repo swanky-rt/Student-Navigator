@@ -426,15 +426,13 @@ Note:
 
 - Aggregator math → code: Helped translate the mathematical update rules for FedAvg, FedMedian, and FedSGD into clean code (shape handling, vectorization, edge-case guards). We reviewed and validated everything against papers and tests.
 
-- Partitioning assistance: Helped us segregate IID vs. Non-IID data (sanity-checking strategies for StratifiedKFold IID and label-skew Non-IID, plus quick checks for client histograms).
+- Partitioning: Helped us segregate IID vs. Non-IID data (sanity-checking strategies for StratifiedKFold IID and label-skew Non-IID, plus quick checks for client histograms).
 
 - Plotting & parameters: Assisted with graph plotting, choosing readable plot parameters (labels, legends, axes, layout), and fixing a plotting error due to parameter/shape mismatch.
 
 - Editing & minor refactors: Shortened comments/docstrings and improved CLI ergonomics (argparse flags/help text).
 
 - Concept checks: Quick sanity checks on expected behavior under IID vs. Non-IID and relative robustness of aggregators.
-
-- Not done by LLMs: experiment design, hyperparameter selection, training/evaluation runs, results, or conclusions. All numbers, plots, and interpretations are ours.
 
 ---
 
@@ -446,7 +444,7 @@ Note:
 
 - Data pipeline & leakage control: Built text column fallback, label-token leakage cleaner (word-boundary removal), TF-IDF (1–2 grams, max 2000 features), label encoding; performed and verified stratified train/test split.
 
-- Federated learning system: Implemented client partitioners (StratifiedKFold for IID; label-skew for Non-IID), FL loops for FedAvg, FedMedian, FedSGD, and end-to-end runners with artifact writing (CSVs/PNGs).
+- Federated learning system: Implemented FL loops for FedAvg, FedMedian, FedSGD, and end-to-end runners with artifact writing (CSVs/PNGs).
 
 - Hyperparameters: Selected and tuned hyperparameters ourselves, iterating through multiple runs (5 clients, 100 rounds; local epochs, LR schedules) and validating stability/accuracy trade-offs.
 
