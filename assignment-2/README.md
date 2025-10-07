@@ -15,7 +15,6 @@
 
 * [Dataset](#dataset)
 * [Folder Setup](#folder-setup)
-* [Design Choices](#design-choices)
 * [Design Choices: Vectorization & Model (with Rationale)](#design-choices-vectorization--model-with-rationale)
 * [Model & Training Details](#model--training-details)
 * [Client Partitioning](#client-partitioning)
@@ -106,17 +105,33 @@ assignment-2/
 
 ```
 ---
+## Design Choices: Vectorization & Model (with Rationale)
 
-## Model
+### Design Choices
 
-* **Architecture:** Custom NumPy MLP: *Adapted from COMPSCII ML-589 coursework.* I have implemented this simple neural newtork from scratch without using any existing library.
+* **#Clients:** 5
+  We used 5 clients — enough to feel realistic, but still easy to run on our machines.
+*  **Model:** Neural Network
+* **IID simulation:** Stratified 5-fold split ensures that each client has the same mix of labels as the full dataset.
+* **Non-IID simulation:** Label-skew strategy; we gave each client mostly 2 types of labels(this makes them biased towards ~2 labels), with the rest spread out randomly.
+* **Local epochs:** Set to **5** — long enough to let local models learn, short enough to avoid divergence.
+* **Rounds:** 100 federated rounds to observe convergence patterns.
+* **Hidden units:** 64 for FL (to reduce comms cost); 128 for centralized baseline.
+* **Regularization:** L2 with λ = 1e-4, excluding bias terms.
+* **max_features**: 2000 balances representational power and communication cost in FL 
+
+---
+### Model
+
+* **Architecture:** Custom NumPy MLP: *Adapted from COMPSCII ML-589 coursework.* I have implemented this neural newtork from scratch without using any existing library.
 * **Centralized baseline:** 2-layer MLP, **hidden=128**, **sigmoid** hidden, **softmax** over 5 classes, cross-entropy + **L2 (λ=1e-4)** (bias excluded)  
 * **Federated runs:** same family with **hidden=64** to lower parameter count and per-round bandwidth  
 * **Why this shape?** One hidden layer is sufficient for TF-IDF inputs, keeps training stable, and mitigates overfitting on 2k-dim sparse vectors; smaller FL hidden trades a bit of capacity for much lower comms
 
 **Why these settings?** We prioritized (1) simple, auditable baselines, (2) fast convergence with compact models, and (3) sane FL bandwidth (parameters scale with `max_features × hidden`). These choices were validated across multiple IID/Non-IID runs.
 
-# Training Details
+---
+### Training Details
 
   * Input: TF-IDF vectors (1–2 grams, max 2000 features)
   * Hidden: 1 fully-connected layer with sigmoid activations
