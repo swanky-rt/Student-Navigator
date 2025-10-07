@@ -385,37 +385,52 @@ Like how with the dataset domain (Image, text, voice) one must tune parameters, 
 ---
 ## 7. Key Findings and Insights
 
-###  Privacy Protection Effectiveness
+### **Privacy Protection Effectiveness**
 
-DP-SGD significantly improved privacy, reducing the budget from ∞ to **ε = 2.53** with only a **2.5% accuracy drop**. The MIA AUC decreased from **0.812 → 0.632**, showing a **22% lower attack success rate**. The tuned setup *(C = 0.17, σ = 1.5, L = 60, LR = 0.1)* achieved very less degradation from baseline accuracy while ensuring strong privacy.
-
-### Hyperparameter Sensitivity
-
-* **Clipping Norm (C):** Best at **0.17** (~1.13x median gradient norm). Too small over-clips; too large weakens privacy.
-* **Lot Size (L):** Optimal at **60**, balancing privacy amplification and stable gradients.
-* **Learning Rate (LR):** **0.1** gave stable convergence; higher values amplified noise.
-* **Model Capacity:** Accuracy stayed constant (~0.81–0.83); noise diluted with more parameters.
-
-Hyper parameter tuning is extremely important, not just the privacy related params like C and σ, we also need to tune params like lot size, LR to get a higher utility model *with a good privacy*. This assignment shows the same.
+DP-SGD made a noticeable difference in protecting privacy. It brought the privacy budget down from ∞ to **ε = 2.53**, with just about a **2.5% drop in accuracy**, a good trade-off according to me, for a big privacy gain.  
+The Membership Inference Attack (MIA) success rate also dropped, with AUC going from **0.812 → 0.632**, meaning a **22% lower chance of an attacker guessing memberships correctly**.  
+Our tuned setup *(C = 0.17, σ = 1.5, L = 60, LR = 0.1)* managed to hold accuracy close to the baseline while adding a strong layer of privacy protection.
 
 
-### Privacy Accounting Insights
+### **Hyperparameter Sensitivity**
 
-Using the **Moments Accountant**, ε grew sublinearly and stabilized near **2.53** after 50 epochs. This confirmed the theoretical √T scaling. The chosen **δ = 1/N** was suitable for the dataset size (~4k).
+We learned that the success of DP-SGD depends as much on the training setup as on the privacy parameters:
+
+- **Clipping Norm (C = 0.17):** Too small and it over-clips gradients; too large and it weakens privacy.
+- **Lot Size (L = 60):** Gave the best balance between privacy amplification and stable gradient updates (≈ √N, where N = 4000 → √N ≈ 62).
+- **Learning Rate (LR = 0.1):** Worked best for convergence; higher rates amplified noise.
+- **Model Capacity:** Accuracy remained steady (~0.81–0.83), showing that adding parameters diluted DP noise impact.
+
+In short, **getting privacy right isn’t only about tuning σ or C**, it’s about balancing every part of the setup. Lot size and learning rate can make or break a "private but usable" model. Also, when considering a new type of model (like we did for TextCNN), we need to tune the params for that as well.
 
 
+### **Privacy Accounting Insights**
+
+The **Moments Accountant** turned out to be far more efficient than Strong Composition as a tighter estimation. ε grew slowly and stabilized near **2.53** after about 50 epochs, exactly as the √T scaling theory predicts. Using **δ = 1/N** was a good fit for our dataset and ensured a sound privacy guarantee.
+
+Seeing ε evolve empirically across epochs helped me connect theory to my experiemenrt, it’s one thing to read about privacy accounting, but watching it happen in code made it click.
+
+
+### **Personal Learnings**
+
+This project taught me how to **build an end-to-end privacy pipeline**, from TF-IDF preprocessing and model training, to adding DP-SGD, tracking ε–δ accounting, and testing privacy through MIA. I also learned how theoretical concepts like **Moments Accountant** and **Strong Composition** behave in practice. Automating parameter sweeps and structured result logging improved how I experiment, making the process reproducible, cleaner, and data-driven.
 
 ---
 
 ## 8. Limitations and Future Work
 
-### Current Limitations
+### **Current Limitations**
 
-Results are based on **synthetic, small-scale data** (~4k samples) and a **simple MLP model**, evaluated only against **MIA attacks**, so findings may not fully generalize.
+Our results are based on a **synthetic dataset (~4k samples)** and a **simple MLP architecture**, tested only with **Membership Inference Attacks**.  
+While useful for controlled evaluation, it doesn’t fully represent complex real-world or large-scale privacy challenges.
 
-### Future Directions
 
-Test on **real datasets**, explore **transformer-based models**, extend to **more attack types**, and combine DP with **federated learning** for broader privacy protection.
+### **Future Directions**
+
+Going forward, it would be valuable to:
+- Experiment with **real-world datasets** and **larger architectures** like Transformers.
+- Extend to **other attack types** and other DP optimizers like DP-Adam (e.g., attribute or gradient inference).  
+- Explore combining **Differential Privacy with Federated Learning** for stronger, distributed privacy protection.
 
 ---
 
