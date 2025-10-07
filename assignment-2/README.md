@@ -16,6 +16,7 @@
 * [Dataset](#dataset)
 * [Folder Setup](#folder-setup)
 * [Design Choices](#design-choices)
+* [Design Choices: Vectorization & Model (with Rationale)](#design-choices-vectorization--model-with-rationale)
 * [Model & Training Details](#model--training-details)
 * [Client Partitioning](#client-partitioning)
 * [Aggregation Methods](#aggregation-methods)
@@ -25,6 +26,7 @@
 * [References](#references)
 * [Verification & Results](#assignment-requirements--verification--results)
 * [Communication Overhead](#communication-overhead)
+* [AI Disclosure and Reference](#ai-disclosure-and-reference)
 
 ---
 
@@ -75,81 +77,43 @@ assignment-2/
     │   └── EduPilot_dataset_2000.csv       # Main dataset
 
     ├── federated_learning_fedAvg/          # (FL Implementation using Fed Avg aggregator)
+    │   └── centralize_global_file.py       # Pipeline (centralized, non-FL)
+    │   └── federated_learning_iid.py       # Federated Averaging (FedAvg) on IID, stratified client splits.
+    │   └── federated_learning_non_iid      # FedAvg with label-skewed (NON_IID) client partitions
+    │   └── federated_learning_run.py       # Utilities class
+    │   └── graph_plotting.py               # Plot FL (IID vs Non-IID) accuracy vs. rounds alongside centralized accuracy vs. epochs.
+    │   └── neural_network_model.py         # Neural Network implementation class
+    │   └── run_fedAvg.py                   # runner file for the full pipeline
     ├── federated_learning_fedMedian/       # (FL Implementation using Fed Median aggregator)
+    │   └── centralize_global_file.py       # Pipeline (centralized, non-FL)
+    │   └── fedMedian_iid.py                # Federated Median (coordinate-wise median of client weights) on IID, stratified spl
+    │   └── fedMedian_non_iid               # Federated Median on label-skewed (NON_IID) client splits
+    │   └── federated_learning_run.py       # Utilities class
+    │   └── graph_plotting.py               # Plot FL (IID vs Non-IID) accuracy vs. rounds alongside centralized accuracy vs. epochs.
+    │   └── neural_network_model.py         # Neural Network implementation class
+    │   └── run_fedAvg.py                   # runner file for the full pipeline
     ├── federated_learning_fedSgd/          # (FL Implementation using Fed SGD aggregator)
+    │   └── centralize_global_file.py       # Pipeline (centralized, non-FL)
+    │   └── fedsgd_iid.py                   # Federated SGD on IID, stratified client splits
+    │   └── fedsgd_non_iid.py               # Federated SGD on label-skewed (NON_IID) client splits
+    │   └── federated_learning_run.py       # Utilities class
+    │   └── graph_plotting.py               # Plot FL (IID vs Non-IID) accuracy vs. rounds alongside centralized accuracy vs. epochs.
+    │   └── neural_network_model.py         # Neural Network implementation class
+    │   └── run_fedAvg.py                   # runner file for the full pipeline
 
 ```
 ---
 
-## Design Choices
+## Model
 
-* **#Clients:** 5
-  We used 5 clients — enough to feel realistic, but still easy to run on our machines.
-*  **Model:** Neural Network
-* **IID simulation:** Stratified 5-fold split ensures that each client has the same mix of labels as the full dataset.
-* **Non-IID simulation:** Label-skew strategy; we gave each client mostly 2 types of labels(this makes them biased towards ~2 labels), with the rest spread out randomly.
-* **Local epochs:** Set to **5** — long enough to let local models learn, short enough to avoid divergence.
-* **Rounds:** 100 federated rounds to observe convergence patterns.
-* **Hidden units:** 64 for FL (to reduce comms cost); 128 for centralized baseline.
-* **Regularization:** L2 with λ = 1e-4, excluding bias terms.
+* **Architecture:** Custom NumPy MLP: *Adapted from COMPSCII ML-589 coursework.* I have implemented this simple neural newtork from scratch without using any existing library.
+* **Centralized baseline:** 2-layer MLP, **hidden=128**, **sigmoid** hidden, **softmax** over 5 classes, cross-entropy + **L2 (λ=1e-4)** (bias excluded)  
+* **Federated runs:** same family with **hidden=64** to lower parameter count and per-round bandwidth  
+* **Why this shape?** One hidden layer is sufficient for TF-IDF inputs, keeps training stable, and mitigates overfitting on 2k-dim sparse vectors; smaller FL hidden trades a bit of capacity for much lower comms
 
-## Design Choices: Vectorization & Model (with Rationale)
+**Why these settings?** We prioritized (1) simple, auditable baselines, (2) fast convergence with compact models, and (3) sane FL bandwidth (parameters scale with `max_features × hidden`). These choices were validated across multiple IID/Non-IID runs.
 
-Note: Parameter-specific settings are implemented in the code and briefly justified here.
-
-Features (TF-IDF with bigrams, max_features=2000)
-
-Why TF-IDF? Sparse, interpretable representations work well on small/medium text; they’re fast to train and easy to audit in FL.
-
-Bigrams (ngram_range=(1,2)) capture short phrases like “software engineer” or “data analyst” that are highly predictive for interview round classification without adding heavy model complexity.
-
-Stopwords (stop_words="english") reduce noise and help the model focus on content-bearing tokens.
-
-max_features=2000 balances representational power and communication cost in FL (fewer parameters to ship per round). In quick ablations, going much larger increased model size with marginal accuracy gains, while smaller caps started to hurt recall on rarer phrases.
-
-Leakage cleaner: before vectorization, we remove exact round tokens (e.g., “technical”, “system design”) from the text to prevent trivial label leakage.
-
-**Model (Custom NumPy MLP)**
-
-*This Neural network was customized by me as part of my coursework COMSCII-589 course.*
-
-- Centralized baseline: 2-layer MLP with hidden size = 128 and sigmoid activations; softmax output over 5 classes, cross-entropy loss, L2 regularization λ=1e-4 (bias excluded).
-
-- Federated runs: same architecture family, but hidden size = 64 to reduce parameter count and lower per-round communication.
-
-Why this size/shape? A single hidden layer is sufficient for TF-IDF, keeps training stable, and avoids overfitting on a 2k-dimensional sparse input. The smaller FL hidden layer trades a tiny amount of capacity for far lower bandwidth each round.
-
-Training & Hyperparameters (Chosen for Stability + FL Efficiency)
-
-Optimizer: plain SGD (simple, transparent, and easy to reproduce).
-
-Learning rates:
-
-Centralized: LR_CENTRAL = 0.10
-
-Federated local: LR_LOCAL = 0.05
-These values gave fast early progress without oscillations.
-
-**Epochs** :
-
-Centralized: 100 outer loops (each inner call trains for 3 epochs)
-
-Federated: 5 local epochs per client per round (good utility per communication round).
-
-Rounds: 100 federated rounds to observe convergence under IID and label-skew Non-IID.
-
-Batching: full-batch on each client per local epoch (consistent with the NumPy MLP and small dataset size).
-
-Seed: SEED = 42 for reproducibility.
-
-Regularization: L2 = 1e-4 (excluding bias) to temper overfitting on sparse inputs without damping useful signal.
-
-Why these choices? We prioritized: (1) simple, auditable baselines; (2) fast convergence with small models; and (3) sane bandwidth use in FL (parameter count scales with max_features × hidden size). The final settings were validated across multiple runs for both IID and Non-IID partitions.
----
-
-## Model & Training Details
-
-* **Architecture:** Custom NumPy MLP
+# Training Details
 
   * Input: TF-IDF vectors (1–2 grams, max 2000 features)
   * Hidden: 1 fully-connected layer with sigmoid activations
@@ -357,7 +321,7 @@ OR
 STEP-1: Run script directly "run_fed_median.py" which is at this location "assignment-2/code/federated_learning_fedMedian"
 
 STEP-2: Run script directly "run_fed_sgd.py" which we is at this location "assignment-2/code/federated_learning_fedSgd"
-___
+---
 
 Note:
 
@@ -371,12 +335,8 @@ Note:
 
 - CSVs(for Fed Median): `fl_iid_fedsgd_accuracy.csv`, `fl_non_iid_fedsgd_accuracy.csv`, `central_accuracy.csv`  
 - Figure: `fl_iid_vs_non_iid_vs_central_fedsgd.png`
-  
-## References
 
-* McMahan et al., 2017. *Communication-Efficient Learning of Deep Networks from Decentralized Data* (FedAvg).
-* Yin et al., 2018. *Byzantine-Robust Distributed Learning: Towards Optimal Statistical Rates* (FedMedian).
-* Carlini et al., 2022. *Membership Inference Attacks from First Principles* (for vulnerabilities).
+---
 
 ## Assignment Requirements — Verification & Results
 
@@ -399,6 +359,8 @@ Note:
 | FL IID | 0.8250 | 100 | 75 | 82 | 96 | — |
 | FL Non‑IID | 0.7425 | 100 | 89 | — | — | — |
 
+---
+
 ## Communication Overhead
 
 **Formula (total bytes)**  
@@ -417,6 +379,8 @@ Note:
 
 **All clients, all rounds (5 clients, 100 rounds)**  
 `8 × 128,389 × 5 × 100 = 513,556,000 bytes ≈ 490 MB`
+
+---
 
 ## AI Disclosure and Reference
 
@@ -452,14 +416,17 @@ Note:
 
 # References & Acknowledgments
 
-McMahan et al., 2017 — Communication-Efficient Learning of Deep Networks from Decentralized Data (FedAvg):
-Link: https://proceedings.mlr.press/v54/mcmahan17a/mcmahan17a.pdf
+- McMahan et al., 2017 — *Communication-Efficient Learning of Deep Networks from Decentralized Data (FedAvg).*  
+  PDF: https://arxiv.org/pdf/1602.05629
 
-Yin et al., 2018 — Byzantine-Robust Distributed Learning: Towards Optimal Statistical Rates (FedMedian):
-Link: https://proceedings.mlr.press/v80/yin18a/yin18a.pdf
+- Yin et al., 2018 — *Byzantine-Robust Distributed Learning: Towards Optimal Statistical Rates (FedMedian).*  
+  PDF: https://arxiv.org/pdf/1803.01498
 
-Carlini et al., 2022 — Membership Inference Attacks from First Principles:
-Link: https://arxiv.org/pdf/2112.03570
+- Kairouz et al., 2021 — *Advances and Open Problems in Federated Learning (survey).*  
+  PDF: https://arxiv.org/pdf/1912.04977
 
-Kairouz et al., 2021 — Advances and Open Problems in Federated Learning (survey):
-Link: https://arxiv.org/pdf/1912.04977
+- Abadi et al., 2016 — *Deep Learning with Differential Privacy.*  
+  PDF: https://arxiv.org/pdf/1607.00133
+  
+- Carlini et al., 2022 — *Membership Inference Attacks from First Principles.*  
+  PDF: https://arxiv.org/pdf/2112.03570
