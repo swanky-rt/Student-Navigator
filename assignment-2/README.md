@@ -91,7 +91,7 @@ assignment-2/
     │   └── federated_learning_run.py       # Utilities class
     │   └── graph_plotting.py               # Plot FL (IID vs Non-IID) accuracy vs. rounds alongside centralized accuracy vs. epochs.
     │   └── neural_network_model.py         # Neural Network implementation class
-    │   └── run_fedAvg.py                   # runner file for the full pipeline
+    │   └── run_fed_median.py                   # runner file for the full pipeline
 
     ├── federated_learning_fedSgd/          # (FL Implementation using Fed SGD aggregator)
     │   └── centralize_global_file.py       # Pipeline (centralized, non-FL)
@@ -100,7 +100,7 @@ assignment-2/
     │   └── federated_learning_run.py       # Utilities class
     │   └── graph_plotting.py               # Plot FL (IID vs Non-IID) accuracy vs. rounds alongside centralized accuracy vs. epochs.
     │   └── neural_network_model.py         # Neural Network implementation class
-    │   └── run_fedAvg.py                   # runner file for the full pipeline
+    │   └── run_fed_sgd.py                   # runner file for the full pipeline
 
 ```
 ---
@@ -122,7 +122,7 @@ assignment-2/
 ---
 ### Model
 
-* **Architecture:** Custom NumPy MLP: *Adapted from COMPSCII ML-589 coursework.* I have implemented this neural newtork from scratch without using any existing library.
+* **Architecture:** Custom NumPy MLP: *Adapted from COMPSCII ML-589 coursework.* I have implemented this neural network from scratch without using any existing library.
 * **Centralized baseline:** 2-layer MLP, **hidden=128**, **sigmoid** hidden, **softmax** over 5 classes, cross-entropy + **L2 (λ=1e-4)** (bias excluded)  
 * **Federated runs:** same family with **hidden=64** to lower parameter count and per-round bandwidth  
 * **Why this shape?** One hidden layer is sufficient for TF-IDF inputs, keeps training stable, and mitigates overfitting on 2k-dim sparse vectors; smaller FL hidden trades a bit of capacity for much lower comms
@@ -208,7 +208,7 @@ assignment-2/
 | FedAvg (IID)        | ~0.82–0.83     | Converges close to centralized                      |
 | FedMedian (IID)     | ~0.80–0.81     | Slightly slower convergence, more stable            |
 | FedAvg (Non-IID)    | ~0.74–0.75     | Accuracy drop due to label skew                     |
-| FedMedian (Non-IID) | ~0.73–0.74     | More robust than FedAvg under skew, but still lower |
+| FedMedian (Non-IID) | ~0.317–0.32    | Accuracy drops                                      |
 
 **Key observations:**
 
