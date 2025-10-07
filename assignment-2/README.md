@@ -416,6 +416,8 @@ Note:
 - Hyperparameters: Selected and tuned hyperparameters ourselves, iterating through multiple runs (5 clients, 100 rounds; local epochs, LR schedules) and validating stability/accuracy trade-offs.
 
 - Analysis & reporting: Generated curves, computed communication overhead, and authored the Vulnerabilities & Implications discussion (why FL helps; why secure aggregation/DP may still be needed).
+  
+- Built the presentation + reading report on our own.
 
 ---
 
