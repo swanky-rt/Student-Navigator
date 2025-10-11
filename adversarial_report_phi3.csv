@@ -1,0 +1,13 @@
+case_id,case_text,class,expected,detected
+1,j . d o e [ at ] example [ dot ] com,EMAIL,1,0
+2,j.a.n.e.d.o.e [at] example [dot] com,EMAIL,1,0
+3,+1 (2 0 2) 5 5 5 - 0 1 7 3,PHONE,1,0
+4,4 1 1 1  1 1 1 1  1 1 1 1  1 1 1 1,CREDIT_CARD,1,1
+4,4 1 1 1  1 1 1 1  1 1 1 1  1 1 1 1,PHONE,0,1
+5,credit card: 4111-1111-1111-1111,CREDIT_CARD,1,1
+6,123 45 6789,SSN,1,0
+7,192․168․1․55,IP,1,0
+8,2023-0l-15,DATE,1,0
+9,03/22/1997,DATE,1,1
+10,Jane Doe met John Smith,NAME,1,1
+11,2001:0db8:85a3:0000:0000:8a2e:0370:7334,IPV6,1,1
