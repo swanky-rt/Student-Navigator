@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-pii_4_updated.py
+pii.py
 
 Week 5 — Assignment 4: PII Filtering (Complete, with plotting)
 
@@ -18,9 +18,9 @@ What this script does (end-to-end):
 - Writes a README section that points to every plot location for your report/slide deck.
 
 USAGE (examples):
-    python pii_4_updated.py --rows 1000 --model mistral
-    python pii_4_updated.py --skip-llm-redaction
-    python pii_4_updated.py --plots-dir figs --rows 500
+    python pii.py --rows 1000 --model mistral
+    python pii.py --skip-llm-redaction
+    python pii.py --plots-dir figs --rows 500
 
 NOTES:
 - This script uses ONLY matplotlib for plots (no seaborn).
