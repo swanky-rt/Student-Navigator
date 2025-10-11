@@ -426,7 +426,40 @@ The trade-off between **privacy** (residual leakage) and **utility** (tokens pre
 
 ## Artifacts
 
-All generated plots are stored in the same directory in a separate folder `plots`.
+All generated plots are stored in the same directory in a separate folder `plots`. Here is a breakdown of each file and what it represents:
+
+### 1. **micro_by_mode.png**
+   - **Description**: A bar plot showing the **micro-average** metrics (Precision, Recall, F1-score) for each of the redaction modes: **Strict**, **Partial**, and **LLM**.
+   - **Purpose**: Helps to understand how the system performs across all classes of PII at a high level, considering all detected PII types in aggregate.
+
+### 2. **per_class_recall.png**
+   - **Description**: A bar plot of **recall** scores for each PII class (e.g., **Email**, **Phone**, **Credit Card**, etc.) across all redaction modes.
+   - **Purpose**: This plot highlights the system's ability to correctly identify all instances of each PII type.
+
+### 3. **per_class_precision.png**
+   - **Description**: A bar plot of **precision** scores for each PII class across the redaction modes.
+   - **Purpose**: Shows the system's accuracy in detecting PII, i.e., how many of the identified PII were actually correct detections.
+
+### 4. **residual_leakage.png**
+   - **Description**: A bar plot showing the **residual leakage rate** for **high-risk PII** types like **Credit Card** and **SSN**, calculated across different redaction modes.
+   - **Purpose**: This plot is essential for understanding how much **sensitive data** (e.g., credit card numbers, SSNs) was **missed** during the redaction process, indicating any potential privacy risks.
+
+### 5. **per_class_f1.png**
+   - **Description**: A bar plot of **F1 scores** for each PII class across the redaction modes.
+   - **Purpose**: The F1 score is the harmonic mean of precision and recall, and this plot shows the system's overall **balanced performance** in detecting each type of PII.
+
+### 6. **utility_vs_privacy.png**
+   - **Description**: A scatter plot comparing **utility** (percentage of tokens preserved) and **privacy** (residual leakage, shown as leakage rates) for each redaction mode.
+   - **Purpose**: This plot provides a **trade-off analysis**, helping to visualize the relationship between how much information is retained (utility) and how well privacy is protected (residual leakage).
+
+### 7. **adversarial_heatmap.png**
+   - **Description**: A heatmap showing the **detection rate** of adversarial test cases across the different redaction modes.
+   - **Purpose**: This plot helps to visualize how the system performs in detecting **obfuscated PII** (e.g., spaced digits, leetspeak, or Unicode confusables) in adversarial cases. It compares the performance of the **Strict**, **Partial**, and **LLM** modes.
+
+### 8. **runtime_by_mode.png**
+   - **Description**: A bar plot showing the **runtime (in seconds)** for processing 1000 documents across the three redaction modes.
+   - **Purpose**: This plot helps to compare the **efficiency** of each mode. It shows how long the system takes to process documents, helping to assess the **trade-off** between privacy protection and system performance.
+
 
 ## How to Run the PII Filtering System
 
