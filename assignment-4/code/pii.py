@@ -1,30 +1,70 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 pii.py
 
 Week 5 — Assignment 4: PII Filtering (Complete, with plotting)
 
-What this script does (end-to-end):
-- Generates a synthetic dataset via Ollama (Mistral) if 'synthetic_jobs.csv' is missing (optional).
-- Detects PII using regex/heuristics for: EMAIL, PHONE, CREDIT_CARD, SSN, DATE/DOB, NAME, IP (+ optional IPv6).
-- Handles unicode confusables + spaced/obfuscated digits via normalization pass for detection.
-- Implements three redaction modes: strict, partial, and LLM-driven (via Ollama; optional).
-- Evaluates detection with Precision/Recall/F1 per class + MICRO.
-- Computes residual leakage rates for high-risk classes: CREDIT_CARD and SSN.
-- Runs ≥ 5 adversarial cases and reports catches vs. misses.
-- Computes utility proxies and runtime.
-- Saves artifacts: cleaned CSVs (strict/partial/llm), adversarial_report.csv, metrics.json/csv, and figures (.png).
-- Writes a README section that points to every plot location for your report/slide deck.
+This script performs a comprehensive process for detecting and redacting Personally Identifiable Information (PII) in synthetic job posting data. It handles multiple stages from dataset generation to redaction, evaluation, and plotting results.
 
-USAGE (examples):
-    python pii.py --rows 1000 --model mistral
-    python pii.py --skip-llm-redaction
-    python pii.py --plots-dir figs --rows 500
+Key Functions and Flow:
+1. **Synthetic Dataset Generation (Optional)**:
+   - If the required dataset `synthetic_jobs.csv` is missing, the script can generate a synthetic dataset containing job postings. This process uses the Ollama model (Mistral) to create realistic job postings with embedded PII (like emails, phone numbers, names, etc.). The generated dataset is saved in `synthetic_jobs.csv`.
+   - This can be skipped if you already have the dataset.
 
-NOTES:
-- This script uses ONLY matplotlib for plots (no seaborn).
-- Colors are not explicitly set (assignment/tooling requirement).
+2. **PII Detection**:
+   - The script detects various types of PII (Email, Phone, Credit Card, SSN, Date of Birth, Name, and IP Address) in the text using regular expressions (regex) patterns and heuristics. It also handles obfuscated PII, such as emails written as `j.doe [at] example [dot] com` or spaced digits in credit card numbers.
+   - It supports both IPv4 and optional IPv6 addresses for IP detection.
+
+3. **Redaction Modes**:
+   - The script supports three different redaction modes for masking detected PII:
+     - **Strict Mode**: All detected PII are replaced with a placeholder (e.g., [EMAIL], [PHONE]).
+     - **Partial Mode**: Only part of the detected PII is redacted (e.g., email addresses are partially masked to `j***@example.com`, phone numbers are partially masked).
+     - **LLM-Driven Mode**: A more sophisticated LLM (Large Language Model) based redaction, using Ollama's Mistral model, which attempts to redact PII while maintaining as much of the original text as possible. This mode is optional and can be skipped.
+   
+4. **Evaluation**:
+   - **Precision/Recall/F1**: The script calculates precision, recall, and F1 scores for each class of PII (Email, Phone, etc.) to evaluate the performance of the detection and redaction process.
+   - **Residual Leakage**: For high-risk PII classes (Credit Card and SSN), the script calculates the residual leakage — the percentage of high-risk PII that is missed after redaction.
+   - **Adversarial Cases**: It tests edge cases and adversarial examples (e.g., obfuscated PII or malformed PII) to evaluate the robustness of the detection system.
+
+5. **Performance Tracking**:
+   - The script tracks runtime for each redaction mode (Strict, Partial, LLM) and computes the time taken for processing per 1000 rows of data.
+   - A utility proxy is calculated to measure how much of the original data is retained after redaction, and how it correlates with the residual leakage of high-risk PII.
+
+6. **Output and Artifacts**:
+   - The script saves several output artifacts:
+     - Cleaned CSVs for each redaction mode (`synthetic_jobs_cleaned_strict.csv`, `synthetic_jobs_cleaned_partial.csv`, `synthetic_jobs_cleaned_llm.csv`).
+     - A report of adversarial test results (`adversarial_report.csv`).
+     - Evaluation metrics in JSON and CSV format (`metrics.json`, `metrics.csv`).
+     - Plots (using Matplotlib) showing per-class precision, recall, F1 scores, residual leakage, adversarial detection heatmap, and more.
+
+7. **Plotting**:
+   - The script generates a series of plots for visualizing the performance of each redaction mode:
+     - **Per-class Precision, Recall, and F1**: Bar charts grouped by redaction mode.
+     - **Micro-average Precision, Recall, and F1**: A single chart showing overall performance by mode.
+     - **Residual Leakage**: A bar chart showing the residual leakage for high-risk PII.
+     - **Adversarial Heatmap**: A heatmap showing detection rates for adversarial cases across modes.
+     - **Utility vs. Privacy**: A scatter plot comparing utility (tokens preserved) and privacy (residual leakage for high-risk PII).
+     - **Runtime by Mode**: A bar chart showing runtime performance for each redaction mode.
+
+8. **README Generation**:
+   - A `README.md` file is updated with a section that lists all the plots saved during the run, so they can be easily referenced for report generation or slide decks.
+
+Usage:
+    python pii.py --rows 1000 --model mistral          # Generate 1000 rows with Mistral model
+    python pii.py --skip-llm-redaction                 # Skip LLM redaction step
+    python pii.py --plots-dir figs --rows 500          # Generate 500 rows, save plots to "figs"
+
+Notes:
+- **Ollama Model**: The script uses the `Ollama` tool with the `Mistral` model (optional) for generating synthetic data and redacting PII using LLM.
+- **Plotting**: Only Matplotlib is used for generating the plots (no Seaborn).
+- **Normalization**: The script includes a normalization step to handle unicode confusables (e.g., "ℓ" vs. "L") and obfuscated characters (e.g., "j.doe [at] example [dot] com").
+- **Adversarial Testing**: The script tests various adversarial examples, including spaced-out digits, obfuscated IPs, malformed dates, and leetspeak names.
+- **Runtime Optimization**: Time taken per 1000 rows is calculated and optimized to provide insights into the efficiency of different redaction modes.
+
+Artifacts:
+    - Cleaned data files: `synthetic_jobs_cleaned_strict.csv`, `synthetic_jobs_cleaned_partial.csv`, `synthetic_jobs_cleaned_llm.csv`
+    - Metrics files: `metrics.json`, `metrics.csv`
+    - Adversarial report: `adversarial_report.csv`
+    - Plots saved in: `figs/`
 """
 
 import os
