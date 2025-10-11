@@ -11,6 +11,7 @@
 4. [Redaction Modes](#redaction-modes)
 5. [LLM Redaction](#llm-redaction)
 6. [Adversarial Cases](#adversarial-cases)
+8. [Implications](#implications-where-this-system-is-sufficient-vs-risky-for-your-project)
 7. [Evaluation Metrics](#evaluation-metrics)
    - [Precision, Recall, F1 per Class](#precision-recall-f1-per-class)
    - [Residual Leakage Rate](#residual-leakage-rate)
@@ -282,6 +283,20 @@ The results of these tests help assess the **detection accuracy** and **robustne
 - **LLM redaction** (as explored in the **extra credit** cases) is more flexible but still misses obfuscated data types like **leet speak** or special character-based obfuscations.
 - The **Regex** method performs well for standard formats but struggles with **adversarial obfuscation** like **spaces**, **leet speak**, and **Unicode character replacements**. 
 
+
+## Implications: Where This System is Sufficient vs Risky for Your Project
+
+| **Criteria**                     | **Sufficient Use Cases**                                                      | **Risky Use Cases**                                                   |
+|-----------------------------------|-------------------------------------------------------------------------------|-----------------------------------------------------------------------|
+| **Standard PII Formats**          | The system performs well for **standard PII** such as emails, phone numbers, credit card numbers, SSNs, and dates. | The system might miss **novel PII formats** like social media handles or unique identifiers. |
+| **Basic Redaction**               | **Strict** and **Partial** redaction modes effectively mask standard PII. LLM improves detection accuracy for general cases. | The system struggles with **complex obfuscations**, especially involving **spaces**, **Unicode characters**, or **leet speak**. |
+| **Evaluation Metrics**            | Provides clear metrics (precision, recall, F1-score) to assess performance on standard PII. | **Obfuscated data** or **adversarial attacks** can lead to **missed PII**. |
+| **Leetspeak**                     | Handles typical **standard PII** without issues.                              | The system misses **leet speak** and substitutions, such as "S@rah C0nn0r". |
+| **Obfuscation Handling**          | Effective for detecting **clean and unmodified** PII in controlled environments. | **Spaces**, **special characters**, and **unusual formatting** lead to missed detection. |
+
+### Conclusion
+- **Sufficient Use Cases**: Ideal for **standard PII** in clean, well-structured datasets.
+- **Risky for Obfuscated Data**: The system struggles with **obfuscated** or **novel PII** formats, leading to potential **privacy risks**.
 
 ## Evaluation Metrics
 
