@@ -8,26 +8,25 @@
 2. [Dataset](#dataset)
 3. [Detector](#detector)
 4. [Folder Structure](#folder-structure)
-4. [Redaction Modes](#redaction-modes)
-5. [LLM Redaction](#llm-redaction)
+5. [Redaction Modes](#redaction-modes)
 6. [Adversarial Cases](#adversarial-cases)
-8. [Implications](#implications-where-this-system-is-sufficient-vs-risky-for-your-project)
-7. [Evaluation Metrics](#evaluation-metrics)
+7. [Implications](#implications-where-this-system-is-sufficient-vs-risky-for-your-project)
+8. [Evaluation Metrics](#evaluation-metrics)
    - [Precision, Recall, F1 per Class](#precision-recall-f1-per-class)
    - [Residual Leakage Rate](#residual-leakage-rate)
    - [Adversarial Tests: Caught vs Missed](#adversarial-tests-caught-vs-missed)
-8. [Results](#results)
+9. [Results](#results)
    - [Precision/Recall/F1 for each Class](#precisionrecallf1-for-each-class)
    - [Residual Leakage](#residual-leakage)
    - [Runtime by Mode](#runtime-by-mode)
    - [Utility vs Privacy](#utility-vs-privacy)
-9. [Artifacts](#artifacts)
-10. [How to Run the PII Filtering System](#how-to-run-the-pii-filtering-system)
-11. [Extra Credit: Running the PHI3 Mini Instruct Model](#extra-credit-running-the-phi3-mini-instruct-model)
-12. [AI Disclosure](#ai-disclosure)
-13. [References](#references)
+10. [Artifacts](#artifacts)
+11. [How to Run the PII Filtering System](#how-to-run-the-pii-filtering-system)
+12. [Extra Credit: Running the PHI3 Mini Instruct Model](#extra-credit-running-the-phi3-mini-instruct-model)
+13. [AI Disclosure](#ai-disclosure)
 14. [How We Used LLMs](#how-we-used-llms)
 15. [What We Did Ourselves](#what-we-did-ourselves)
+16. [References](#references)
 
 ## Overview
 
@@ -116,23 +115,92 @@ Dataset: The synthetic dataset (synthetic_jobs.csv).
 Reports: Includes adversarial test results, metrics, and redacted datasets in different modes.
 
 Figures: Plots saved during the evaluation process for comparison and analysis.
-## Redaction Modes
 
-There are three redaction modes implemented in the system:
+# Redaction Modes
 
-1. **Strict Masking**: Replace PII fields with placeholders.
+There are three redaction modes implemented in the system: **Strict Masking**, **Partial Masking**, and **LLM Masking**. These modes help to protect sensitive information (PII) by replacing or obscuring personal identifiers in text data.
 
-   * Example: `Email: [EMAIL]`, `Phone: [PHONE]`
-2. **Partial Masking**: Obscure parts of the PII data.
+## 1. Strict Masking
 
-   * Example: `Credit Card: ***-**-1234`, `Email: j***@example.com`
-3. **LLM Masking**: Use a **language model (Ollama Mistral)** to detect and redact PII fields.
+**Strict Masking** is the simplest form of redaction. In this mode, any detected PII is replaced with a predefined placeholder, ensuring that the personal information is completely hidden. This is useful when you need to completely remove sensitive data from the text without revealing any part of it.
 
-   * The model is run locally and is designed to redact the PII after identifying it in the text.
+### How it works:
+- The system identifies PII fields like email addresses, phone numbers, credit card numbers, and more, using regex patterns.
+- Once identified, the PII is replaced with a placeholder. For example:
+  - **Email**: `jane.doe@example.com` becomes `[EMAIL]`
+  - **Phone Number**: `(123) 456-7890` becomes `[PHONE]`
 
-## LLM Redaction
+### Example:
+- **Before Redaction**:  
+  `Contact me at jane.doe@example.com or call (123) 456-7890.`
+  
+- **After Strict Masking**:  
+  `Contact me at [EMAIL] or call [PHONE].`
 
-The **Ollama Mistral model** is used for the **LLM redaction mode**. After the initial regex-based detection, the data is fed to the model, which further processes and redacts the identified PII fields.
+### Benefits:
+- **Complete Protection**: This mode ensures that no PII remains visible in the text.
+- **Simple and Effective**: It's easy to implement and guarantees that no sensitive data is accidentally exposed.
+
+### Use Cases:
+- **Data sharing**: When sharing datasets with PII removed, this mode ensures that no identifying details are retained, making the data safe to use.
+- **Regulatory Compliance**: It helps comply with regulations like GDPR or CCPA, where removing identifiable data is necessary.
+
+---
+
+## 2. Partial Masking
+
+**Partial Masking** obscures parts of the sensitive information instead of completely removing it. This can be useful when you want to retain part of the data for utility purposes, like displaying the last 4 digits of a credit card number or masking part of an email. It allows you to balance **privacy** and **utility**.
+
+### How it works:
+- Instead of completely replacing the PII, only part of it is obscured, leaving just enough for context while ensuring the sensitive part remains hidden.
+- The system identifies the PII fields and then obscures the characters in a way that ensures privacy while retaining partial utility.
+
+### Example:
+- **Email Redaction**: `jane.doe@example.com` becomes `j***@example.com`
+- **Credit Card Redaction**: `4111-1111-1111-1111` becomes `****-****-****-1111`
+- **Phone Number Redaction**: `(123) 456-7890` becomes `***-***-7890`
+
+### Benefits:
+- **Utility with Privacy**: By keeping a portion of the data visible (like the last 4 digits of a credit card or part of the email address), you can still perform tasks like verification or partial identification without exposing the full information.
+- **Context Retention**: This mode allows the text to still make sense and maintain context for human reviewers or systems that need to see part of the information (e.g., the first letter of an email or the last digits of a phone number).
+
+### Use Cases:
+- **Data Masking for Analytics**: If you need to work with sensitive data for analysis or reporting but still want to retain partial context (e.g., understanding the domain of an email or the region in a phone number), this mode helps.
+- **Data Sharing with Limited Disclosure**: This is useful when sharing data with partners or collaborators while still keeping key information (e.g., a customer’s last 4 digits of a credit card) private.
+
+### Example Scenarios:
+- **Phone Number**: A system where **Partial Masking** shows only the last 4 digits of a phone number (e.g., `***-***-7890`) can be helpful for identifying records associated with a customer while keeping their full contact details protected.
+- **Email**: When showing customer interactions in a customer service system, you may want to show only the domain of the email (e.g., `j***@example.com`) without exposing the full email address.
+
+---
+
+## 3. LLM Masking
+
+**LLM Masking** takes redaction a step further by leveraging a **language model** (such as **Ollama Mistral**) to automatically identify and redact PII. This mode is more flexible and powerful than strict regex-based methods because it can understand the context of the text and better identify complex or obfuscated PII.
+
+### How it works:
+- The text is passed to an **LLM model**, which is trained to detect and redact PII in a more intelligent and contextual way.
+- The model can identify PII in non-standard formats, such as **spaced digits**, **leet speak**, or **obfuscated email formats**.
+- Once PII is detected, it is replaced with placeholders like `[EMAIL]`, `[PHONE]`, `[CREDIT_CARD]`, etc.
+
+### Example:
+- **Before Redaction**:  
+  `Please contact me at johndoe [at] gmail [dot] com for further details.`  
+  `My card number is 4111-1111-1111-1111.`  
+  `Call me at (202) 555-0185.`
+
+- **After LLM Masking**:  
+  `Please contact me at [EMAIL] for further details.`  
+  `My card number is [CREDIT_CARD].`  
+  `Call me at [PHONE].`
+
+### Benefits:
+- **Advanced Contextual Understanding**: The LLM can identify more complex obfuscations (like “johndoe [at] gmail [dot] com”) that traditional regex-based systems may miss.
+- **Dynamic Redaction**: The model can adapt to different PII patterns and handle non-standard obfuscations that are increasingly common in privacy-conscious environments.
+
+### Use Cases:
+- **Real-World Text**: This is useful in real-world applications where the text may contain diverse, inconsistent, or obfuscated PII (e.g., emails formatted with `[at]` instead of `@`).
+- **Highly Sensitive Data**: It’s beneficial when redacting highly sensitive data and where high accuracy is required in identifying PII, even in adversarial or obfuscated scenarios.
 
 ## Adversarial Cases
 
@@ -569,12 +637,6 @@ The system leverages **Large Language Models (LLMs)** such as **Ollama Mistral**
 
 The models process text data in an automated manner without human intervention in the detection or redaction process.
 
-## References
-
-* **Ollama**: [Ollama Website](https://ollama.com/)
-* **Ollama Mistral Model**: [Ollama Mistral Documentation](https://ollama.com/docs/mistral)
-* **PHI3 Mini Instruct Model**: [PHI3 Mini Instruct Documentation](https://phi3.com/)
-
 ## How We Used LLMs
 
 We utilized **Ollama Mistral** and **PHI3 Mini Instruct** models for **PII redaction**. The LLMs were fed text data containing potentially sensitive information, and they provided redactions of emails, phone numbers, credit card numbers, etc., by replacing them with placeholders. The **Ollama Mistral** model is used for its efficiency in performing redaction based on natural language understanding, while the **PHI3 Mini Instruct Model** was tested as an additional LLM for comparison in the extra credit section.
@@ -590,3 +652,9 @@ The following tasks were implemented manually:
 * **Plotting and Reporting**: We used **Matplotlib** to generate visual reports of the system's performance, such as **precision/recall per class**, **runtime analysis**, and **adversarial case detection**.
 
 The combination of regex detection and LLM-based redaction methods ensures a balance between speed, accuracy, and data privacy in the PII detection and redaction pipeline.
+
+## References
+
+* **Ollama**: [Ollama Website](https://ollama.com/)
+* **Ollama Mistral Model**: [Ollama Mistral Documentation](https://ollama.com/docs/mistral)
+* **PHI3 Mini Instruct Model**: [PHI3 Mini Instruct Documentation](https://phi3.com/)
