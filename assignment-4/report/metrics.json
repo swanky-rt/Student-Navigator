@@ -1,0 +1,308 @@
+{
+  "per_class": [
+    {
+      "class_": "EMAIL",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 300,
+      "mode": "Strict"
+    },
+    {
+      "class_": "PHONE",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 331,
+      "mode": "Strict"
+    },
+    {
+      "class_": "CREDIT_CARD",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 109,
+      "mode": "Strict"
+    },
+    {
+      "class_": "SSN",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 113,
+      "mode": "Strict"
+    },
+    {
+      "class_": "DATE",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 115,
+      "mode": "Strict"
+    },
+    {
+      "class_": "NAME",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 282,
+      "mode": "Strict"
+    },
+    {
+      "class_": "IP",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 67,
+      "mode": "Strict"
+    },
+    {
+      "class_": "IPV6",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 35,
+      "mode": "Strict"
+    },
+    {
+      "class_": "IPV6",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 35,
+      "mode": "Strict"
+    },
+    {
+      "class_": "EMAIL",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 300,
+      "mode": "Partial"
+    },
+    {
+      "class_": "PHONE",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 331,
+      "mode": "Partial"
+    },
+    {
+      "class_": "CREDIT_CARD",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 109,
+      "mode": "Partial"
+    },
+    {
+      "class_": "SSN",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 113,
+      "mode": "Partial"
+    },
+    {
+      "class_": "DATE",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 115,
+      "mode": "Partial"
+    },
+    {
+      "class_": "NAME",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 282,
+      "mode": "Partial"
+    },
+    {
+      "class_": "IP",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 67,
+      "mode": "Partial"
+    },
+    {
+      "class_": "IPV6",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 35,
+      "mode": "Partial"
+    },
+    {
+      "class_": "IPV6",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 35,
+      "mode": "Partial"
+    },
+    {
+      "class_": "EMAIL",
+      "precision": 0.9033333333333333,
+      "recall": 0.9033333333333333,
+      "f1": 0.9033333333333333,
+      "support": 300,
+      "mode": "LLM"
+    },
+    {
+      "class_": "PHONE",
+      "precision": 0.9817629179331308,
+      "recall": 0.9758308157099698,
+      "f1": 0.9787878787878787,
+      "support": 331,
+      "mode": "LLM"
+    },
+    {
+      "class_": "CREDIT_CARD",
+      "precision": 0.9351851851851852,
+      "recall": 0.926605504587156,
+      "f1": 0.9308755760368663,
+      "support": 109,
+      "mode": "LLM"
+    },
+    {
+      "class_": "SSN",
+      "precision": 0.990909090909091,
+      "recall": 0.9646017699115044,
+      "f1": 0.9775784753363229,
+      "support": 113,
+      "mode": "LLM"
+    },
+    {
+      "class_": "DATE",
+      "precision": 0.9913793103448276,
+      "recall": 1.0,
+      "f1": 0.9956709956709957,
+      "support": 115,
+      "mode": "LLM"
+    },
+    {
+      "class_": "NAME",
+      "precision": 0.9368770764119602,
+      "recall": 1.0,
+      "f1": 0.967409948542024,
+      "support": 282,
+      "mode": "LLM"
+    },
+    {
+      "class_": "IP",
+      "precision": 0.8082191780821918,
+      "recall": 0.8805970149253731,
+      "f1": 0.8428571428571429,
+      "support": 67,
+      "mode": "LLM"
+    },
+    {
+      "class_": "IPV6",
+      "precision": 0.9722222222222222,
+      "recall": 1.0,
+      "f1": 0.9859154929577464,
+      "support": 35,
+      "mode": "LLM"
+    },
+    {
+      "class_": "IPV6",
+      "precision": 0.9722222222222222,
+      "recall": 1.0,
+      "f1": 0.9859154929577464,
+      "support": 35,
+      "mode": "LLM"
+    }
+  ],
+  "micro": [
+    {
+      "mode": "Strict",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "mode": "Partial",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "mode": "LLM",
+      "precision": 0.9431900946831755,
+      "recall": 0.9578402366863905,
+      "f1": 0.9504587155963303
+    }
+  ],
+  "leakage": [
+    {
+      "CREDIT_CARD": 0.0,
+      "SSN": 0.0,
+      "HIGH_RISK_MICRO": 0.0,
+      "mode": "Strict"
+    },
+    {
+      "CREDIT_CARD": 0.0,
+      "SSN": 0.0,
+      "HIGH_RISK_MICRO": 0.0,
+      "mode": "Partial"
+    },
+    {
+      "CREDIT_CARD": 7.3394,
+      "SSN": 3.5398,
+      "HIGH_RISK_MICRO": 6.5041,
+      "mode": "LLM"
+    }
+  ],
+  "utility": [
+    {
+      "mode": "Strict",
+      "utility_tokens_preserved": 68.97067606964129
+    },
+    {
+      "mode": "Partial",
+      "utility_tokens_preserved": 84.92521703635691
+    },
+    {
+      "mode": "LLM",
+      "utility_tokens_preserved": 58.068416374757724
+    }
+  ],
+  "runtime": [
+    {
+      "mode": "Strict",
+      "runtime_sec_per_1k": 0.13032792761251588
+    },
+    {
+      "mode": "Partial",
+      "runtime_sec_per_1k": 0.16174720645363355
+    },
+    {
+      "mode": "LLM",
+      "runtime_sec_per_1k": 15962.34179904304
+    }
+  ],
+  "sample_preview": [
+    {
+      "orig": "Software Engineer | Join our backend team at CloudShift. Contact [dev-team@cloudshift.com](mailto:dev-team@cloudshift.com) or call +1 (555) 111-2233. Project ID",
+      "strict": "[NAME] | Join our backend team at CloudShift. Contact [[EMAIL]](mailto:[EMAIL]) or call +[PHONE]. Project ID: ENG-123-45-6789. Version: [IP] | CloudShift | [[EM",
+      "partial": "SE. | Join our backend team at CloudShift. Contact [d***@cloudshift.com](mailto:d***@cloudshift.com) or call +***-***-2233. Project ID: ENG-123-45-6789. Version",
+      "llm": "Software Engineer | Join our backend team at CloudShift. Contact [EMAIL] or call [PHONE]. Project ID: [PROJECT_ID]. Version: [VERSION]. | CloudShift | [EMAIL], "
+    },
+    {
+      "orig": "Data Analyst | Data Analyst at MetricWorks. Email [hr@metricworks.com](mailto:hr@metricworks.com). Reference number: REF-4111-1111-1111-1111 | MetricWorks | [hr",
+      "strict": "[NAME] | [NAME] at MetricWorks. Email [[EMAIL]](mailto:[EMAIL]). Reference number: REF-[CREDIT_CARD] | MetricWorks | [[EMAIL]](mailto:[EMAIL]), +[PHONE] | recor",
+      "partial": "DA. | DA. at MetricWorks. Email [h***@metricworks.com](mailto:h***@metricworks.com). Reference number: REF-****-****-****-1111 | MetricWorks | [h***@metricworks",
+      "llm": "Data Analyst | Data Analyst at [REDACTED_COMPANY]. Email [EMAIL]. Reference number: [REFERENCE]. MetricWorks | [EMAIL], [PHONE] | record ID: [REFERENCE]"
+    },
+    {
+      "orig": "UX Designer | We\u2019re hiring at Designify. Contact [careers@designify.com](mailto:careers@designify.com). Prototype hash: 192-abc-168-xyz. | Designify | [careers@",
+      "strict": "UX Designer | We\u2019re hiring at Designify. Contact [[EMAIL]](mailto:[EMAIL]). Prototype hash: 192-abc-168-xyz. | Designify | [[EMAIL]](mailto:[EMAIL]), +[PHONE] |",
+      "partial": "UX Designer | We\u2019re hiring at Designify. Contact [c***@designify.com](mailto:c***@designify.com). Prototype hash: 192-abc-168-xyz. | Designify | [c***@designify",
+      "llm": "UX Designer | We\u2019re hiring at Designify. Contact [EMAIL]. Prototype hash: [DATE]. | Designify | [EMAIL], [PHONE] | prototype hash: [DATE]"
+    }
+  ]
+}

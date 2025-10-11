@@ -1,0 +1,15 @@
+case_id,case_text,class,expected,detected,mode
+1,j . d o e [ at ] example [ dot ] com,EMAIL,1,0,Regex
+2,j.a.n.e.d.o.e [at] example [dot] com,EMAIL,1,0,Regex
+3,+1 (2 0 2) 5 5 5 - 0 1 7 3,PHONE,1,0,Regex
+4,4 1 1 1  1 1 1 1  1 1 1 1  1 1 1 1,CREDIT_CARD,1,1,Regex
+4,4 1 1 1  1 1 1 1  1 1 1 1  1 1 1 1,PHONE,0,1,Regex
+5,credit card: 4111-1111-1111-1111,CREDIT_CARD,1,1,Regex
+6,123 45 6789,SSN,1,0,Regex
+7,192․ 168․ 1․ 55,IP,1,0,Regex
+8,192․168․1․55,IP,1,0,Regex
+9,2023-0l-15,DATE,1,0,Regex
+10,03/22/1997,DATE,1,1,Regex
+11,CℓientName met Jane Doe,NAME,1,1,Regex
+12,S@rah C0nn0r applied,NAME,1,0,Regex
+13,2001:0db8:85a3:0000:0000:8a2e:0370:7334,IPV6,1,1,Regex
