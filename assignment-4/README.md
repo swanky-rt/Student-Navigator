@@ -30,7 +30,11 @@
 
 ## Overview
 
-This project aims to implement a **PII detection and redaction** system to protect personal information in text data. The system uses a combination of **regex patterns** for detection and a **language model (Ollama Mistral)** for advanced redaction. The system is evaluated based on metrics such as **Precision**, **Recall**, **F1-Score**, and **Residual Leakage** to assess how well it can detect and redact sensitive information while maintaining data utility.
+This project implements a **comprehensive PII (Personally Identifiable Information) detection and redaction pipeline** designed to safeguard sensitive data in textual datasets such as synthetic job postings. It combines **rule-based regex detection** for deterministic coverage with an optional **LLM-driven redaction layer** powered by *Ollama’s Mistral model*, enabling context-aware masking of personal information.  
+
+The system supports three redaction modes — **Strict**, **Partial**, and **LLM-Based** — allowing comparison between full anonymization, partial masking, and intelligent language-model redaction. It automatically evaluates performance through **Precision**, **Recall**, **F1-Score**, and **Residual Leakage** metrics, and visualizes results across all modes through detailed plots.  
+
+By quantifying both **privacy protection** and **data utility**, this pipeline provides an interpretable and extensible foundation for **privacy-preserving data preprocessing**, **synthetic dataset curation**, and **safe downstream model training**.
 
 ## Dataset
 
@@ -65,17 +69,21 @@ PATTERNS = {
 ## Folder Structure
 
 Here’s the complete folder structure of the project:
-````
+```
 assignment-4/
 │
 ├── readme.md
-├── code/
+│
+├── code/                                          # Core scripts for PII detection and redaction
 │   ├── pii.py
 │   └── pii_phi3.py
+│
 ├── requirements.txt
-├── dataset/
+│
+├── dataset/                                       # Synthetic dataset used for testing and evaluation
 │   └── synthetic_jobs.csv
-├── phi_3_report/
+│
+├── phi_3_report/                                  # Evaluation results and plots for Phi-3 model run
 │   ├── adversarial_report_phi3.csv
 │   ├── metrics_phi3.csv
 │   ├── metrics_phi3.json
@@ -87,7 +95,8 @@ assignment-4/
 │       ├── phi3_residual_leakage.png
 │       ├── phi3_per_class_f1.png
 │       ├── phi3_per_class_recall.png
-├── plots/
+│
+├── plots/                                         # Plots and visualizations from main (Mistral) run
 │   ├── micro_by_mode.png
 │   ├── per_class_recall.png
 │   ├── per_class_precision.png
@@ -96,25 +105,17 @@ assignment-4/
 │   ├── utility_vs_privacy.png
 │   ├── adversarial_heatmap.png
 │   └── runtime_by_mode.png
-├── redaction_mode_converted_dataset/
+│
+├── redaction_mode_converted_dataset/              # Redacted datasets for each anonymization mode
 │   ├── synthetic_jobs_cleaned_strict.csv
 │   ├── synthetic_jobs_cleaned_partial.csv
 │   └── synthetic_jobs_cleaned_llm.csv
-└── report/
+│
+└── report/                                        # Metrics, reports, and adversarial results summary
     ├── adversarial_report.csv
     ├── metrics.csv
     └── metrics.json
-
-````
-This structure contains all the necessary components:
-
-Code: The main scripts (pii.py, pii_phi3.py) for detection and redaction.
-
-Dataset: The synthetic dataset (synthetic_jobs.csv).
-
-Reports: Includes adversarial test results, metrics, and redacted datasets in different modes.
-
-Figures: Plots saved during the evaluation process for comparison and analysis.
+```
 
 ## Redaction Modes
 
@@ -381,6 +382,8 @@ The micro average metrics for all classes are also calculated.
 Partial      1.00000    1.00000   1.000000
     LLM      0.94319    0.95784   0.950459
 ```
+The regex-based modes (**Strict** and **Partial**) achieved perfect precision, recall, and F1-scores, indicating flawless detection on the structured synthetic dataset where PII followed predictable patterns. The **LLM mode** showed slightly lower performance (F1 ≈ 0.95) due to occasional over-redaction or missed edge cases, reflecting its contextual flexibility but reduced consistency. Overall, regex delivers **exact, rule-based accuracy**, while the LLM introduces **semantic understanding** at a small trade-off in precision — a balance between deterministic and adaptive privacy protection.
+
 
 ### Residual Leakage Rate
 
@@ -394,6 +397,9 @@ Partial          0.0000   0.0000       0.0000
     LLM          7.3394   3.5398       6.5041
 ```
 
+The **Strict** and **Partial** modes achieved a **0% residual leakage rate**, successfully redacting all high-risk PII such as credit card numbers and SSNs. In contrast, the **LLM mode** showed minor leakage (≈7.3% for credit cards and ≈3.5% for SSNs), indicating that a few sensitive instances were missed. This suggests that while the LLM-based approach provides greater contextual understanding, it can occasionally under-redact structured patterns. Overall, **regex-based redaction ensures complete coverage for high-risk PII**, whereas **LLM redaction trades absolute precision for contextual adaptability**.
+
+
 ## Results
 
 ### 1. **Precision/Recall/F1 for each Class**:
@@ -402,11 +408,15 @@ The following figures show the **precision**, **recall**, and **F1-score** per c
 
 ![Precision, Recall, F1 per Class](plots/per_class_f1.png)
 
+The **Strict** and **Partial** modes achieved consistently high F1-scores (≈1.0) across all PII classes, demonstrating perfect detection and redaction accuracy on structured data. The **LLM mode** performed slightly lower for a few classes like **Credit Card**, **Email**, and **IP**, suggesting minor inconsistencies in structured pattern recognition. Overall, regex-based methods maintained **uniform precision across all PII types**, while the LLM showed **contextual strength but slight variability** depending on the PII category.
+
 ### 2. **Residual Leakage**:
 
 The system achieves **zero residual leakage** in **Strict** and **Partial** modes but has some leakage in the **LLM** mode for high-risk items like **Credit Cards** and **SSNs**.
 
 ![Residual Leakage](plots/residual_leakage.png)
+
+The **Strict** and **Partial** modes maintained a **0% miss rate** for all high-risk PII types, confirming complete redaction of sensitive fields like **Credit Card** and **SSN**. The **LLM mode**, however, exhibited slight leakage—around **7% for credit cards** and **3.5% for SSNs**—indicating occasional misses in structured numeric formats. This reinforces that **regex-based methods guarantee complete coverage** for clearly defined patterns, while **LLM redaction offers contextual flexibility at the cost of minor residual leakage**.
 
 ### 3. **Runtime by Mode**:
 
@@ -414,48 +424,30 @@ The system achieves **zero residual leakage** in **Strict** and **Partial** mode
 
 ![Runtime by Mode](plots/runtime_by_mode.png)
 
+The **runtime analysis** shows a significant difference between regex-based and LLM-based modes. Both **Strict** and **Partial** redaction complete in under a second per 1,000 documents, demonstrating their efficiency and scalability. In contrast, the **LLM mode** is several orders of magnitude slower due to the overhead of model inference for each text entry. This highlights a clear trade-off — **regex methods provide near-instant processing for large datasets**, whereas **LLM redaction offers contextual precision at a substantially higher computational cost**.
+
 ### 4. **Utility vs Privacy**:
 
 The trade-off between **privacy** (residual leakage) and **utility** (tokens preserved) is illustrated below.
 
 ![Utility vs Privacy](plots/utility_vs_privacy.png)
 
+The **utility vs privacy trade-off** plot shows that **Partial redaction** preserves the highest amount of text (~85% tokens) while maintaining zero leakage, achieving the best overall balance. **Strict redaction** ensures complete privacy but at a moderate utility cost (~70% tokens preserved). The **LLM mode**, though more contextually aware, retains less text (~60%) and introduces minor leakage, reflecting a higher trade-off between privacy and data usability. In summary, **Partial mode offers the optimal balance**, while **Strict prioritizes privacy** and **LLM emphasizes contextual retention** at a measurable cost.
+
 ## Artifacts
 
-All generated plots are stored in the same directory in a separate folder `plots`. Here is a breakdown of each file and what it represents:
+All generated plots are stored in the `plots` directory. The table below provides a breakdown of each file and its purpose:
 
-### 1. **micro_by_mode.png**
-   - **Description**: A bar plot showing the **micro-average** metrics (Precision, Recall, F1-score) for each of the redaction modes: **Strict**, **Partial**, and **LLM**.
-   - **Purpose**: Helps to understand how the system performs across all classes of PII at a high level, considering all detected PII types in aggregate.
-
-### 2. **per_class_recall.png**
-   - **Description**: A bar plot of **recall** scores for each PII class (e.g., **Email**, **Phone**, **Credit Card**, etc.) across all redaction modes.
-   - **Purpose**: This plot highlights the system's ability to correctly identify all instances of each PII type.
-
-### 3. **per_class_precision.png**
-   - **Description**: A bar plot of **precision** scores for each PII class across the redaction modes.
-   - **Purpose**: Shows the system's accuracy in detecting PII, i.e., how many of the identified PII were actually correct detections.
-
-### 4. **residual_leakage.png**
-   - **Description**: A bar plot showing the **residual leakage rate** for **high-risk PII** types like **Credit Card** and **SSN**, calculated across different redaction modes.
-   - **Purpose**: This plot is essential for understanding how much **sensitive data** (e.g., credit card numbers, SSNs) was **missed** during the redaction process, indicating any potential privacy risks.
-
-### 5. **per_class_f1.png**
-   - **Description**: A bar plot of **F1 scores** for each PII class across the redaction modes.
-   - **Purpose**: The F1 score is the harmonic mean of precision and recall, and this plot shows the system's overall **balanced performance** in detecting each type of PII.
-
-### 6. **utility_vs_privacy.png**
-   - **Description**: A scatter plot comparing **utility** (percentage of tokens preserved) and **privacy** (residual leakage, shown as leakage rates) for each redaction mode.
-   - **Purpose**: This plot provides a **trade-off analysis**, helping to visualize the relationship between how much information is retained (utility) and how well privacy is protected (residual leakage).
-
-### 7. **adversarial_heatmap.png**
-   - **Description**: A heatmap showing the **detection rate** of adversarial test cases across the different redaction modes.
-   - **Purpose**: This plot helps to visualize how the system performs in detecting **obfuscated PII** (e.g., spaced digits, leetspeak, or Unicode confusables) in adversarial cases. It compares the performance of the **Strict**, **Partial**, and **LLM** modes.
-
-### 8. **runtime_by_mode.png**
-   - **Description**: A bar plot showing the **runtime (in seconds)** for processing 1000 documents across the three redaction modes.
-   - **Purpose**: This plot helps to compare the **efficiency** of each mode. It shows how long the system takes to process documents, helping to assess the **trade-off** between privacy protection and system performance.
-
+| **File Name** | **Description** | **Purpose** |
+|----------------|-----------------|--------------|
+| **micro_by_mode.png** | Bar plot showing the **micro-average** metrics (Precision, Recall, F1-score) for each redaction mode: **Strict**, **Partial**, and **LLM**. | Understands overall system performance across all PII types in aggregate. |
+| **per_class_recall.png** | Bar plot of **recall** scores for each PII class (e.g., Email, Phone, Credit Card) across all modes. | Highlights how effectively the system detects all true instances of each PII type. |
+| **per_class_precision.png** | Bar plot of **precision** scores for each PII class across the redaction modes. | Shows accuracy in detection — how many of the identified PII were correct. |
+| **residual_leakage.png** | Bar plot showing **residual leakage rates** for **high-risk PII** like Credit Card and SSN across modes. | Evaluates how much sensitive data was **missed** during redaction, revealing privacy risks. |
+| **per_class_f1.png** | Bar plot of **F1 scores** for each PII class across all redaction modes. | Indicates **balanced performance** between precision and recall for each PII category. |
+| **utility_vs_privacy.png** | Scatter plot comparing **utility** (tokens preserved) and **privacy** (residual leakage) per mode. | Shows the **trade-off** between retaining useful information and ensuring strong privacy protection. |
+| **adversarial_heatmap.png** | Heatmap displaying **detection rates** for adversarial PII cases (e.g., obfuscations, leetspeak). | Tests system robustness against **obfuscated or adversarial PII patterns** across modes. |
+| **runtime_by_mode.png** | Bar plot showing **runtime (seconds per 1000 docs)** for each redaction mode. | Compares **processing efficiency**, illustrating the performance–privacy trade-off. |
 
 ## How to Run the PII Filtering System
 
