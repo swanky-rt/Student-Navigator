@@ -638,19 +638,75 @@ All generated files related to the **PHI3 Mini Instruct Model** are saved in the
 
 These files provide insights into how well the **PHI3 Mini Instruct Model** performs on the same PII detection and redaction task, allowing for a comparison against the **Ollama Mistral model**.
 
-### Results
+## Phi-3 Model Results and Analysis
 
-The results from running the **PHI3 Mini Instruct Model** are saved separately for comparison and analysis. The following artifacts were generated during this extra credit task:
+The results from running the **Phi-3 Mini Instruct Model** were saved separately for evaluation and comparison with the Mistral-based pipeline. The Phi-3 model was tested on the same synthetic dataset, focusing on detection accuracy, redaction consistency, and robustness against adversarial inputs.
 
-1. **PII Detection and Redaction Results**:
+---
 
-   * The redacted versions of the synthetic dataset using the **PHI3 Mini Instruct Model** are saved in CSV format. These files are located in the `phi_3_report` folder.
-2. **Evaluation Metrics**:
+### **1. Per-Class Precision, Recall, and F1 by PII Class**
+![Phi-3 Precision, Recall, F1](phi_3_report/phi3_figs/phi3_metrics_comparison.png)
 
-   * Precision, Recall, and F1 scores are calculated for each PII class, as well as the **micro-average metrics** and **residual leakage** rates.
-3. **Adversarial Cases**:
+**Inference:**  
+Phi-3 shows strong detection performance for **Email**, **Phone**, and **Name** entities, with F1-scores close to or above 0.85, indicating effective recognition of structured identifiers and names.  
+However, detection quality decreases sharply for **Credit Card** (F1 ≈ 0.35) and near-zero performance for **SSN**, **Date**, and **IP**, showing difficulty in handling purely numeric or less common patterns.  
+Overall, Phi-3 performs best for **linguistic and contextual PII** (names, emails) but struggles with **digit-based PII** (credit cards, SSNs), where pattern-based recognition is critical.
 
-   * Similar to the base model, the **PHI3 Mini Instruct Model** was tested on adversarial cases, and the results are included in the **phi3_report** folder.
+---
+
+### **2. Per-Class F1**
+![Phi-3 Per-Class F1](phi_3_report/phi3_figs/phi3_per_class_f1.png)
+
+**Inference:**  
+The **F1 distribution** reinforces the same trend — high scores for **Email (≈0.87)** and **Name (≈0.93)**, moderate for **Phone (≈0.73)**, and significantly lower for **Credit Card (~0.35)**.  
+This imbalance suggests Phi-3 effectively generalizes to PII embedded in natural text but exhibits weak pattern generalization for structured data, possibly due to limited regex-like internal representations.
+
+---
+
+### **3. Per-Class Precision**
+![Phi-3 Per-Class Precision](phi_3_report/phi3_figs/phi3_per_class_precision.png)
+
+**Inference:**  
+Precision reaches **1.0** for **Email** and **Phone**, meaning every detection was correct with no false positives.  
+However, **Credit Card** precision drops (~0.33), implying misclassification or incomplete masking of partial sequences.  
+The strong performance on names (≈0.88) highlights Phi-3’s contextual reasoning ability to identify personal identifiers even without explicit markers.
+
+---
+
+### **4. Per-Class Recall**
+![Phi-3 Per-Class Recall](phi_3_report/phi3_figs/phi3_per_class_recall.png)
+
+**Inference:**  
+Recall is highest for **Name (≈0.96)**, indicating nearly all true instances were captured. **Email** and **Phone** follow at 0.75 and 0.59, respectively, showing moderate consistency.  
+Low recall for **Credit Card** (≈0.40) confirms under-detection, consistent with the weak numeric pattern handling observed earlier.  
+The gap between precision and recall for text-based vs. numeric-based PII highlights **Phi-3’s semantic strength** but **pattern sensitivity limitations**.
+
+---
+
+### **5. Residual Leakage (High-Risk PII)**
+![Phi-3 Residual Leakage](phi_3_report/phi3_figs/phi3_residual_leakage.png)
+
+**Inference:**  
+The **residual leakage rate** for **Credit Card** and overall **high-risk micro-average** is around **60%**, meaning over half of sensitive numeric identifiers were not redacted.  
+This significant leakage confirms that while Phi-3 can reason contextually, it lacks precise pattern enforcement for structured data fields — making it less reliable for high-assurance privacy pipelines where full redaction is mandatory.
+
+---
+
+### **6. Adversarial Test Detection Heatmap**
+![Phi-3 Adversarial Detection Heatmap](phi_3_report/phi3_figs/phi3_adversarial_heatmap.png)
+
+**Inference:**  
+The adversarial heatmap shows sparse detections — Phi-3 successfully identifies a few **Credit Card**, **Date**, and **Name** adversarial patterns but misses most obfuscated or Unicode-based variants.  
+This indicates limited robustness against **obfuscated or adversarially altered PII**, likely due to its reliance on semantic understanding rather than normalization or symbol-based preprocessing.
+
+---
+
+### Overall Trends
+- **Strengths:** High contextual accuracy for natural text identifiers (**Name**, **Email**, **Phone**).  
+- **Weaknesses:** Poor detection of structured numeric formats (**Credit Card**, **SSN**), leading to high leakage rates.  
+- **Adversarial Robustness:** Limited — model misses heavily obfuscated or leetspeak variants.  
+- **Conclusion:** Phi-3 excels at **semantic detection** but underperforms in **pattern fidelity**, making it better suited for conversational PII detection than rigid compliance redaction tasks.
+
 
 ## AI Disclosure
 
