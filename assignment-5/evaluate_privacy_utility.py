@@ -1,102 +1,130 @@
-import json
-import argparse
-import torch
-from transformers import AutoTokenizer, AutoModel
-from tqdm import tqdm
-import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
+import re, json, argparse
+import pandas as pd
 from datetime import datetime
+from sentence_transformers import SentenceTransformer, util
 
-REPORT_FILE = "evaluation_report.json"
+# --- PII detection regexes ---
+EMAIL_RE = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
+PHONE_RE = re.compile(r"\+?\d[\d\-\s().]{7,}\d")
+REF_RE   = re.compile(r"\b(?:REF[-\d]{6,}|[A-Z]{2,}-\d{3,}-\d{2,}-\d{3,})\b")
 
-def embed_texts(texts, tokenizer, model):
-    """Convert list of texts to embedding vectors (mean pooled)."""
-    inputs = tokenizer(texts, padding=True, truncation=True, return_tensors="pt").to(model.device)
-    with torch.no_grad():
-        outputs = model(**inputs).last_hidden_state.mean(dim=1)
-    return outputs.cpu().numpy()
+def contains_pii(text: str) -> bool:
+    return bool(EMAIL_RE.search(text) or PHONE_RE.search(text) or REF_RE.search(text))
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--orig", default="Data/synthetic_jobs.csv", help="Original CSV file")
-    parser.add_argument("--minimized", default="minimized.json", help="Minimized output JSON")
+    parser.add_argument("--orig", required=True)
+    parser.add_argument("--minimized", required=True)
     args = parser.parse_args()
 
-    print(f"\n[✓] Evaluating privacy–utility tradeoff")
-    print(f"[i] Using minimized data: {args.minimized}")
-
-    # --- Load data ---
-    with open(args.minimized) as f:
+    print("[✓] Evaluating privacy–utility tradeoff")
+    df_orig = pd.read_csv(args.orig, dtype=str).fillna("")
+    with open(args.minimized, "r", encoding="utf-8") as f:
         minimized = json.load(f)
-    texts = []
-    minimized_texts = []
-    sensitive_hits = 0
 
-    # Basic sensitive-keyword detector (simulated privacy leak check)
-    sensitive_keywords = ["email", "phone", "address", "linkedin", "salary", "ssn"]
+    model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+    print("[✓] Loaded evaluation model")
 
-    for rec in minimized:
-        orig_text = " ".join(str(v) for v in rec.values())
-        min_text = " ".join(str(v) for v in rec.values())
-        texts.append(orig_text)
-        minimized_texts.append(min_text)
-        if any(word.lower() in min_text.lower() for word in sensitive_keywords):
-            sensitive_hits += 1
+    # Counters
+    total_fields = 0
+    false_neg = 0
+    false_pos = 0
+    leak_count = 0  # how many PII tokens leaked
+    sim_sum = 0.0
+    sim_count = 0
+    blanks_overredacted = 0
 
-    leak_rate = sensitive_hits / len(minimized)
-    privacy_retention = (1 - leak_rate) * 100
+    # per-field breakdown
+    per_field_stats = {fld: {"FN":0, "FP":0, "count":0, "leak":0, "sim_sum":0.0} 
+                        for fld in ["job_title","job_description","company_name","contact_info","notes"]}
 
-    # --- Embedding model (lightweight) ---
-    model_name = "sentence-transformers/all-MiniLM-L6-v2"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModel.from_pretrained(model_name).to("cuda" if torch.cuda.is_available() else "cpu")
+    for orig, mini in zip(df_orig.to_dict(orient="records"), minimized):
+        for fld in per_field_stats.keys():
+            o = str(orig.get(fld, ""))
+            m = str(mini.get(fld, ""))
 
-    print(f"[✓] Loaded evaluation model: {model_name}")
+            # skip if original is empty (no content)
+            if o.strip() == "":
+                continue
 
-    # --- Compute Utility ---
-    orig_embeds = embed_texts(texts, tokenizer, model)
-    min_embeds = embed_texts(minimized_texts, tokenizer, model)
+            per_field_stats[fld]["count"] += 1
+            total_fields += 1
 
-    similarities = [cosine_similarity([a], [b])[0][0] for a, b in zip(orig_embeds, min_embeds)]
-    utility_score = np.mean(similarities) * 100
+            orig_has_pii = contains_pii(o)
+            mini_has_pii = contains_pii(m)
 
-    # --- Simple attack simulation ---
-    attack_success = (100 - privacy_retention) * np.random.uniform(0.5, 1.0)
+            # —— Leakage detection / false negatives
+            if orig_has_pii and mini_has_pii:
+                false_neg += 1
+                per_field_stats[fld]["FN"] += 1
+                # count how many PII fragments remain (simple approach: count matches)
+                leaked_tokens = len(EMAIL_RE.findall(m) + PHONE_RE.findall(m) + REF_RE.findall(m))
+                per_field_stats[fld]["leak"] += leaked_tokens
+                leak_count += leaked_tokens
+
+            # —— Over-redaction (false positives)
+            if not orig_has_pii and m.strip() == "":
+                false_pos += 1
+                per_field_stats[fld]["FP"] += 1
+                blanks_overredacted += 1
+
+            # —— Similarity / utility for non-empty minimized fields
+            if m.strip() != "":
+                sim = util.cos_sim(model.encode(o, convert_to_tensor=True),
+                                   model.encode(m, convert_to_tensor=True)).item()
+                sim_sum += sim
+                sim_count += 1
+                per_field_stats[fld]["sim_sum"] += sim
+
+    # Compute metrics
+    attack_success = (false_neg / total_fields) * 100 if total_fields > 0 else 0.0
+    privacy_retention = ((total_fields - false_neg) / total_fields) * 100 if total_fields > 0 else 0.0
+    over_redaction_rate = (false_pos / total_fields) * 100 if total_fields > 0 else 0.0
+    avg_similarity = (sim_sum / sim_count) * 100 if sim_count > 0 else 0.0
 
     report = {
-        "timestamp": datetime.now().isoformat(),
-        "records_evaluated": len(minimized),
+        "timestamp": str(datetime.now()),
+        "fields_evaluated": total_fields,
+        "attack_success_%": round(attack_success, 2),
         "privacy_retention_%": round(privacy_retention, 2),
-        "utility_%": round(utility_score, 2),
-        "attack_success_%": round(attack_success, 2)
+        "over_redaction_rate_%": round(over_redaction_rate, 2),
+        "avg_similarity_%": round(avg_similarity, 2),
+        "leak_count": leak_count,
+        "false_negatives": false_neg,
+        "false_positives": false_pos,
+        "per_field": {
+            fld: {
+                "count": st["count"],
+                "FN": st["FN"],
+                "FP": st["FP"],
+                "leak": st["leak"],
+                "avg_sim_%": round((st["sim_sum"] / st["count"] * 100) if st["count"]>0 else 0.0, 2)
+            }
+            for fld, st in per_field_stats.items()
+        }
     }
 
-    def make_json_safe(obj):
-        if isinstance(obj, dict):
-            return {k: make_json_safe(v) for k, v in obj.items()}
-        elif isinstance(obj, list):
-            return [make_json_safe(v) for v in obj]
-        elif hasattr(obj, "item") and callable(obj.item):
-            try:
-                return obj.item()
-            except:
-                return str(obj)
-        elif isinstance(obj, (float, int, str, bool)) or obj is None:
-            return obj
-        else:
-            return str(obj)
-
-    report = make_json_safe(report)
-
-    with open("privacy_utility_report.json", "w", encoding="utf-8") as f:
-        json.dump(report, f, indent=2)
-
-    print("\n📊 Evaluation Summary")
-    print("="*50)
+    print("📊 Evaluation Report")
     for k, v in report.items():
-        print(f"{k:25s}: {v}")
-    print("="*50)
-    print(f"\n[✓] Report saved to {REPORT_FILE}\n")
+        if k == "per_field":
+            print(" per-field breakdown:")
+            for fld, st in report["per_field"].items():
+                print(f"  {fld}: {st}")
+        else:
+            print(f"{k:25s}: {v}")
+    
+    # Convert to JSON safe types (if needed)
+    def make_safe(x):
+        if isinstance(x, dict):
+            return {k: make_safe(v) for k, v in x.items()}
+        if isinstance(x, float):
+            return float(x)
+        return x
+    report = make_safe(report)
+
+    with open("evaluation_report_detailed.json", "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2)
+    print("[✓] Saved detailed report to evaluation_report_detailed.json")
 
 if __name__ == "__main__":
     main()
