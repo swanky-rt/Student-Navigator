@@ -1,0 +1,41 @@
+﻿name: airgap-agent
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # ---- Core ----
+  - python=3.10
+  - pandas
+  - numpy
+  - pip
+  - setuptools
+  - wheel
+  - openssl
+  - libffi
+  - zlib
+  - tk
+  - bzip2
+  - tbb
+  - llvm-openmp        # works on both mac + win (OpenMP runtime)
+
+  # ---- PIP packages ----
+  - pip:
+      # Deep-learning + Hugging Face stack
+      - torch==2.8.0
+      - torchvision==0.23.0
+      - torchaudio==2.8.0
+      - transformers==4.57.0
+      - accelerate==1.10.1
+      - bitsandbytes==0.48.1
+      - safetensors==0.6.2
+      - huggingface-hub==0.35.3
+
+      # Data + plotting
+      - matplotlib==3.10.7
+      - seaborn==0.13.2
+      - tqdm==4.67.1
+      - requests==2.32.5
+      - pyyaml==6.0.3
+      - regex==2025.9.18
+      - colorama==0.4.6
+      - psutil==7.1.0
