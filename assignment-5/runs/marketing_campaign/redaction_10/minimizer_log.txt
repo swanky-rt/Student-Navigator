@@ -1,0 +1,66 @@
+Please print
+Please print main
+Loading data from C:\Users\sriro\AppData\Local\Temp\scenario_310gmiv3.csv ...
+1 rows loaded.
+Loading model mistralai/Mistral-7B-Instruct-v0.2 ...
+Please print minimize_records
+
+================================================================================
+FULL PROMPT SENT TO MODEL
+================================================================================
+<s> [INST] You are a trusted privacy gatekeeper. Your ONLY job is to decide which fields should be revealed, not to perform the task itself.
+
+You are a privacy-minimization expert. Your goal is to decide which fields from a user's record should be shared for the described purpose â€” balancing usefulness with privacy risk.
+TASK: Design a marketing campaign dataset.
+PRIVACY DIRECTIVE: Goal: share aggregated data with marketing teams to plan targeted campaigns. Keep broad, demographic, or behavioral descriptors that describe audience trends. Do NOT include individual-level contact or identifiers. The focus is on group-level insight, not personal details.
+REDACTION STRENGTH: 0.10
+(0.0 â†’ share almost everything | 1.0 â†’ share almost nothing)
+USER RECORD: {
+  "id": "505",
+  "job_title": "Marketing Specialist",
+  "job_description": "Join Marketify. Contact [marketing@marketify.com](mailto:marketing@marketify.com). Batch number: CARD-9876-5432-1111.",
+  "company_name": "Marketify",
+  "contact_info": "[marketing@marketify.com](mailto:marketing@marketify.com), +1 (555) 555-6677",
+  "notes": "batch ref: CARD-9876-5432-1111",
+  "directive": "marketing_campaign"
+}
+Think carefully:
+1. Identify which fields directly enable the task.
+2. Identify which fields could expose personal, traceable, or unnecessary details.
+3. Adjust your decision based on redaction strength:
+   - Low values (<0.3): favor utility, allow broader sharing.
+   - Mid values (0.3â€“0.7): balance privacy and utility.
+   - High values (>0.7): favor privacy, share only essential safe fields.
+4. Consider that similar tasks may differ in purpose and sensitivity, so reason contextually.
+Finally, output ONLY a JSON array of the field names to share.
+The last line must be the JSON array, e.g.:
+["column_name1","column_name2",...,"column_nameN"]
+ [/INST]
+================================================================================
+
+
+================================================================================
+RAW COMPLETION FROM MODEL
+================================================================================
+Based on the privacy directive and the user record provided, here's the JSON array of fields to share for the marketing campaign dataset:
+
+["job_title", "company_name"]
+
+Explanation:
+1. The task requires aggregated data for marketing teams to plan targeted campaigns, so fields that describe audience trends, such as job titles and company names, are directly enabling the task.
+2. Fields like contact_info, id, and notes should not be shared as they contain personal, traceable, or unnecessary details that could potentially expose individual identities.
+3. Given a reda
+================================================================================
+
+[OK] Saved minimized dataset to runs\marketing_campaign\redaction_10\minimized.json
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]
+Loading checkpoint shards:  33%|###3      | 1/3 [00:01<00:02,  1.49s/it]
+Loading checkpoint shards:  67%|######6   | 2/3 [00:02<00:01,  1.32s/it]
+Loading checkpoint shards: 100%|##########| 3/3 [00:05<00:00,  2.16s/it]
+Loading checkpoint shards: 100%|##########| 3/3 [00:05<00:00,  1.95s/it]
+Some parameters are on the meta device because they were offloaded to the cpu.
+
+Minimizing:   0%|          | 0/1 [00:00<?, ?it/s]
+Minimizing: 100%|##########| 1/1 [02:03<00:00, 123.82s/it]
+Minimizing: 100%|##########| 1/1 [02:03<00:00, 123.82s/it]
