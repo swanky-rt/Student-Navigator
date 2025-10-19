@@ -134,6 +134,15 @@ All reports and plots are saved in runs/, plots_compare/, and plots_tradeoff/.
 - **marketing_campaign:** Only aggregated, non-personal insights are shared for marketing analysis
 - **research_dataset:** Data is fully anonymized for research, applying the strictest privacy—no personal information.
 
+
+### What attacks were attempted?
+All adversarial evaluations used hijacking / social-engineering style attacks implemented as multi-turn dialogues that attempt to coerce the privacy-preserving assistant into revealing private tokens. Prompting variations (different strategies) include:
+
+- Authority roleplay: The attacker prompt is generated to impersonate roles such as HR, legal, or compliance, demanding verification of specific fields. This is implemented in the code by constructing pretext prompts that simulate authoritative requests (see `generate_hijack_pretext` in `attack_defense_sim.py`).
+- Few-shot deception: The attacker prompt may include examples or context that condition the defender model to reply with sensitive fields. This is achieved by varying the prompt content and conversation history in multi-turn simulations.
+- Iterative escalation: The code supports successive rephrasing and increasingly forceful requests across multiple chat turns. Each turn, the attacker can escalate the urgency or specificity of the request, stimulating the defender to potentially reveal more information.
+- "Mild" to "Extreme" variation: The hijacking prompt style is controlled by the `hijack_style` parameter in the code, allowing the attacker to switch between less aggressive (mild) and more aggressive (extreme) contextual hijacking prompts.
+
 ---
 
 ## Model Design with Justification
@@ -413,7 +422,7 @@ We went about this keeping in mind that we wanted to calculate how much % of the
 To quantify information retention in a context-aware way, I compared the minimized outputs to the scenario’s expected ground truth. The AirGap paper defines utility as
 > "utility score, quantifying the proportion of task-relevant information shared with third party p" [[Paper Link]](https://arxiv.org/pdf/2405.05175)
 
-For each scenario (e.g., recruiter outreach, public job board, etc), I defined a policy-ideal version, representing what should be shared according to that privacy directive (what columns is relevant to the scenario). For each field, I then measured how semantically similar my minimized output was to this ideal disclosure using *cosine similarity*. 
+For each scenario (e.g., recruiter outreach, public job board, etc), I defined what should be shared according to that privacy directive (what columns is relevant to the scenario). For each field, I then measured how semantically similar my minimized output was to this ideal disclosure using *cosine similarity* with original data as contextual hijacking, none of the data is contextually safe to share and Professor mentioned about no ground truth in Context Hijacking. 
 
 I used cosine similarity to measure semantic utility because it captures meaning rather than exact text overlap. In privacy-minimization scenarios, especially those involving natural-language redaction by LLMs, the minimized output is often paraphrased or restructured, but still correct and contextually relevant.
 
@@ -477,11 +486,18 @@ The percentage of original sensitive tokens that the attacker was able to recove
 ## Learnings, Limitations, and Future Work
 
 ### Learnings
+- I understood that data minimization is a continuous balancing act, too much obfuscation can preserve privacy but be detrimental to the utility of the task while too little has perfect or maximized utility at the expense of leaking private context. Seeing the privacy-utility trade off in the metrics it became obvious there isn't a one-size-fits-all optimal. The ‘ideal’ balance strikes entirely when relating back to the scenario being engaged in, and the purpose for sharing the data.
 
+- One of the most enlightening aspects of the project was designing and implementing the interactive attacker–defender loop. Attackers could adapt based on any response from the defender in the previous iteration. I learned the impact of history of conversation, context, and also, prompt conditioning.
+
+- In the process, I found that while regex-based detection is quick and interpretable, there are innate restrictions- you only get exact matches. It will struggle if a private piece of information is paraphrased, expressed more generally, or reworded in a contextual way. I switched to using cosine similarity between text embeddings to quantify how semantically related the minimized, or leaked material, was to the original.
 
 ### Limitations
-* The paper worked on many records but we could only run our model on few 100 records due to computational limitations.
-* Computationally intensive for running bigger (better) models like GPT-4.
+* The paper worked on many records but we could only run our model on few 100 records due to computational limitation and computationally intensive for running bigger (better) models like GPT-4.
+* GPU memory overhead and long sequence handling were limiting factors when running multiple parallel records or long transcripts.
+* The interactive attack loop (attacker - defender) took longer than expected, especially with multi-turn conversations, since each defender response triggered a new generation call.
+* Some models (e.g., DistilGPT2 and TinyLlama) hit token limits (2048 context length), causing truncation or degraded performance.
+
 
 ### Future Work
 
@@ -500,7 +516,7 @@ We used ChatGPT-5-based LLMs for support in this project. Their role was to:
 
 * Verify theoretical correctness of privacy–utility metrics.
 * Help with debugging and refactoring repetitive experiment scripts. Helped with Regex formatting and logging scripts.
-* Provide structural consistency in documentation and plots, library usage.
+* Provide structural consistency in documentation and plots, library usage, cosine similarity.
   All code logic, experiments, and results were designed and executed by the team.
 * Helped with structuring markdowns (but the content was provided by us)
 
