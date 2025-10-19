@@ -104,7 +104,7 @@ All reports and plots are saved in `runs/`, `plots_compare/`, and `plots_tradeof
 ## Dataset Overview
 
 * **Name:** Synthetic Job Data (Augmented)
-* **Size:** 3,000–5,000 records (configurable)
+* **Size:** 300 records (configurable)
 * **Generated Using:** `augment_dataset.py` (Faker library)
 
 | Field                                                        | Description                 | Sensitivity |
@@ -206,10 +206,7 @@ Simulates an adversarial conversation between two LLMs:
 
 * Multi-turn chat (3–6 rounds).
 * Regex-based PII extraction after each round.
-* Supports two attack modes:
-
-  * *Context-preserving* (indirect inference)
-  * *Hijacking* (direct coercion)
+* Supports *Hijacking* (direct coercion)
 
 #### Outputs
 
@@ -348,5 +345,3 @@ Their role was to:
 * *Hugging Face* (2024). **Transformers: Text-Generation Pipeline Documentation.**
 
 ---
-
-Would you like me to now generate this entire version as a downloadable `README.md` file with proper formatting and embedded image reference (so you can commit it directly)?
