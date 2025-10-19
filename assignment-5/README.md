@@ -15,7 +15,11 @@ This assignment investigates privacy-preserving data minimization using large la
 ## Quick Navigation
 
 - [Folder Structure](#folder-structure)
-- [Environment Setup and Running the Code](#environment-setup-and-running-the-code)
+- [Setting Up the Conda Environment and Running the Code](#setting-up-the-conda-environment-and-running-the-code)
+  - [Environment Setup](#environment-setup)
+  - [Running the Workflow](#running-the-workflow)
+    - [To run the full pipeline](#to-run-the-full-pipeline)
+    - [To visualize results](#to-visualize-results)
 - [Dataset Overview](#dataset-overview)
 - [System Architecture](#system-architecture)
 - [Model Design with Justification](#model-design-with-justification)
@@ -27,6 +31,7 @@ This assignment investigates privacy-preserving data minimization using large la
   - [3. Attack Simulation (attack_defense_sim.py)](#3-attack-simulation-attack_defense_simpy)
   - [4. Evaluation and Metrics (evaluate_privacy_utility.py)](#4-evaluation-and-metrics-evaluate_privacy_utilitypy)
   - [5. Plotting and Visualization](#5-plotting-and-visualization)
+- [Overall Design Justification](#overall-design-justification)
 - [Quality Metrics with Justification](#quality-metrics-with-justification)
   - [Attack Success and Privacy](#attack-success-and-privacy)
   - [Utility Score (Semantic-Based)](#utility-score-semantic-based)
