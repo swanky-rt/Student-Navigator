@@ -1,0 +1,23 @@
+
+# ─────────────────────────────────────────────
+# Run artifacts 
+# ─────────────────────────────────────────────
+
+runs/**/transcripts/
+runs/**/*.txt
+plots_compare/Tradeoff_Plots/
+plots_compare/*.csv
+
+# ─────────────────────────────────────────────
+# LaTeX / Report artifacts
+# ─────────────────────────────────────────────
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.bbl
+*.blg
+
