@@ -609,6 +609,65 @@ The attack success rate dropped from 42.10% in the baseline to 12.03% with AirGa
 </tr>
 </table>
 
+### Other Inference: 
+
+<div align="center">
+<table>
+<tr>
+<td width="45%">
+<img src="/assignment-5/plots_compare/compare_scatter_privacy_utility.png" width="100%">
+</td>
+
+<td width="55%" valign="top">
+
+#### *Scatter:  Privacy and Utility Analysis*
+
+The scatter plot comparing all scenarios reveals that the Baseline (no minimization) consistently achieves 100% Utility but suffers from poor ∼57% Privacy, clustering tightly in the top-left. Conversely, the AirGap LLM-minimization strategy successfully improves Privacy across the board to a range of 81% to 93%, but this comes at a significant and necessary cost to Utility, which drops into the 22% to 34% range, confirming the fundamental privacy-utility tradeoff enforced by the policy-aware redaction.
+</td>
+</tr>
+</table>
+
+</div>
+
+
+<div align="center">
+<table>
+<tr>
+<td width="45%">
+<img src="/assignment-5/plots_compare/scenario_tradeoff.png" width="100%">
+</td>
+
+<td width="55%" valign="top">
+
+#### *Extra Credit - Internal HR:  Privacy and Utility Analysis*
+
+The AirGap minimizer achieved a notable improvement in privacy protection, increasing Privacy from 38% at baseline to 63% (+25 percentage points). This confirms that the system effectively redacted sensitive employee-related information such as personal identifiers, contact details, and HR notes. However, this came at a moderate cost to Utility, which declined from 67% to 60% (−7 percentage points). The reduction suggests that while AirGap retained sufficient structural and contextual data for internal analytics, certain non-sensitive but relevant fields were also removed, slightly impacting overall task performance.
+
+This tradeoff indicates that AirGap performs best in privacy-sensitive internal environments where data confidentiality outweighs full analytical completeness—such as HR audits, employee reviews, or compliance-focused reporting. In these contexts, AirGap’s redaction strategy balances acceptable analytical utility with significantly improved privacy assurance, making it suitable for controlled internal data-sharing scenarios.
+
+Note : Due to the high computational cost of running full LLM-based attack–defense simulations across all five policy scenarios, this analysis focuses exclusively on the internal_hr scenario as a representative case.
+</td>
+</tr>
+</table>
+
+</div>
+
+<div align="center">
+<table>
+<tr>
+<td width="45%">
+<img src="/assignment-5/plots_compare/leakage_rate_comparison.png" width="100%">
+</td>
+
+<td width="55%" valign="top">
+
+#### *Token-Level Leakage Rate by Scenario*
+
+The bar chart comparing Token-Level Leakage Rate between the Baseline (no minimization) and AirGap (LLM-minimization) systems across all five scenarios demonstrates the consistent and dramatic effectiveness of the LLM-based defense. In the Baseline, the Leakage Rate remains high and similar across all scenarios, hovering between $41\%$ and $43\%$, confirming that the simple act of using the full, unredacted data inherently poses a significant, uniform privacy risk to all policies. Conversely, the AirGap system substantially reduces the Leakage Rate in every single scenario, with the most aggressive privacy policies like "internal_hr" and "public_job_board" achieving the lowest leakage rates, falling below $8\%$. Even the most utility-focused policy, recruiter_outreach, sees its leakage rate slashed from $43\%$ to under $20\%$, decisively proving that the policy-aware LLM minimization is highly effective at reducing the exposure of sensitive tokens regardless of the specific scenario or directive.
+</td>
+</tr>
+</table>
+
 </div>
 
 ---
