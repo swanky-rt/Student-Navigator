@@ -79,10 +79,18 @@ assignment-5/
 1. Ensure you have *Anaconda* or *Miniconda* installed.
 2. Create and activate the environment using the provided YAML file:
 
-bash
+#### To set up the environment:
+
+```
 conda env create -f environment.yml
 conda activate airgap-agent
+```
 
+#### To update the yml file:
+
+```
+conda env update -f environment.yml --prune
+```
 
 3. Alternatively, install the dependencies manually:
 
@@ -97,21 +105,29 @@ conda activate airgap-agent
 
 #### To run the full pipeline:
 
-```bash
-python controller.py --csv Data/synthetic_jobs.csv --out_dir runs/airgap \
-  --model_variant airgap --attacker_mode hijacking --hijack_style mild
 ```
-
+python controller.py \
+  --csv Data/synthetic_jobs_augmented.csv \
+  --out_dir runs/airgap_aug_hijack_redact \
+  --model_variant airgap \
+  --attacker_mode hijacking \
+  --hijack_style extreme \
+  --attacker_model EleutherAI/gpt-neo-125M \
+  --conversational_model distilgpt2 \
+  --max_records 300 \
+  --redaction_strength 0.2 \
+  --max_new_tokens 64
+```
 
 #### To visualize results:
 
-```bash
-python plot_leakrate_comparison.py --run1 runs/airgap
-python plot_privacy_utility.py --run1 runs/airgap
-python plot_redaction_tradeoff.py --run runs/airgap
+```
+python plot_leakrate_comparison.py --run1 runs/baseline_aug_hijack --run2 runs/airgap_aug_hijack
+python plot_privacy_utility.py --run1 runs/baseline_aug_hijack --run2 runs/airgap_aug_hijack
+python plot_redaction_tradeoff.py --run runs/airgap_aug_hijack
 ```
 
-All reports and plots are saved in runs/, plots_compare/, and plots_tradeoff/.
+All reports and plots are saved in runs/ and plots_compare/.
 
 ---
 
