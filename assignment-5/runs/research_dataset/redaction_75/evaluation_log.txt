@@ -1,0 +1,22 @@
+Evaluating Privacy–Utility Tradeoff (AirGap metrics)
+[i] Loaded embedding model for semantic similarity
+
+=== AirGap Evaluation Report ===
+timestamp           : 2025-10-15 05:22:49.671998
+fields_evaluated    : 15
+pii_fields          : 9
+false_negatives     : 5
+false_positives     : 1
+leak_count          : 18
+Attack_S            : 55.56
+Privacy_S           : 44.44
+Utility_S           : 66.67
+Over_redaction_%    : 6.67
+ per-field breakdown:
+  job_title: {'count': 3, 'FN': 0, 'FP': 1, 'leak': 0, 'avg_sim_%': 66.67}
+  job_description: {'count': 3, 'FN': 2, 'FP': 0, 'leak': 10, 'avg_sim_%': 66.67}
+  company_name: {'count': 3, 'FN': 0, 'FP': 0, 'leak': 0, 'avg_sim_%': 100.0}
+  contact_info: {'count': 3, 'FN': 1, 'FP': 0, 'leak': 2, 'avg_sim_%': 33.33}
+  notes: {'count': 3, 'FN': 2, 'FP': 0, 'leak': 6, 'avg_sim_%': 66.67}
+redaction_strength  : 0.75
+[OK] Saved AirGap evaluation report to runs\research_dataset\redaction_75\evaluation_report.json

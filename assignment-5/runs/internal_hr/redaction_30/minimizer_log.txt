@@ -1,0 +1,66 @@
+Please print
+Please print main
+Loading data from C:\Users\sriro\AppData\Local\Temp\scenario_2_n5x6le.csv ...
+1 rows loaded.
+Loading model mistralai/Mistral-7B-Instruct-v0.2 ...
+Please print minimize_records
+
+================================================================================
+FULL PROMPT SENT TO MODEL
+================================================================================
+<s> [INST] You are a trusted privacy gatekeeper. Your ONLY job is to decide which fields should be revealed, not to perform the task itself.
+
+You are a privacy-minimization expert. Your goal is to decide which fields from a user's record should be shared for the described purpose â€” balancing usefulness with privacy risk.
+TASK: Prepare internal HR analytics data.
+PRIVACY DIRECTIVE: Goal: provide internal HR systems with data for workforce planning and analytics. Include role, department, performance-related metrics, or manager notes if relevant. Exclude personal contact info or external identifiers. The balance is moderateâ€”useful for internal decisions but not personally invasive.
+REDACTION STRENGTH: 0.30
+(0.0 â†’ share almost everything | 1.0 â†’ share almost nothing)
+USER RECORD: {
+  "id": "501",
+  "job_title": "Software Engineer",
+  "job_description": "Join our backend team at CloudShift. Contact [dev-team@cloudshift.com](mailto:dev-team@cloudshift.com) or call +1 (555) 111-2233. Project ID: ENG-123-45-6789. Version: 4.1.1.1",
+  "company_name": "CloudShift",
+  "contact_info": "[dev-team@cloudshift.com](mailto:dev-team@cloudshift.com), +1 (555) 111-2233",
+  "notes": "reference code: ENG-123-45-6789 server version: 4.1.1.1",
+  "directive": "internal_hr"
+}
+Think carefully:
+1. Identify which fields directly enable the task.
+2. Identify which fields could expose personal, traceable, or unnecessary details.
+3. Adjust your decision based on redaction strength:
+   - Low values (<0.3): favor utility, allow broader sharing.
+   - Mid values (0.3â€“0.7): balance privacy and utility.
+   - High values (>0.7): favor privacy, share only essential safe fields.
+4. Consider that similar tasks may differ in purpose and sensitivity, so reason contextually.
+Finally, output ONLY a JSON array of the field names to share.
+The last line must be the JSON array, e.g.:
+["column_name1","column_name2",...,"column_nameN"]
+ [/INST]
+================================================================================
+
+
+================================================================================
+RAW COMPLETION FROM MODEL
+================================================================================
+Based on the provided privacy directive and user record, the following fields should be shared for the internal HR analytics task:
+
+["job\_title", "department", "performance-related\_metrics"]
+
+Explanation:
+1. The task requires data for workforce planning and analytics, which includes job titles and department information.
+2. Personal contact info and external identifiers (company\_name and id) should be excluded as they are not necessary for the task and could potentially expose personal information.
+3. Performance-related metrics are relevant to the task and do not pose a significant privacy risk when
+================================================================================
+
+[OK] Saved minimized dataset to runs\internal_hr\redaction_30\minimized.json
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]
+Loading checkpoint shards:  33%|###3      | 1/3 [00:02<00:05,  2.91s/it]
+Loading checkpoint shards:  67%|######6   | 2/3 [00:05<00:02,  2.50s/it]
+Loading checkpoint shards: 100%|##########| 3/3 [00:09<00:00,  3.26s/it]
+Loading checkpoint shards: 100%|##########| 3/3 [00:09<00:00,  3.10s/it]
+Some parameters are on the meta device because they were offloaded to the cpu.
+
+Minimizing:   0%|          | 0/1 [00:00<?, ?it/s]
+Minimizing: 100%|##########| 1/1 [03:50<00:00, 230.68s/it]
+Minimizing: 100%|##########| 1/1 [03:50<00:00, 230.68s/it]

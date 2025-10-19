@@ -1,0 +1,97 @@
+Loading data from C:\Users\sriro\AppData\Local\Temp\scenario_zea5ti1s.csv ...
+3 rows loaded.
+[DECIDE] field=job_title candidate_text='answer with only one word: share or do_not_share. if you have to say something other than this, like when unsure, take the safest option. only those two responses are allowed.'
+  -> DO_NOT_SHARE -> set job_title = ''
+[DECIDE] field=job_description candidate_text='share.'
+  -> SHARE -> set job_description = 'Join our backend team at CloudShift. Contact [dev-team@cloudshift.com](mailto:dev-team@cloudshift.com) or call +1 (555) 111-2233. Project ID: ENG-123-45-6789. Version: 4.1.1.1'
+[DECIDE] field=company_name candidate_text='answer: share.'
+  -> SHARE -> set company_name = 'CloudShift'
+[DECIDE] field=contact_info candidate_text='share (for general contact details like this)'
+  -> SHARE -> set contact_info = '[dev-team@cloudshift.com](mailto:dev-team@cloudshift.com), +1 (555) 111-2233'
+[DECIDE] field=notes candidate_text='answer: share.'
+  -> SHARE -> set notes = 'reference code: ENG-123-45-6789 server version: 4.1.1.1'
+[DECIDE] field=job_title candidate_text='share.'
+  -> SHARE -> set job_title = 'Data Analyst'
+[DECIDE] field=job_description candidate_text='share.'
+  -> SHARE -> set job_description = 'Data Analyst at MetricWorks. Email [hr@metricworks.com](mailto:hr@metricworks.com). Reference number: REF-4111-1111-1111-1111'
+[DECIDE] field=company_name candidate_text='share.'
+  -> SHARE -> set company_name = 'MetricWorks'
+[DECIDE] field=contact_info candidate_text='share (but redact [hr@metricworks.com](mailto:hr@metricworks.com'
+  -> SHARE -> set contact_info = '[hr@metricworks.com](mailto:hr@metricworks.com), +1 (555) 222-3344'
+[DECIDE] field=notes candidate_text='note: the redaction strength does not affect the answer. it'
+  -> UNCLEAR -> set notes = ''
+[DECIDE] field=job_title candidate_text='answer: share.'
+  -> SHARE -> set job_title = 'UX Designer'
+[DECIDE] field=job_description candidate_text='answer: share.'
+  -> SHARE -> set job_description = 'We’re hiring at Designify. Contact [careers@designify.com](mailto:careers@designify.com). Prototype hash: 192-abc-168-xyz.'
+[DECIDE] field=company_name candidate_text='answer with only one word: share or do_not_share. if you have to say something other than this, like when unsure, take the safest option. only those two responses are allowed.'
+  -> DO_NOT_SHARE -> set company_name = ''
+[DECIDE] field=contact_info candidate_text='share'
+  -> SHARE -> set contact_info = '[careers@designify.com](mailto:careers@designify.com), +1 (555) 333-4455'
+[DECIDE] field=notes candidate_text='prototype hash: 192'
+  -> UNCLEAR -> set notes = ''
+ Saved minimized dataset to runs\recruiter_outreach\redaction_75\minimized.json
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/config.json (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B03F72EF0>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: 6700fdd7-f28b-4b60-9436-a589405f393d)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/config.json
+Retrying in 1s [Retry 1/5].
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/config.json (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B03F73580>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: c39eb844-c680-4984-9f61-fa639b8e9a6e)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/config.json
+Retrying in 2s [Retry 2/5].
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/config.json (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B03C80610>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: a71879c8-6fbe-4a48-9291-be178d09d0b4)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/config.json
+Retrying in 4s [Retry 3/5].
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/config.json (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B57FEECB0>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: 63ade16c-7cc8-497b-8914-ef4dc2bf6bfa)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/config.json
+Retrying in 8s [Retry 4/5].
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/config.json (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B03F73580>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: b9da6752-8227-439c-af18-47b6fb1b1c44)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/config.json
+Retrying in 8s [Retry 5/5].
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/config.json (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B03F72E60>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: 41686624-d7b4-4871-b252-741f1c0f703f)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/config.json
+`torch_dtype` is deprecated! Use `dtype` instead!
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]
+Loading checkpoint shards:  33%|###3      | 1/3 [00:03<00:06,  3.29s/it]
+Loading checkpoint shards:  67%|######6   | 2/3 [00:03<00:01,  1.65s/it]
+Loading checkpoint shards: 100%|##########| 3/3 [00:04<00:00,  1.05s/it]
+Loading checkpoint shards: 100%|##########| 3/3 [00:04<00:00,  1.37s/it]
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/generation_config.json (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B2A267B20>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: 219d771e-5139-49cd-a53a-2571d8ffa297)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/generation_config.json
+Retrying in 1s [Retry 1/5].
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/generation_config.json (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B2A267610>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: f6aaf656-a771-4808-bddb-a6c3908c0df0)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/generation_config.json
+Retrying in 2s [Retry 2/5].
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/generation_config.json (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B2A267370>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: 2a0bbfc3-eff6-497d-8f59-0c78d87da622)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/generation_config.json
+Retrying in 4s [Retry 3/5].
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/generation_config.json (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B2A1C9BD0>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: 17425c15-72fb-483b-ad0b-95b8699c791d)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/generation_config.json
+Retrying in 8s [Retry 4/5].
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/generation_config.json (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B2A1C9630>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: d9156796-c171-43dc-a64e-dec458836b37)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/generation_config.json
+Retrying in 8s [Retry 5/5].
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/generation_config.json (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B2A1C9DB0>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: 72e02964-a47a-48f0-8d2b-9a9eaf4fe177)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/generation_config.json
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/custom_generate/generate.py (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B2A1C9990>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: c7492b76-cd53-4d5e-b74c-f2a433c143d5)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/custom_generate/generate.py
+Retrying in 1s [Retry 1/5].
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/custom_generate/generate.py (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B2A1C9630>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: 064ea738-9b4b-47a4-b039-cd8dc79792da)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/custom_generate/generate.py
+Retrying in 2s [Retry 2/5].
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/custom_generate/generate.py (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B2A1C9BD0>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: d8d3aaeb-956a-42bc-9306-d5873e659e34)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/custom_generate/generate.py
+Retrying in 4s [Retry 3/5].
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/custom_generate/generate.py (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B2A267E50>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: 954498a6-92b2-4d1d-aaec-1fff1457d748)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/custom_generate/generate.py
+Retrying in 8s [Retry 4/5].
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/custom_generate/generate.py (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B2A2678E0>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: 6589e0f5-a992-49d3-8b5e-2de35a8dd9bd)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/custom_generate/generate.py
+Retrying in 8s [Retry 5/5].
+'(MaxRetryError('HTTPSConnectionPool(host=\'huggingface.co\', port=443): Max retries exceeded with url: /mistralai/Mistral-7B-Instruct-v0.2/resolve/main/custom_generate/generate.py (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x0000025B2A267F70>: Failed to resolve \'huggingface.co\' ([Errno 11001] getaddrinfo failed)"))'), '(Request ID: 2ce6c56d-9a19-451b-89ae-bdbdb882465f)')' thrown while requesting HEAD https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2/resolve/main/custom_generate/generate.py
+Some parameters are on the meta device because they were offloaded to the cpu.
+Device set to use cuda:0
+
+Minimizing:   0%|          | 0/3 [00:00<?, ?it/s]Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+
+Minimizing:  33%|###3      | 1/3 [01:14<02:29, 74.86s/it]Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+
+Minimizing:  67%|######6   | 2/3 [02:39<01:20, 80.80s/it]You seem to be using the pipelines sequentially on GPU. In order to maximize efficiency please use a dataset
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+
+Minimizing: 100%|##########| 3/3 [04:25<00:00, 92.28s/it]
+Minimizing: 100%|##########| 3/3 [04:25<00:00, 88.59s/it]

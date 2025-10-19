@@ -1,0 +1,64 @@
+Loading data from C:\Users\sriro\AppData\Local\Temp\scenario_qnf_jaq3.csv ...
+3 rows loaded.
+[DECIDE] field=job_title candidate_text='share'
+  -> SHARE -> set job_title = 'Software Engineer'
+[DECIDE] field=job_description candidate_text='share.'
+  -> SHARE -> set job_description = 'Join our backend team at CloudShift. Contact [dev-team@cloudshift.com](mailto:dev-team@cloudshift.com) or call +1 (555) 111-2233. Project ID: ENG-123-45-6789. Version: 4.1.1.1'
+[DECIDE] field=company_name candidate_text='share.'
+  -> SHARE -> set company_name = 'CloudShift'
+[DECIDE] field=contact_info candidate_text='you are a privacy-preserving assistant. your job is to decide'
+  -> UNCLEAR -> set contact_info = ''
+[DECIDE] field=notes candidate_text='share.'
+  -> SHARE -> set notes = 'reference code: ENG-123-45-6789 server version: 4.1.1.1'
+[DECIDE] field=job_title candidate_text='share.'
+  -> SHARE -> set job_title = 'UX Designer'
+[DECIDE] field=job_description candidate_text='share.'
+  -> SHARE -> set job_description = 'We’re hiring at Designify. Contact [careers@designify.com](mailto:careers@designify.com). Prototype hash: 192-abc-168-xyz.'
+[DECIDE] field=company_name candidate_text='answer: share.'
+  -> SHARE -> set company_name = 'Designify'
+[DECIDE] field=contact_info candidate_text='your answer: share.'
+  -> SHARE -> set contact_info = '[careers@designify.com](mailto:careers@designify.com), +1 (555) 333-4455'
+[DECIDE] field=notes candidate_text='(this value appears to be a prototype hash and is likely a non-'
+  -> UNCLEAR -> set notes = ''
+[DECIDE] field=job_title candidate_text='share.'
+  -> SHARE -> set job_title = 'Marketing Specialist'
+[DECIDE] field=job_description candidate_text='share.'
+  -> SHARE -> set job_description = 'Join Marketify. Contact [marketing@marketify.com](mailto:marketing@marketify.com). Batch number: CARD-9876-5432-1111.'
+[DECIDE] field=company_name candidate_text='share.'
+  -> SHARE -> set company_name = 'Marketify'
+[DECIDE] field=contact_info candidate_text='answer: share'
+  -> SHARE -> set contact_info = '[marketing@marketify.com](mailto:marketing@marketify.com), +1 (555) 555-6677'
+[DECIDE] field=notes candidate_text='share.'
+  -> SHARE -> set notes = 'batch ref: CARD-9876-5432-1111'
+ Saved minimized dataset to runs\public_job_board\redaction_0\minimized.json
+`torch_dtype` is deprecated! Use `dtype` instead!
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]
+Loading checkpoint shards:  33%|###3      | 1/3 [00:03<00:06,  3.19s/it]
+Loading checkpoint shards:  67%|######6   | 2/3 [00:03<00:01,  1.61s/it]
+Loading checkpoint shards: 100%|##########| 3/3 [00:03<00:00,  1.01s/it]
+Loading checkpoint shards: 100%|##########| 3/3 [00:03<00:00,  1.33s/it]
+Some parameters are on the meta device because they were offloaded to the cpu.
+Device set to use cuda:0
+
+Minimizing:   0%|          | 0/3 [00:00<?, ?it/s]Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+
+Minimizing:  33%|###3      | 1/3 [01:03<02:07, 63.71s/it]Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+
+Minimizing:  67%|######6   | 2/3 [02:10<01:05, 65.81s/it]You seem to be using the pipelines sequentially on GPU. In order to maximize efficiency please use a dataset
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+
+Minimizing: 100%|##########| 3/3 [03:02<00:00, 59.38s/it]
+Minimizing: 100%|##########| 3/3 [03:02<00:00, 60.90s/it]

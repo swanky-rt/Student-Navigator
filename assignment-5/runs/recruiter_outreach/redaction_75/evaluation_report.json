@@ -1,0 +1,50 @@
+{
+  "timestamp": "2025-10-15 02:13:34.410991",
+  "fields_evaluated": 15,
+  "pii_fields": 8,
+  "false_negatives": 7,
+  "false_positives": 3,
+  "leak_count": 22,
+  "Attack_S": 87.5,
+  "Privacy_S": 12.5,
+  "Utility_S": 73.33,
+  "Over_redaction_%": 20.0,
+  "per_field": {
+    "job_title": {
+      "count": 3,
+      "FN": 0,
+      "FP": 1,
+      "leak": 0,
+      "avg_sim_%": 66.67
+    },
+    "job_description": {
+      "count": 3,
+      "FN": 3,
+      "FP": 0,
+      "leak": 11,
+      "avg_sim_%": 100.0
+    },
+    "company_name": {
+      "count": 3,
+      "FN": 0,
+      "FP": 1,
+      "leak": 0,
+      "avg_sim_%": 66.67
+    },
+    "contact_info": {
+      "count": 3,
+      "FN": 3,
+      "FP": 0,
+      "leak": 9,
+      "avg_sim_%": 100.0
+    },
+    "notes": {
+      "count": 3,
+      "FN": 1,
+      "FP": 1,
+      "leak": 2,
+      "avg_sim_%": 33.33
+    }
+  },
+  "redaction_strength": 0.75
+}
