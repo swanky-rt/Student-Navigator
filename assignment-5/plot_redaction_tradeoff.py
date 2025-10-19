@@ -1,24 +1,13 @@
 #!/usr/bin/env python3
 """
 plot_redaction_tradeoff.py
+Generates Privacy–Utility tradeoff curves per scenario using attack and evaluation reports.
 
-Plot Privacy–Utility tradeoff curves for each scenario using
-attack_report.json (for privacy_retention_%) and evaluation_report.json (for Utility_S).
-
-Expected folder structure:
-    runs/airgap_aug_hijack/
-        internal_hr/
-            redaction_1/
-                attack_report.json
-                evaluation_report.json
-            redaction_2/
-                attack_report.json
-                evaluation_report.json
-        marketing_campaign/
-            redaction_1/
-                ...
-            redaction_2/
-                ...
+Reads:
+ - attack_report.json → Privacy (privacy_retention_%)
+ - evaluation_report.json → Utility (Utility_S)
+Outputs:
+ - Per-scenario and overall tradeoff plots across redaction strengths.
 """
 
 import os
@@ -29,11 +18,11 @@ import matplotlib.pyplot as plt
 import re
 
 
-# ─────────────────────────────────────────────────────────────
-# Helper: numeric redaction extraction
-# ─────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
+# Helper: extract numeric redaction strength from folder names
+# --------------------------------------------------------------
 def extract_strength_from_path(path):
-    """Extract numeric redaction value from folder name like redaction_0.3 or redaction_2."""
+    """Extract numeric redaction value from a folder name like redaction_0.3 or redaction_2."""
     name = os.path.basename(path)
     m = re.search(r"([0-9]*\.?[0-9]+)", name)
     if m:
@@ -44,16 +33,11 @@ def extract_strength_from_path(path):
     return None
 
 
-# ─────────────────────────────────────────────────────────────
-# Loader
-# ─────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
+# Data loader
+# --------------------------------------------------------------
 def load_privacy_utility_data(parent_dir):
-    """
-    For each scenario/redaction subfolder, read both:
-        attack_report.json  → privacy_retention_%
-        evaluation_report.json → Utility_S
-    and return a DataFrame with all records.
-    """
+    """Load privacy and utility values from attack/evaluation reports in nested run folders."""
     rows = []
     for root, dirs, files in os.walk(parent_dir):
         if not ("attack_report.json" in files or "evaluation_report.json" in files):
@@ -65,7 +49,7 @@ def load_privacy_utility_data(parent_dir):
         privacy = None
         utility = None
 
-        # privacy from attack_report
+        # Read privacy metrics from attack_report
         if os.path.exists(attack_path):
             try:
                 with open(attack_path, "r", encoding="utf-8") as f:
@@ -74,7 +58,7 @@ def load_privacy_utility_data(parent_dir):
             except Exception as e:
                 print(f"[Skip privacy] {attack_path}: {e}")
 
-        # utility from evaluation_report
+        # Read utility metrics from evaluation_report
         if os.path.exists(eval_path):
             try:
                 with open(eval_path, "r", encoding="utf-8") as f:
@@ -83,6 +67,7 @@ def load_privacy_utility_data(parent_dir):
             except Exception as e:
                 print(f"[Skip utility] {eval_path}: {e}")
 
+        # Skip if neither metric found
         if privacy is None and utility is None:
             continue
 
@@ -102,10 +87,11 @@ def load_privacy_utility_data(parent_dir):
     return pd.DataFrame(rows)
 
 
-# ─────────────────────────────────────────────────────────────
-# Plotter
-# ─────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
+# Plot generation
+# --------------------------------------------------------------
 def plot_tradeoff_curves(df, outdir="plots_tradeoff"):
+    """Generate Privacy–Utility tradeoff plots per scenario and combined overview."""
     os.makedirs(outdir, exist_ok=True)
 
     scenarios = sorted(df["scenario"].unique())
@@ -120,9 +106,11 @@ def plot_tradeoff_curves(df, outdir="plots_tradeoff"):
         else:
             sub = sub.sort_values("Privacy_S")
 
+        # Per-scenario curve
         fig, ax = plt.subplots(figsize=(6, 5))
         ax.plot(sub["Privacy_S"], sub["Utility_S"], marker="o", linewidth=2, color="tab:blue")
 
+        # Label each point with its redaction folder
         for _, r in sub.iterrows():
             label = r["redaction"]
             if pd.notnull(r.get("redaction_strength")):
@@ -150,6 +138,7 @@ def plot_tradeoff_curves(df, outdir="plots_tradeoff"):
             continue
         sub = sub.sort_values("Privacy_S")
         ax.plot(sub["Privacy_S"], sub["Utility_S"], marker="o", label=sc)
+
     ax.set_xlabel("Privacy (%)")
     ax.set_ylabel("Utility (%)")
     ax.set_title("Privacy–Utility Tradeoff Across Scenarios")
@@ -162,13 +151,14 @@ def plot_tradeoff_curves(df, outdir="plots_tradeoff"):
     print(f"[Saved] {outp}")
 
 
-# ─────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 # Main
-# ─────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 def main():
+    """Main entry point: load reports and plot privacy–utility tradeoff curves."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True, help="Path to AirGap run folder")
-    ap.add_argument("--outdir", default="plots_tradeoff", help="Output directory for plots")
+    ap.add_argument("--outdir", default="plots_compare/redaction_plots", help="Output directory for plots")
     args = ap.parse_args()
 
     df = load_privacy_utility_data(args.run)

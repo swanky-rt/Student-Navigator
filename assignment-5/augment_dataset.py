@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+"""
+Augments synthetic job data with DOB, address, experience, and website.
+Uses Faker for realistic values and reproducible randomization.
+Ensures uniqueness and plausibility across generated fields.
+"""
+
 import pandas as pd
 import random
 from faker import Faker
@@ -8,62 +14,65 @@ from dateutil.relativedelta import relativedelta
 import re
 
 # ---------- Config ----------
+# Input/output paths and configuration constants for data augmentation
 INPUT = "Data/synthetic_jobs.csv"
 OUTPUT = "Data/synthetic_jobs_augmented.csv"
 
 SEED = 12345              # deterministic seed for reproducibility
-DOB_START_YEAR = 1970
-DOB_END_YEAR = 2002
-MAX_WEBSITE_ATTEMPTS = 5  # attempts to make a unique website
-FAKER_LOCALE = "en_US"    
+DOB_START_YEAR = 1970     # lower bound for date of birth
+DOB_END_YEAR = 2002       # upper bound for date of birth
+MAX_WEBSITE_ATTEMPTS = 5  # how many tries to ensure unique website
+FAKER_LOCALE = "en_US"    # locale for Faker data generation
 
 # ---------- Setup ----------
+# Set seeds to make results reproducible
 random.seed(SEED)
 fake = Faker(FAKER_LOCALE)
 Faker.seed(SEED)
 
-# Use Faker.unique for names but handle exhaustion gracefully
+# Use Faker.unique for name generation; ensures less repetition
 fake_unique = fake.unique
 
 # ---------- Helpers ----------
+
 def random_dob(start_year=DOB_START_YEAR, end_year=DOB_END_YEAR):
-    """Return DOB string in ISO format YYYY-MM-DD between start_year and end_year."""
+    """Generate a random date of birth (YYYY-MM-DD) between given years."""
     year = random.randint(start_year, end_year)
     month = random.randint(1, 12)
-    # choose safe day to avoid month-end issues
+    # restrict day to 1–28 to avoid invalid dates in shorter months
     day = random.randint(1, 28)
     return f"{year:04d}-{month:02d}-{day:02d}"
 
 def calculate_years_experience_from_dob(dob_iso):
-    """Plausible years_experience based on DOB: (age - 22) +/- noise, clamped."""
+    """Estimate years of experience based on age (approx age - 22 ± small noise)."""
     try:
         dob = datetime.strptime(dob_iso, "%Y-%m-%d").date()
     except Exception:
-        # fallback random
+        # fallback to random plausible value if parsing fails
         return random.randint(1, 15)
     today = date.today()
+    # compute age and adjust by assuming career start at 22
     age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
-    base = max(age - 22, 0)  # assume start of career ~22
-    noise = random.randint(-2, 5)
+    base = max(age - 22, 0)
+    noise = random.randint(-2, 5)  # add variability to make it realistic
     years = max(0, base + noise)
-    return min(years, 40)  # clamp to a sane upper bound
+    return min(years, 40)  # clamp to max 40 years
 
 def one_line_address():
-    """Return a single-line address suitable for regex extraction."""
+    """Return a one-line US-style address (no line breaks)."""
     raw = fake.address()
     return raw.replace("\n", ", ")
 
 def make_website_for_name(name, used_sites):
     """
-    Create a simple personal website URL based on a name.
-    Ensures uniqueness (probabilistic) by appending numbers if needed.
-    Regex-friendly format: https://<slug><num>.(com|dev|io|me)
+    Generate a unique personal website based on person's name.
+    Adds numeric suffix or random fallback if duplicates occur.
     """
-    slug = re.sub(r'[^a-z0-9]', '', name.lower())
-    # avoid empty slug
-    if not slug:
+    slug = re.sub(r'[^a-z0-9]', '', name.lower())  # keep alphanumerics only
+    if not slug:  # fallback if slug is empty
         slug = f"user{random.randint(100,999)}"
     tlds = [".com", ".dev", ".io", ".me"]
+    # try multiple combinations to ensure uniqueness
     for attempt in range(MAX_WEBSITE_ATTEMPTS):
         suffix = "" if attempt == 0 else str(random.randint(1, 9999))
         tld = random.choice(tlds)
@@ -71,87 +80,74 @@ def make_website_for_name(name, used_sites):
         if site not in used_sites:
             used_sites.add(site)
             return site
-    # fallback (guaranteed unique)
+    # fallback: guaranteed unique site name
     site = f"https://{slug}{random.randint(10000,99999)}.com"
     used_sites.add(site)
     return site
 
 # ---------- Main enrichment ----------
-def enrich(input_path=INPUT, output_path=OUTPUT):
-    df = pd.read_csv(input_path)
 
+def enrich(input_path=INPUT, output_path=OUTPUT):
+    """Main function to enrich base dataset with DOB, address, experience, and website."""
+    df = pd.read_csv(input_path)
     n = len(df)
     print(f"[INFO] Loaded {n} records from {input_path}")
 
-    # Prepare containers
+    # Containers for generated attributes
     names = []
     dobs = []
     addresses = []
     years_ex = []
     personal_websites = []
 
-    used_websites = set()
+    used_websites = set()  # track uniqueness of generated websites
 
-    # Attempt to generate unique-ish names via Faker.unique, fallback to Faker() + counter
+    # Iterate over all rows and generate new synthetic attributes
     for i in range(n):
         try:
-            # try unique name first (less chance of repetition)
+            # use Faker.unique for more varied names
             name = fake_unique.name()
         except Exception:
-            # if unique pool exhausted or error, fallback: name + small suffix
+            # fallback if unique pool exhausted
             name_base = fake.name()
             name = f"{name_base} {random.randint(1,9999)}"
         names.append(name)
 
-        # DOB
+        # Generate random date of birth
         dob = random_dob()
         dobs.append(dob)
 
-        # Address (one-line)
+        # Generate one-line address
         addr = one_line_address()
         addresses.append(addr)
 
-        # Years experience (plausible from dob)
+        # Estimate years of experience from DOB with small random variation
         yexp = calculate_years_experience_from_dob(dob)
-        # add small random variation to spread values
         if random.random() < 0.12:
             yexp = max(0, yexp + random.randint(1, 4))
         years_ex.append(int(yexp))
 
-        # Personal website (unique-ish)
+        # Generate personal website (ensure uniqueness)
         site = make_website_for_name(name, used_websites)
         personal_websites.append(site)
 
-    # Insert columns into dataframe; keep original columns untouched
+    # Append new columns to dataframe
     df["dob"] = dobs
     df["address"] = addresses
     df["years_experience"] = years_ex
     df["personal_website"] = personal_websites
 
-    # Save result
+    # Save final augmented dataset
     df.to_csv(output_path, index=False)
     print(f"[INFO] Enriched dataset saved to {output_path}")
     return df
 
-# ---------- Regex helpers for extraction / leakage checks ----------
-REGEX_PATTERNS = {
-    "dob_iso": re.compile(r"\b(19[7-9]\d|200[0-2])-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b"),
-    # address is fuzzy; this regex looks for typical US street-number + street pattern
-    "address_one_line": re.compile(r"\d{1,5}\s+[A-Za-z0-9.\- ]+,\s*[A-Za-z .]+,\s*[A-Z]{2}\s*\d{5}|\d{1,5}\s+[A-Za-z0-9.\- ]+,\s*[A-Za-z .]+"),
-    "years_experience": re.compile(r"\b(?:[0-9]|[1-3][0-9]|40)\b"),
-    "personal_website": re.compile(r"https?://[A-Za-z0-9\-_]+\.[A-Za-z]{2,}(?:/[^\s]*)?")
-}
 
 # ---------- If this file executed as script ----------
 if __name__ == "__main__":
+    # Run enrichment pipeline
     df_enriched = enrich()
-    # print a small sample to stdout for quick verification
+
+    # Display quick preview of newly added fields
     print("\n[INFO] Sample of enriched records (first 5):")
     print(df_enriched[["dob", "years_experience", "personal_website"]].head(5).to_string(index=False))
-
-    # Print regex patterns for downstream use
-    print("\n[INFO] Regex patterns available in REGEX_PATTERNS dict (keys):", list(REGEX_PATTERNS.keys()))
-    # Example: how to use one pattern (demonstration only)
-    sample_text = "Contact: https://johnsmith.dev or DOB 1988-07-12 or Lives at 123 Main St, Springfield"
-    example_hits = {k: v.findall(sample_text) for k, v in REGEX_PATTERNS.items()}
-    print("\n[INFO] Example regex hits on sample text:", example_hits)

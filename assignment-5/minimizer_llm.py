@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""
+minimizer_llm.py — runs LLM-based data minimization.
+Given a CSV of user/job records and a directive, selects the minimal set of fields
+required to complete a task while balancing privacy and usefulness.
+"""
+
 import argparse, json, re
 import pandas as pd
 from tqdm import tqdm
@@ -7,7 +13,9 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import sys
 
 
-
+# ---------------------------------------------------------------------
+# Directive templates describe what kind of data should be retained or removed
+# depending on the purpose of data sharing (outreach, research, etc.)
 DIRECTIVE_TEMPLATES = {
     "recruiter_outreach": (
         "Goal: enable a recruiter to contact a potential candidate directly. "
@@ -53,24 +61,8 @@ DIRECTIVE_TEMPLATES = {
 
 
 # ---------------------------------------------------------------------
-
-# def build_minimizer_prompt(task, directive_text, record, redaction_strength):
-#     return f"""<s>[INST]
-#         You are a trusted privacy minimizer.
-#         Given a TASK, a PRIVACY DIRECTIVE, and a USER RECORD (schema + values),
-#         return only the minimal set of field NAMES required to complete the task.
-
-#         TASK: {task}
-#         PRIVACY DIRECTIVE: {directive_text}
-#         PRIVACY STRENGTH: {redaction_strength:.2f}
-#         USER RECORD: {json.dumps(record, indent=2)}
-
-#         Respond with a valid JSON array of strings only, like:
-#         ["job_title","company_name"]
-#         [/INST]
-#     """
-
 def build_minimizer_prompt(task, directive_text, record, redaction_strength):
+    """Builds the instruction prompt that guides the LLM’s minimization decision."""
     return f"""
         You are a trusted privacy minimizer agent. In your reasoning, think like a domain expert following this directive.
         Base your decisions on the intent behind the directive rather than memorizing field names.
@@ -100,23 +92,8 @@ def build_minimizer_prompt(task, directive_text, record, redaction_strength):
     """
 
 # ---------------------------------------------------------------------
-
-# def generate_response(model, tokenizer, prompt):
-#     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-#     outputs = model.generate(
-#         **inputs,
-#         max_new_tokens=128,
-#         do_sample=False,
-#         temperature=0.1,
-#         pad_token_id=tokenizer.eos_token_id
-#     )
-#     text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-#     # Extract only model's answer (after [/INST])
-#     if "[/INST]" in text:
-#         text = text.split("[/INST]")[-1]
-#     return text.strip()
-
 def generate_response(model, tokenizer, record, task, directive_text, redaction_strength, debug=False):
+    """Sends the minimization prompt to the LLM and returns the raw model output."""
     user_prompt = f"""You are a privacy-minimization expert. Your goal is to decide which fields from a user's record should be shared for the described purpose — balancing usefulness with privacy risk.
 TASK: {task}
 PRIVACY DIRECTIVE: {directive_text}
@@ -146,7 +123,7 @@ The last line must be the JSON array, e.g.:
     
     sys.stdout.reconfigure(encoding='utf-8')
 
-    # === 🟢 LOGGING: print the full prompt for the log file ===
+    # Print the final constructed prompt to stdout for logging/debugging
     full_prompt = tokenizer.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
     print("\n" + "="*80, flush=True)
     print(f"FULL PROMPT SENT TO MODEL", flush=True)
@@ -154,13 +131,12 @@ The last line must be the JSON array, e.g.:
     print(full_prompt, flush=True)
     print("="*80 + "\n", flush=True)
 
-    # --- Encode for model ---
+    # Encode and generate model output
     input_ids = tokenizer.apply_chat_template(
         messages,
         add_generation_prompt=True,
         return_tensors="pt"
     ).to(model.device)
-
     attention_mask = torch.ones_like(input_ids)
 
     model.eval()
@@ -174,7 +150,7 @@ The last line must be the JSON array, e.g.:
             pad_token_id=tokenizer.eos_token_id,
         )
 
-    # --- Decode output ---
+    # Decode model response
     sequences = out.sequences if hasattr(out, "sequences") else out
     gen_tokens = sequences[0, input_ids.shape[-1]:]
     decoded = tokenizer.decode(gen_tokens, skip_special_tokens=True).strip()
@@ -186,92 +162,25 @@ The last line must be the JSON array, e.g.:
     print("="*80 + "\n", flush=True)
 
     return decoded
-    
-    user_prompt = f"""You are a privacy-minimization expert, not the person performing the task itself.
-Your goal is to analyze what information from a user's record should be revealed to another system
-that will later perform this task — while keeping privacy risks minimal.
 
-TASK to be performed later: {task}
-PRIVACY DIRECTIVE: {directive_text}
-REDACTION STRENGTH: {redaction_strength:.2f}
-(0.0 → share almost everything, 1.0 → share almost nothing)
-
-USER RECORD (schema + values):
-{json.dumps(record, indent=2)}
-
-Your reasoning steps:
-1. Identify which fields directly help the downstream system accomplish the task.
-2. Identify which fields would expose personal or sensitive details.
-3. Based on the redaction strength, choose the minimal useful subset.
-
-Finally, output ONLY a JSON array of field names that may be safely shared.
-The final line must be JUST the JSON array, e.g.:
-["job_title", "company_name"]
-"""
-
-    messages = [
-        {"role": "system", "content": (
-            "You are a trusted privacy gatekeeper. "
-            "Your ONLY job is to decide which fields should be revealed, not to perform the task itself."
-        )},
-        {"role": "user", "content": user_prompt},
-    ]
-
-    # ✅ --- PRINT the exact message content (the actual prompt the LLM will see)
-    if debug:
-        full_prompt = tokenizer.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
-        print("\n=== FULL PROMPT SENT TO MODEL ===\n")
-        print(full_prompt)
-        print("\n=================================\n")
-
-    #  Prepare input for generation
-    input_ids = tokenizer.apply_chat_template(
-        messages,
-        add_generation_prompt=True,
-        return_tensors="pt"
-    ).to(model.device)
-
-    attention_mask = torch.ones_like(input_ids)
-
-    model.eval()
-    with torch.no_grad():
-        out = model.generate(
-            input_ids,
-            attention_mask=attention_mask,
-            max_new_tokens=96,
-            do_sample=False,
-            use_cache=True,
-            pad_token_id=tokenizer.eos_token_id,
-        )
-
-    sequences = out.sequences if hasattr(out, "sequences") else out
-    gen_tokens = sequences[0, input_ids.shape[-1]:]
-    decoded = tokenizer.decode(gen_tokens, skip_special_tokens=True).strip()
-
-    if debug:
-        print("\n=== RAW COMPLETION ===\n", decoded[:800], "\n=====================\n")
-
-    return decoded
 # ---------------------------------------------------------------------
-
 def extract_json_array(text, debug=False):
-    # Take the last non-empty line
+    """Extracts the JSON array (list of selected field names) from LLM output."""
     last = ""
     for line in text.strip().splitlines():
         if line.strip():
             last = line.strip()
 
-    # sanitize escaped underscores and stray backslashes
     clean = text.replace("\\_", "_").replace("\\\\", "\\")
 
-    # 1) If last line is a JSON array, parse it
+    # 1. Try the final line first
     if last.startswith("[") and last.endswith("]"):
         try:
             return json.loads(last.replace("\\_", "_"))
         except Exception:
             pass
 
-    # 2) Fallback: find the last bracketed JSON-looking array anywhere
+    # 2. Fallback: parse the last valid array pattern in text
     m = list(re.finditer(r"\[[\s\S]*?\]", clean))
     if m:
         candidate = m[-1].group(0).replace("\\_", "_")
@@ -285,10 +194,9 @@ def extract_json_array(text, debug=False):
         print("[WARN] No JSON array found in model output:\n", text[:300])
     return []
 
-
 # ---------------------------------------------------------------------
-
 def minimize_records(df, model, tokenizer, task, fallback_directive, redaction_strength=0.5, max_records=None, debug=False):
+    """Iterates through dataset rows and produces minimized records using LLM outputs."""
     print(df.head(1))
     results = []
     rows = df.to_dict(orient="records")
@@ -307,15 +215,15 @@ def minimize_records(df, model, tokenizer, task, fallback_directive, redaction_s
         except Exception as e:
             minimal_fields = []
             if debug:
-                    print(f"[WARN] JSON parsing failed: {e}\nRaw: {out_text[:150]}")
+                print(f"[WARN] JSON parsing failed: {e}\nRaw: {out_text[:150]}")
+
+        # fallback if no valid output received
         if not minimal_fields:
             if debug:
                 print(f"[WARN] No JSON found. Raw output:\n{out_text[:150]}")
-
-        if not minimal_fields:
-            # fallback: share only job-related fields
             minimal_fields = [k for k in rec.keys() if any(x in k for x in ["job", "company"])]
 
+        # create minimized record with only selected fields retained
         minimized = {"id": rec.get("id"), "_redaction_strength": redaction_strength}
         for k, v in rec.items():
             minimized[k] = v if k in minimal_fields else ""
@@ -325,8 +233,8 @@ def minimize_records(df, model, tokenizer, task, fallback_directive, redaction_s
     return results
 
 # ---------------------------------------------------------------------
-
 def main():
+    """Entry point: loads model, runs minimization, saves output."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--csv", required=True)
     parser.add_argument("--out", default="minimized.json")
@@ -344,6 +252,7 @@ def main():
         df = df.head(args.max_records)
     print(f"{len(df)} rows loaded.")
 
+    # Load model and tokenizer
     print(f"Loading model {args.model} ...")
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     model = AutoModelForCausalLM.from_pretrained(
@@ -353,6 +262,7 @@ def main():
         trust_remote_code=True
     )
 
+    # Run LLM minimization for all records
     minimized = minimize_records(
         df, model, tokenizer, args.task, args.directive_fallback,
         redaction_strength=args.redaction_strength,
@@ -360,11 +270,11 @@ def main():
         debug=args.debug
     )
 
+    # Save minimized dataset
     with open(args.out, "w", encoding="utf-8") as f:
         json.dump(minimized, f, indent=2)
     print(f"[OK] Saved minimized dataset to {args.out}")
 
 # ---------------------------------------------------------------------
-
 if __name__ == "__main__":
     main()

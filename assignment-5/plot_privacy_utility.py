@@ -1,32 +1,24 @@
 #!/usr/bin/env python3
 """
 plot_privacy_utility.py
-Compare multiple AirGap / baseline runs and generate privacy–utility plots.
+Generates privacy–utility comparison plots for one or two experimental runs.
 
-Features:
-- Automatically scans nested subfolders for attack_report.json & evaluation_report.json
-- Uses privacy_retention_% from attack_report.json as Privacy
-- Uses Utility_S from evaluation_report.json as Utility
-- Cleans up plot titles (no "redaction_x" shown)
-- Works safely across Windows/Linux paths
+Reads:
+ - attack_report.json → Privacy metrics (Privacy_S / Attack_S)
+ - evaluation_report.json → Utility metrics (Utility_S)
+Creates bar and scatter plots comparing runs (e.g., Baseline vs AirGap).
 """
 
 import argparse, json, os, glob
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# ─────────────────────────────────────────────────────────────
-# Loaders
-# ─────────────────────────────────────────────────────────────
 
+# --------------------------------------------------------------
+# Data loading
+# --------------------------------------------------------------
 def load_combined_reports(parent_dir, tag="run"):
-    """
-    Combine attack_report.json (for privacy) and evaluation_report.json (for utility)
-    under each scenario/redaction folder.
-    Example structure:
-        parent_dir/scenario/redaction_x/attack_report.json
-        parent_dir/scenario/redaction_x/evaluation_report.json
-    """
+    """Load attack and evaluation reports recursively and merge privacy + utility metrics."""
     dfs = []
     for root, dirs, files in os.walk(parent_dir):
         if "attack_report.json" in files or "evaluation_report.json" in files:
@@ -36,7 +28,7 @@ def load_combined_reports(parent_dir, tag="run"):
             privacy, utility = None, None
             attack_s, leak_count = None, None
 
-            # --- read attack report ---
+            # Read attack report for privacy-related metrics
             if os.path.exists(attack_path):
                 with open(attack_path, "r", encoding="utf-8") as f:
                     att = json.load(f)
@@ -44,7 +36,7 @@ def load_combined_reports(parent_dir, tag="run"):
                 attack_s = att.get("attack_success_%") or att.get("Attack_S")
                 leak_count = att.get("leak_count")
 
-            # --- read evaluation report ---
+            # Read evaluation report for utility metrics
             if os.path.exists(eval_path):
                 with open(eval_path, "r", encoding="utf-8") as f:
                     ev = json.load(f)
@@ -61,13 +53,14 @@ def load_combined_reports(parent_dir, tag="run"):
                 "_source": tag
             })
             print(f"[Loaded] {scenario}/{redaction}")
+
     if not dfs:
         raise FileNotFoundError(f"No reports found under {parent_dir}")
     return pd.DataFrame(dfs)
 
 
 def load_attack_or_eval(path, tag="run"):
-    """Handle single report files."""
+    """Handle loading of single report files (attack or evaluation)."""
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
     df = pd.DataFrame([{
@@ -81,13 +74,13 @@ def load_attack_or_eval(path, tag="run"):
     return df
 
 
-# ─────────────────────────────────────────────────────────────
-# Compare + plotting
-# ─────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
+# Comparison and plotting
+# --------------------------------------------------------------
 def compare_data(df1, df2):
+    """Merge two runs and compute differences (Δ) for key metrics."""
     on = ["scenario"]
     merged = pd.merge(df1, df2, on=on, suffixes=("_1", "_2"), how="outer")
-
     for col in ["Privacy_S", "Utility_S", "Attack_S"]:
         if col + "_1" in merged and col + "_2" in merged:
             merged[col + "_Δ"] = merged[col + "_2"] - merged[col + "_1"]
@@ -95,14 +88,15 @@ def compare_data(df1, df2):
 
 
 def plot_comparison(merged, outdir, label1="Run1", label2="Run2"):
+    """Create bar and scatter plots comparing privacy and utility across runs."""
     os.makedirs(outdir, exist_ok=True)
 
-    # Clean scenario names (remove redaction details for titles)
+    # Clean scenario names (remove redaction_x)
     merged["scenario_clean"] = merged["scenario"].apply(
         lambda x: x.split("/")[0] if isinstance(x, str) and "/" in x else x
     )
 
-    # --- 1. Privacy & Utility bar comparison
+    # --- Bar charts for each scenario
     for sc in sorted(merged["scenario"].dropna().unique()):
         sub = merged[merged["scenario"] == sc]
         if sub.empty:
@@ -111,7 +105,6 @@ def plot_comparison(merged, outdir, label1="Run1", label2="Run2"):
             print(f"[Skip] {sc} (no valid privacy/utility scores)")
             continue
 
-        # Use clean name for title
         title = sc.split("/")[0] if "/" in sc else sc
         metrics = ["Privacy_S", "Utility_S"]
         labels = [label1, label2]
@@ -119,6 +112,8 @@ def plot_comparison(merged, outdir, label1="Run1", label2="Run2"):
 
         fig, ax = plt.subplots(figsize=(6, 4))
         x = range(len(metrics))
+
+        # Plot bars for both runs side by side
         for i, prefix in enumerate(["_1", "_2"]):
             vals = []
             for m in metrics:
@@ -126,6 +121,7 @@ def plot_comparison(merged, outdir, label1="Run1", label2="Run2"):
                 val = sub[col].values[0] if col in sub and not sub[col].isna().all() else 0.0
                 vals.append(val if isinstance(val, (int, float)) else 0.0)
             ax.bar([xi + i * width for xi in x], vals, width=width, label=labels[i], alpha=0.8)
+
         ax.set_xticks([r + width / 2 for r in x])
         ax.set_xticklabels(["Privacy", "Utility"])
         ax.set_ylabel("Score (%)")
@@ -134,14 +130,13 @@ def plot_comparison(merged, outdir, label1="Run1", label2="Run2"):
         ax.grid(alpha=0.15, axis="y")
         plt.tight_layout()
 
-        # sanitize filename
         safe_name = title.replace("/", "_").replace("\\", "_")
         outp = os.path.join(outdir, f"compare_bar_{safe_name}.png")
         plt.savefig(outp, dpi=160)
         plt.close(fig)
         print(f"[Saved] {outp}")
 
-    # --- 2. Utility vs Privacy scatter
+    # --- Scatter plot: Privacy vs Utility
     fig, ax = plt.subplots(figsize=(6, 5))
     for label, prefix, color in [(label1, "_1", "tab:blue"), (label2, "_2", "tab:orange")]:
         if f"Privacy_S{prefix}" in merged and f"Utility_S{prefix}" in merged:
@@ -164,10 +159,11 @@ def plot_comparison(merged, outdir, label1="Run1", label2="Run2"):
     print(f"[Saved] {outp}")
 
 
-# ─────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 # Main
-# ─────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 def main():
+    """Main entry: loads runs, compares data, and generates plots."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--run1", required=True, help="Folder for first run (baseline)")
     ap.add_argument("--run2", required=False, help="Folder for second run (airgap)")
@@ -176,13 +172,13 @@ def main():
     ap.add_argument("--outdir", default="plots_compare")
     args = ap.parse_args()
 
-    # Load baseline
+    # Load first run (baseline or single)
     if os.path.isdir(args.run1):
         df1 = load_combined_reports(args.run1, tag=args.label1)
     else:
         df1 = load_attack_or_eval(args.run1, args.label1)
 
-    # Load airgap
+    # Load second run if provided
     if args.run2:
         if os.path.isdir(args.run2):
             df2 = load_combined_reports(args.run2, tag=args.label2)
@@ -191,7 +187,7 @@ def main():
     else:
         df2 = pd.DataFrame()
 
-    # Compare or visualize single run
+    # Merge for comparison
     if not df2.empty:
         merged = compare_data(df1, df2)
         table = merged
@@ -202,6 +198,7 @@ def main():
     print("\n=== COMPARISON TABLE ===\n")
     print(table.to_string(index=False))
 
+    # Save comparison table and plots
     os.makedirs(args.outdir, exist_ok=True)
     csv_path = os.path.join(args.outdir, "comparison_table.csv")
     table.to_csv(csv_path, index=False)

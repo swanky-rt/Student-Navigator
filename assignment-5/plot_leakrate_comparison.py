@@ -1,15 +1,8 @@
 #!/usr/bin/env python3
 """
 plot_leakrate_comparison.py
-
-Compare leakage rates (% recovered tokens) across all scenario folders
-and optionally between two runs (Baseline vs AirGap).
-
-• Reads attack_report.json under each subfolder:
-      runs/<variant>/<scenario>/redaction_x/attack_report.json
-• Extracts: total_sensitive_tokens, total_recovered_tokens
-• Computes: leakage_rate_% = 100 * total_recovered_tokens / total_sensitive_tokens
-• Plots per-scenario bar chart (single run or comparative two-run mode).
+Plots token-level leakage rates from attack reports for each scenario.
+Supports single-run or comparative two-run (e.g., Baseline vs AirGap) mode.
 """
 
 import os, json, argparse
@@ -17,11 +10,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-# ─────────────────────────────────────────────────────────────
-# Loaders
-# ─────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
+# Data loading utilities
+# --------------------------------------------------------------
 def load_leakage_from_run(parent_dir, tag="run"):
-    """Recursively load attack_report.json files and compute leakage rate."""
+    """Traverse a run directory and extract leakage rates from attack_report.json files."""
     rows = []
     for root, dirs, files in os.walk(parent_dir):
         if "attack_report.json" not in files:
@@ -32,11 +25,9 @@ def load_leakage_from_run(parent_dir, tag="run"):
                 data = json.load(f)
             total = data.get("total_sensitive_tokens", 0)
             recovered = data.get("total_recovered_tokens", 0)
-            if total > 0:
-                leak_rate = 100.0 * recovered / total
-            else:
-                leak_rate = 0.0
-            scenario = os.path.basename(os.path.dirname(root))  # e.g. internal_hr
+            # Compute leakage rate percentage
+            leak_rate = 100.0 * recovered / total if total > 0 else 0.0
+            scenario = os.path.basename(os.path.dirname(root))
             rows.append({
                 "scenario": scenario,
                 "variant": tag,
@@ -48,17 +39,18 @@ def load_leakage_from_run(parent_dir, tag="run"):
     return pd.DataFrame(rows)
 
 
-# ─────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 # Plotting
-# ─────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 def plot_leakage(df, outdir="plots_leakage", label1="Baseline", label2="AirGap"):
+    """Plot bar charts of leakage rates per scenario; handles single or dual-run comparison."""
     os.makedirs(outdir, exist_ok=True)
 
     scenarios = sorted(df["scenario"].unique())
     fig, ax = plt.subplots(figsize=(8, 5))
 
+    # Comparative bar chart when two variants are provided
     if "variant" in df.columns and df["variant"].nunique() > 1:
-        # Comparative mode (Baseline vs AirGap)
         variants = df["variant"].unique()
         width = 0.35
         x = range(len(scenarios))
@@ -69,11 +61,12 @@ def plot_leakage(df, outdir="plots_leakage", label1="Baseline", label2="AirGap")
             ax.bar([xi + i * width for xi in x], vals, width=width, label=var)
         ax.set_xticks([r + width / 2 for r in x])
     else:
-        # Single run
+        # Single-run plot
         vals = [df[df["scenario"] == sc]["leakage_rate_%"].mean() for sc in scenarios]
         ax.bar(scenarios, vals, color="tab:blue", alpha=0.8)
         ax.set_xticks(range(len(scenarios)))
 
+    # Basic chart formatting
     ax.set_xticklabels(scenarios, rotation=30, ha="right")
     ax.set_ylabel("Leakage Rate (%)")
     ax.set_xlabel("Scenario")
@@ -87,10 +80,11 @@ def plot_leakage(df, outdir="plots_leakage", label1="Baseline", label2="AirGap")
     print(f"[Saved] {outp}")
 
 
-# ─────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 # Main
-# ─────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 def main():
+    """Main entry: loads results from one or two runs and plots leakage comparison."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--run1", required=True, help="Path to first run folder (Baseline)")
     ap.add_argument("--run2", required=False, help="Path to second run folder (AirGap)")
@@ -99,6 +93,7 @@ def main():
     ap.add_argument("--outdir", default="plots_compare")
     args = ap.parse_args()
 
+    # Load run(s)
     df1 = load_leakage_from_run(args.run1, tag=args.label1)
     if args.run2:
         df2 = load_leakage_from_run(args.run2, tag=args.label2)
@@ -109,6 +104,7 @@ def main():
     print("\n=== LEAKAGE SUMMARY ===\n")
     print(df.to_string(index=False))
 
+    # Generate plot
     plot_leakage(df, args.outdir, args.label1, args.label2)
 
 
