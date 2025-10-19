@@ -46,7 +46,7 @@ This assignment investigates privacy-preserving data minimization using large la
   - [A. Extra Credit](#a-extra-credit)
     - [A1. Multi-Attacker Conversation Simulation](#a1-multi-attacker-conversation-simulation)
     - [A2. Redaction Strength Variation](#a2-redaction-strength-variation)
-    - [A3. Hijack Style Parameterization (Mild vs. Extreme)](#a3-hijack-style-parameterization-mild-vs-extreme)
+    - [A3. Other Hijack Style Quantifying Metrics](#a3-other-hijack-style-quantifying-metrics)
   - [B. Assignment Requirements](#b-assignment-requirements)
 ## Folder Structure
 
@@ -105,25 +105,33 @@ conda env update -f environment.yml --prune
 
 ### Running the Workflow
 
+Go to ```assignemnt-5``` folder.
+
+```bash
+cd assignment-5
+```
+
 #### To run the full pipeline:
 
-```
+```bash
 python controller.py \
   --csv Data/synthetic_jobs_augmented.csv \
-  --out_dir runs/airgap_aug_hijack_redact \
+  --out_dir runs/airgap_aug_hijack \
   --model_variant airgap \
   --attacker_mode hijacking \
   --hijack_style extreme \
   --attacker_model EleutherAI/gpt-neo-125M \
   --conversational_model distilgpt2 \
   --max_records 300 \
-  --redaction_strength 0.2 \
+  --redaction_strength 0.5 \
   --max_new_tokens 64
 ```
 
+**Note:** Runs faster if you have GPU.
+
 #### To visualize results:
 
-```
+```bash
 python plot_leakrate_comparison.py --run1 runs/baseline_aug_hijack --run2 runs/airgap_aug_hijack
 python plot_privacy_utility.py --run1 runs/baseline_aug_hijack --run2 runs/airgap_aug_hijack
 python plot_redaction_tradeoff.py --run runs/airgap_aug_hijack
@@ -611,6 +619,67 @@ The attack success rate dropped from 42.10% in the baseline to 12.03% with AirGa
 
 </div>
 
+### Other Inference: 
+
+<div align="center">
+<table>
+<tr>
+<td width="45%">
+<img src="/assignment-5/plots_compare/compare_scatter_privacy_utility.png" width="100%">
+</td>
+
+<td width="55%" valign="top">
+
+#### *Scatter:  Privacy and Utility Analysis*
+
+The scatter plot comparing all scenarios reveals that the Baseline (no minimization) consistently achieves 100% Utility but suffers from poor ∼57% Privacy, clustering tightly in the top-left. Conversely, the AirGap LLM-minimization strategy successfully improves Privacy across the board to a range of 81% to 93%, but this comes at a significant and necessary cost to Utility, which drops into the 22% to 34% range, confirming the fundamental privacy-utility tradeoff enforced by the policy-aware redaction.
+</td>
+</tr>
+</table>
+
+</div>
+
+
+<div align="center">
+<table>
+<tr>
+<td width="45%">
+<img src="/assignment-5/plots_compare/scenario_tradeoff.png" width="100%">
+</td>
+
+<td width="55%" valign="top">
+
+#### *Extra Credit - Internal HR:  Privacy and Utility Analysis*
+
+The AirGap minimizer achieved a notable improvement in privacy protection, increasing Privacy from 38% at baseline to 63% (+25 percentage points). This confirms that the system effectively redacted sensitive employee-related information such as personal identifiers, contact details, and HR notes. However, this came at a moderate cost to Utility, which declined from 67% to 60% (−7 percentage points). The reduction suggests that while AirGap retained sufficient structural and contextual data for internal analytics, certain non-sensitive but relevant fields were also removed, slightly impacting overall task performance.
+
+This tradeoff indicates that AirGap performs best in privacy-sensitive internal environments where data confidentiality outweighs full analytical completeness—such as HR audits, employee reviews, or compliance-focused reporting. In these contexts, AirGap’s redaction strategy balances acceptable analytical utility with significantly improved privacy assurance, making it suitable for controlled internal data-sharing scenarios.
+
+Note : Due to the high computational cost of running full LLM-based attack–defense simulations across all five policy scenarios, this analysis focuses exclusively on the internal_hr scenario as a representative case.
+</td>
+</tr>
+</table>
+
+</div>
+
+<div align="center">
+<table>
+<tr>
+<td width="45%">
+<img src="/assignment-5/plots_compare/leakage_rate_comparison.png" width="100%">
+</td>
+
+<td width="55%" valign="top">
+
+#### *Extra Credit - Token-Level Leakage Rate by Scenario*
+
+The bar chart comparing Token-Level Leakage Rate between the Baseline (no minimization) and AirGap (LLM-minimization) systems across all five scenarios demonstrates the consistent and dramatic effectiveness of the LLM-based defense. In the Baseline, the Leakage Rate remains high and similar across all scenarios, hovering between $41\%$ and $43\%$, confirming that the simple act of using the full, unredacted data inherently poses a significant, uniform privacy risk to all policies. Conversely, the AirGap system substantially reduces the Leakage Rate in every single scenario, with the most aggressive privacy policies like "internal_hr" and "public_job_board" achieving the lowest leakage rates, falling below $8\%$. Even the most utility-focused policy, recruiter_outreach, sees its leakage rate slashed from $43\%$ to under $20\%$, decisively proving that the policy-aware LLM minimization is highly effective at reducing the exposure of sensitive tokens regardless of the specific scenario or directive.
+</td>
+</tr>
+</table>
+
+</div>
+
 ---
 
 ## Learnings, Limitations, and Future Work
@@ -681,12 +750,13 @@ As part of the extra credit, we extended the attack module to support multi-atta
 
 We introduced a continuous redaction_strength parameter (0.0–1.0) apart from directive to control the degree of privacy applied per scenario. This variable enabled reproducible tuning of privacy–utility trade-offs across all scenarios and made the model’s behavior more interpretable.
 
-#### A3. Hijack Style Quantifying
-
+#### A3. Other Hijack Style Quantifying Metrics
 
 We added two metrics: *Attack Success Rate* and *Leak Rate*.
+- **Attack Success Rate (%):** Proportion of sensitive tokens recovered during multi-turn attacks.  
+- **Leak Rate (%):** Fraction of total PII tokens that leaked despite minimization.
 
-→ See: [Quality Metrics with Justification](#quality-metrics-with-justification) for definitions and formulas of these metrics.
+→ See: [Quality Metrics with Justification](#quality-metrics-with-justification) for definitions and formulas of these metrics. Check [Results Summary](#results-summary) for their results.
 
 
 ### B. Assignment Requirements
@@ -723,10 +793,10 @@ We implemented *automated, dynamic attacks* using attack_defense_sim.py that sim
 *Requirement:* Implement Air Gap defense and show how it mitigates attacks.  
 
 *Our Work:*  
-We implemented the *AirGap Minimizer* (minimizer_llm.py) using the *Mistral-7B-Instruct* model for privacy-preserving data redaction.  
-The minimizer enforces context-aware redaction using *privacy directives* and a **continuous redaction_strength parameter (0.0–1.0).  
-The *defender agent (DistilGPT2)* strictly responds using only minimized data, ensuring no private tokens are ever accessed during a conversation.  
-Comparing baseline vs AirGap showed an *average privacy gain of +30–37%* and a *reduction in attack success by −30–35%*.  
+- We implemented the *AirGap Minimizer* (minimizer_llm.py) using the *Mistral-7B-Instruct* model for privacy-preserving data redaction.  
+- The minimizer enforces context-aware redaction using *privacy directives* and a **continuous redaction_strength parameter (0.0–1.0).**  
+- The *defender agent (DistilGPT2)* strictly responds using only minimized data, ensuring no private tokens are ever accessed during a conversation.  
+- Comparing baseline vs AirGap showed an *average privacy gain of +30–37%* and a *reduction in attack success by −30–35%*.  
 
 → Refer: [AirGap Minimizer](#2-airgap-minimizer-minimizer_llmpy), [Architecture](#architecture), [Results Summary](#results-summary),  [How Did You Implement Dynamic Attacks?](#how-did-you-implement-dynamic-attacks), [Model Design with Justification](#model-design-with-justification)
 
@@ -791,3 +861,4 @@ All deliverables are included and reproducible:
 ---
 
 *Repository:* [proj-group-04](https://github.com/umass-CS690F/proj-group-04)
+
