@@ -745,6 +745,8 @@ We introduced a continuous redaction_strength parameter (0.0–1.0) apart from d
 #### A3. Other Hijack Style Quantifying Metrics
 
 We added two metrics: *Attack Success Rate* and *Leak Rate*.
+- **Attack Success Rate (%):** Proportion of sensitive tokens recovered during multi-turn attacks.  
+- **Leak Rate (%):** Fraction of total PII tokens that leaked despite minimization.
 
 → See: [Quality Metrics with Justification](#quality-metrics-with-justification) for definitions and formulas of these metrics. Check [Results Summary](#results-summary) for their results.
 
@@ -783,10 +785,10 @@ We implemented *automated, dynamic attacks* using attack_defense_sim.py that sim
 *Requirement:* Implement Air Gap defense and show how it mitigates attacks.  
 
 *Our Work:*  
-We implemented the *AirGap Minimizer* (minimizer_llm.py) using the *Mistral-7B-Instruct* model for privacy-preserving data redaction.  
-The minimizer enforces context-aware redaction using *privacy directives* and a **continuous redaction_strength parameter (0.0–1.0).  
-The *defender agent (DistilGPT2)* strictly responds using only minimized data, ensuring no private tokens are ever accessed during a conversation.  
-Comparing baseline vs AirGap showed an *average privacy gain of +30–37%* and a *reduction in attack success by −30–35%*.  
+- We implemented the *AirGap Minimizer* (minimizer_llm.py) using the *Mistral-7B-Instruct* model for privacy-preserving data redaction.  
+- The minimizer enforces context-aware redaction using *privacy directives* and a **continuous redaction_strength parameter (0.0–1.0).**  
+- The *defender agent (DistilGPT2)* strictly responds using only minimized data, ensuring no private tokens are ever accessed during a conversation.  
+- Comparing baseline vs AirGap showed an *average privacy gain of +30–37%* and a *reduction in attack success by −30–35%*.  
 
 → Refer: [AirGap Minimizer](#2-airgap-minimizer-minimizer_llmpy), [Architecture](#architecture), [Results Summary](#results-summary),  [How Did You Implement Dynamic Attacks?](#how-did-you-implement-dynamic-attacks), [Model Design with Justification](#model-design-with-justification)
 
@@ -851,3 +853,4 @@ All deliverables are included and reproducible:
 ---
 
 *Repository:* [proj-group-04](https://github.com/umass-CS690F/proj-group-04)
+
