@@ -153,12 +153,11 @@ All reports and plots are saved in runs/ and plots_compare/.
 
 
 ### What attacks were attempted?
-All adversarial evaluations used hijacking / social-engineering style attacks implemented as multi-turn dialogues that attempt to coerce the privacy-preserving assistant into revealing private tokens. Prompting variations (different strategies) include:
-
-- Authority roleplay: The attacker prompt is generated to impersonate roles such as HR, legal, or compliance, demanding verification of specific fields. This is implemented in the code by constructing pretext prompts that simulate authoritative requests (see `generate_hijack_pretext` in `attack_defense_sim.py`).
-- Few-shot deception: The attacker prompt may include examples or context that condition the defender model to reply with sensitive fields. This is achieved by varying the prompt content and conversation history in multi-turn simulations.
-- Iterative escalation: The code supports successive rephrasing and increasingly forceful requests across multiple chat turns. Each turn, the attacker can escalate the urgency or specificity of the request, stimulating the defender to potentially reveal more information.
-- "Mild" to "Extreme" variation: The hijacking prompt style is controlled by the `hijack_style` parameter in the code, allowing the attacker to switch between less aggressive (mild) and more aggressive (extreme) contextual hijacking prompts.
+> All adversarial evaluations used hijacking / social-engineering style attacks implemented as multi-turn dialogues that attempt to coerce the privacy-preserving assistant into revealing private tokens. Prompting variations (different strategies) include:
+> - Authority roleplay: The attacker prompt is generated to impersonate roles such as HR, legal, or compliance, demanding verification of specific fields. This is implemented in the code by constructing pretext prompts that simulate authoritative requests (see `generate_hijack_pretext` in `attack_defense_sim.py`).
+> - Few-shot deception: The attacker prompt may include examples or context that condition the defender model to reply with sensitive fields. This is achieved by varying the prompt content and conversation history in multi-turn simulations.
+> - Iterative escalation: The code supports successive rephrasing and increasingly forceful requests across multiple chat turns. Each turn, the attacker can escalate the urgency or specificity of the request, stimulating the defender to potentially reveal more information.
+> - "Mild" to "Extreme" variation: The hijacking prompt style is controlled by the `hijack_style` parameter in the code, allowing the attacker to switch between less aggressive (mild) and more aggressive (extreme) contextual hijacking prompts.
 
 ---
 
@@ -202,16 +201,19 @@ Finally, I assess all the results through the evaluation module (evaluate_privac
 4. **Evaluation** computes privacy and utility metrics.
 5. **Plotting Modules** visualize performance and trade-offs.
 
+#### How did you implement dynamic attacks?
+> Dynamic attacks were implemented by varying the attacker's prompts and conversation flow in a multi-turn simulation. In the code (`attack_defense_sim.py`), the attacker agent generates different styles of hijacking prompts using the `generate_hijack_pretext` function, which can impersonate authority figures or escalate requests over several turns. The `hijack_style` parameter allows switching between "mild" and "extreme" prompt aggressiveness. This setup enables the attacker to adapt its strategy based on previous responses, simulating realistic social engineering and coercion attempts. All attacker responses are parsed and scored for sensitive token recovery, quantifying the effectiveness of dynamic, adaptive attacks.
+
 ---
 
 ### Model Choices 
 #### Data Minimizer Model
 We specifically used [Mistral Instruct Model](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3), instead of using a base model, I used an instruction-tuned model because the entire pipeline centers on the model being able to strictly follow a set of instructions instead of freely generating text. When I tested base models, I found they frequently did not follow my formatted instructions, or added more explanations, resulting in the breakdown of the pipeline. The instruction models were consistent and compliant during my tests. I needed an adversarial model that operated under controlled, rule-based behavior whereby it only extracted sensitive tokens when it was necessitated, and did not hallucinate unnecessary tokens or additional sensitive tokens. The instruction model helped enable me to formally define that behavior using JSON schemas and explicit constraints. This was also the best model which was computationally realistic and the best in terms of responses to run.
 
-#### Conversational/ Defender Model
+#### Conversational/ Defender Model (Defense System)
 For the defender, we opted for the [DistilGPT2](https://huggingface.co/distilbert/distilgpt2) model because it struck a reasonable balance between efficiency of resources and operational reliability in the simulation. At first, I thought we would use Mistral-Instruct for both the minimizer and the defender. Practically, however, running two large instruction-tuned models was taxing, and when we used Mistral as the instruction-tuned model for minimization and embedded the defender as a conversational agent, the available GPU memory and RAM exhausted quickly. So I replaced Mistral with DistilGPT2 as the defender model. I believe it works just as effectively in terms of the defender's task because the defender only makes inferences on already minimized data and does not require the same type of complex semantic reasoning.
 
-#### Attacker Model
+#### Attacker Model (Attack System)
 I chose [GPT Neo 125M](https://huggingface.co/EleutherAI/gpt-neo-125m) for the attacker since the adversary's role is largely procedural: create attack prompts, examine the minimized record, and extract explicit tokens or simple inferences. It does not require highly advanced reasoning, primarily pattern recognition and forcing the model to follow the prompt, so a smaller model is adequate. GPT-Neo-125M maintains the attacker-lightweight and reproducible across models, provides me the ability to run multiple multi-turn simulations without resource-intensiveness. It is also a replica of GPT-3 architecture, so I believe it will be a good opponent for the defender model, while having a faster compute time
 
 ---
@@ -419,7 +421,7 @@ For each field in each record:
 
 ---
 
-### Attack Success and Privacy
+### Privacy
 These two metrics measure how effectively private information was removed. In reference to the AirGapAgent paper, which defines privacy as:
 > "privacy score, quantifying the proportion of contextually private information withheld from third-party" [[Paper Link]](https://arxiv.org/pdf/2405.05175)
 
@@ -602,3 +604,123 @@ We used ChatGPT-5-based LLMs for support in this project. Their role was to:
 * Mireshghallah, N., Kim, H., Zhou, X., Tsvetkov, Y., Sap, M., Shokri, R., & Choi, Y. (2023). [Can LLMs Keep a Secret? Testing Privacy Implications of Language Models via Contextual Integrity Theory](https://arxiv.org/pdf/2310.17884)
 
 ---
+
+## Appendix
+
+### A. Extra Credit
+
+#### A1. Multi-Attacker Conversation Simulation
+
+As part of the extra credit, we extended the attack module to support multi-attacker conversations, where multiple adversarial agents simultaneously attempted to extract hidden data. Each attacker used different strategies such as authority impersonation, context re-phrasing, or progressive coercion. 
+
+#### A2. Redaction Strength Variation
+
+We introduced a continuous redaction_strength parameter (0.0–1.0) apart from directive to control the degree of privacy applied per scenario. This variable enabled reproducible tuning of privacy–utility trade-offs across all scenarios and made the model’s behavior more interpretable.
+
+#### A3. Hijack Style Parameterization (Mild vs. Extreme)
+
+The hijack_style tag in attack_defense_sim.py allowed evaluation under mild and extreme hijacking strategies. By varying this parameter, we were able to analyze how different attack intensities affect privacy resilience and model leakage rates.
+
+
+### B. Assignment Requirements
+
+This section maps each official project requirement to our implementation, design choices, and reported outcomes.
+
+---
+
+#### **Dataset and Scenarios**
+**Requirement:** Use your project dataset and create 5 different AI-agent use scenarios for your startup.  
+
+**Our Work:**  
+We developed a **synthetic job dataset** (`augment_dataset.py`) containing 300 records with both professional and personal details, generated using the **Faker** library.  
+We then created **five scenarios**, each representing a distinct real-world data-sharing use case with its own privacy directive:  `internal_hr`, `recruiter_outreach`, `public_job_board`, `marketing_campaign`, `research_dataset`.
+
+→ Refer: [Dataset Overview](#dataset-overview)
+
+---
+
+#### **Attack Implementation and Context Hijacking**
+**Requirement:** Implement attacks that try to trick the agent and generate context hijacking.  
+
+**Our Work:**  
+We implemented **automated, dynamic attacks** using `attack_defense_sim.py` that simulate real-world **social engineering** and **context hijacking** attempts. Each attack follows a **multi-turn conversation**, escalating from mild rephrasing to coercive prompts, mimicking realistic adversarial probing.  
+- **Attack Types:** Authority impersonation, context re-framing, iterative escalation.  
+- **Automation:** Attack prompts dynamically adapt using conversation history.  
+- **Extra Credit:** Multi-attacker simulation, where multiple agents coordinate simultaneous extraction attempts.  
+
+→ Refer: [Attack Simulation](#3-attack-simulation-attack_defense_simpy), [Appendix A1–A3](#a-extra-credit)
+
+---
+
+#### **AirGap Defense and Mitigation**
+**Requirement:** Implement Air Gap defense and show how it mitigates attacks.  
+
+**Our Work:**  
+We implemented the **AirGap Minimizer** (`minimizer_llm.py`) using the **Mistral-7B-Instruct** model for privacy-preserving data redaction.  
+The minimizer enforces context-aware redaction using **privacy directives** and a **continuous `redaction_strength` parameter (0.0–1.0)**.  
+The **defender agent (DistilGPT2)** strictly responds using only minimized data, ensuring no private tokens are ever accessed during a conversation.  
+Comparing baseline vs AirGap showed an **average privacy gain of +30–37%** and a **reduction in attack success by −30–35%**.  
+
+→ Refer: [AirGap Minimizer](#2-airgap-minimizer-minimizer_llmpy), [Architecture](#architecture), [Results Summary](#results-summary)
+
+---
+
+#### **Metrics and Evaluation**
+**Requirement:** Compute and report attack success rates and privacy–utility trade-off.  
+
+**Our Work:**  
+We used `evaluate_privacy_utility.py` to compute quantitative metrics for privacy, utility, and leakage.  
+- **Privacy (%):** 100 − Attack  
+(Attack - leak from the data minimizer- data exposed to the third party)
+- **Utility (%):** Cosine similarity between ideal and minimized outputs  
+- **Leakage:** Token-level count of residual sensitive values  
+- **Attack Success Rate(%):** Ratio of recovered sensitive fields post-attack  
+
+These metrics enabled direct measurement of the privacy–utility trade-off across different scenarios and redaction strengths.  
+
+→ Refer: [Quality Metrics with Justification](#quality-metrics-with-justification)
+
+---
+
+#### **Results and Visualization**
+**Requirement:** Show privacy–utility trade-off and attack success trends under different defenses.  
+
+**Our Work:**  
+Generated detailed plots under `plots_compare/` and `plots_tradeoff/` using scripts:  
+- `plot_leakrate_comparison.py` → Leakage rate bar charts.  
+- `plot_privacy_utility.py` → Privacy vs Utility comparisons.  
+- `plot_redaction_tradeoff.py` → Continuous redaction-strength trade-off curves.  
+
+Across all runs, AirGap achieved **>90% privacy** with controlled **22–35% utility retention**, clearly visualizing the inherent privacy–utility balance.  
+
+→ Refer: [Results Summary](#results-summary), [Plotting and Visualization](#5-plotting-and-visualization)
+
+---
+
+#### **Discussion, Limitations, and Future Work**
+**Requirement:** Reflect on limitations and propose future improvements.  
+
+**Our Work:**  
+We discussed practical limitations such as limited GPU memory, small model capacity, and slower multi-turn simulations.  
+Future directions include **adaptive reinforcement learning-based minimizers**, **semantic leakage detection**, and **federated AirGap deployments**.  
+
+→ Refer: [Learnings, Limitations, and Future Work](#learnings-limitations-and-future-work)
+
+---
+
+#### **Deliverables (GitHub)**
+**Requirement:** Provide all code, dataset, and documentation in GitHub.  
+
+**Our Work:**  
+All deliverables are included and reproducible:  
+- Synthetic and augmented datasets  
+- Attack and defense scripts  
+- Visualization and metric modules  
+- Comprehensive README and AI disclosure  
+- Conda environment (`environment.yml`) for full reproducibility  
+
+→ Refer: [Folder Structure](#folder-structure), [AI Disclosure](#ai-disclosure), [Results Summary](#results-summary),  [Learnings, Limitations, and Future Work](#learnings-limitations-and-future-work), [Setting Up the Conda Environment and Running the Code](#setting-up-the-conda-environment-and-running-the-code), [Dataset Overview](#dataset-overview)
+
+---
+
+**Repository:** [proj-group-04](https://github.com/umass-CS690F/proj-group-04)
