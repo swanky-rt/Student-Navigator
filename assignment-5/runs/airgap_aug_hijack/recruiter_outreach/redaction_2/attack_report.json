@@ -1,0 +1,69 @@
+{
+  "timestamp": "2025-10-18T04:01:36",
+  "records_simulated": 10,
+  "total_sensitive_tokens": 184,
+  "total_recovered_tokens": 35,
+  "attack_success_%": 19.02173913043478,
+  "privacy_retention_%": 80.97826086956522,
+  "TP": 51,
+  "FP": 27,
+  "FN": 20,
+  "TN": 2,
+  "false_positives": 27,
+  "false_negatives": 20,
+  "per_field": {
+    "job_title": {
+      "total": 10,
+      "sensitive": 10,
+      "recovered": 10
+    },
+    "job_description": {
+      "total": 10,
+      "sensitive": 68,
+      "recovered": 25
+    },
+    "company_name": {
+      "total": 10,
+      "sensitive": 2,
+      "recovered": 0
+    },
+    "contact_info": {
+      "total": 10,
+      "sensitive": 30,
+      "recovered": 0
+    },
+    "notes": {
+      "total": 10,
+      "sensitive": 16,
+      "recovered": 0
+    },
+    "name": {
+      "total": 10,
+      "sensitive": 0,
+      "recovered": 0
+    },
+    "dob": {
+      "total": 10,
+      "sensitive": 20,
+      "recovered": 0
+    },
+    "address": {
+      "total": 10,
+      "sensitive": 28,
+      "recovered": 0
+    },
+    "years_experience": {
+      "total": 10,
+      "sensitive": 0,
+      "recovered": 0
+    },
+    "personal_website": {
+      "total": 10,
+      "sensitive": 10,
+      "recovered": 0
+    }
+  },
+  "attacker_mode": "hijacking",
+  "hijack_style": "extreme",
+  "redaction_strength": 0.02
+}

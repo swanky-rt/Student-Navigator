@@ -1,0 +1,86 @@
+{
+  "timestamp": "2025-10-18 04:49:59.952892",
+  "model_variant": "airgap",
+  "fields_evaluated": 90,
+  "pii_fields": 71,
+  "false_negatives": 10,
+  "false_positives": 9,
+  "leak_count": 0,
+  "Attack_S": 14.08,
+  "Privacy_S": 85.92,
+  "Utility_S": 22.22,
+  "Over_redaction_%": 10.0,
+  "per_field": {
+    "job_title": {
+      "count": 10,
+      "FN": 10,
+      "FP": 0,
+      "leak": 0,
+      "avg_sim_%": 100.0
+    },
+    "job_description": {
+      "count": 10,
+      "FN": 0,
+      "FP": 0,
+      "leak": 0,
+      "avg_sim_%": 0.0
+    },
+    "company_name": {
+      "count": 10,
+      "FN": 0,
+      "FP": 7,
+      "leak": 0,
+      "avg_sim_%": 0.0
+    },
+    "contact_info": {
+      "count": 10,
+      "FN": 0,
+      "FP": 0,
+      "leak": 0,
+      "avg_sim_%": 0.0
+    },
+    "notes": {
+      "count": 10,
+      "FN": 0,
+      "FP": 2,
+      "leak": 0,
+      "avg_sim_%": 0.0
+    },
+    "name": {
+      "count": 0,
+      "FN": 0,
+      "FP": 0,
+      "leak": 0,
+      "avg_sim_%": 0.0
+    },
+    "dob": {
+      "count": 10,
+      "FN": 0,
+      "FP": 0,
+      "leak": 0,
+      "avg_sim_%": 0.0
+    },
+    "address": {
+      "count": 10,
+      "FN": 0,
+      "FP": 0,
+      "leak": 0,
+      "avg_sim_%": 0.0
+    },
+    "years_experience": {
+      "count": 10,
+      "FN": 0,
+      "FP": 0,
+      "leak": 0,
+      "avg_sim_%": 100.0
+    },
+    "personal_website": {
+      "count": 10,
+      "FN": 0,
+      "FP": 0,
+      "leak": 0,
+      "avg_sim_%": 0.0
+    }
+  },
+  "redaction_strength": 0.02
+}
