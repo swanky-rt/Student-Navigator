@@ -4,9 +4,9 @@
 
 ### Robust PII Redaction and Privacy-Utility Analysis on Synthetic Job Data
 
-*This assignment investigates privacy-preserving data minimization using large language models (LLMs), simulates adversarial attacks, and analyzes the privacy-utility trade-off across multiple real-world data-sharing scenarios.*
+This assignment investigates privacy-preserving data minimization using large language models (LLMs), simulates adversarial attacks, and analyzes the privacy-utility trade-off across multiple real-world data-sharing scenarios.
 
-**Team Lead:** Sriram Kannan
+*Team Lead:* Sriram Kannan
 
 </div>
 
@@ -36,7 +36,7 @@
 
 The project is organized into the following directories and modules:
 
-```
+
 code/
 ├── Data/
 │   ├── synthetic_jobs.csv                # Synthetic dataset with job-related and personal data
@@ -54,7 +54,7 @@ code/
 ├── plot_redaction_tradeoff.py            # Privacy–Utility trade-off curve plotting
 │
 └── environment.yml                       # Conda environment configuration
-```
+
 
 ---
 
@@ -62,13 +62,13 @@ code/
 
 ### Environment Setup
 
-1. Ensure you have **Anaconda** or **Miniconda** installed.
+1. Ensure you have *Anaconda* or *Miniconda* installed.
 2. Create and activate the environment using the provided YAML file:
 
-```bash
+bash
 conda env create -f environment.yml
 conda activate airgap-agent
-```
+
 
 3. Alternatively, install the dependencies manually:
 
@@ -83,69 +83,86 @@ conda activate airgap-agent
 
 #### To run the full pipeline:
 
-```bash
+bash
 python controller.py --csv Data/synthetic_jobs.csv --out_dir runs/airgap \
   --model_variant airgap --attacker_mode hijacking --hijack_style mild
-```
+
 
 #### To visualize results:
 
-```bash
+bash
 python plot_leakrate_comparison.py --run1 runs/airgap
 python plot_privacy_utility.py --run1 runs/airgap
 python plot_redaction_tradeoff.py --run runs/airgap
-```
 
-All reports and plots are saved in `runs/`, `plots_compare/`, and `plots_tradeoff/`.
+
+All reports and plots are saved in runs/, plots_compare/, and plots_tradeoff/.
 
 ---
 
 ## Dataset Overview
 
-* **Name:** Synthetic Job Data (Augmented)
-* **Size:** 300 records (configurable)
-* **Generated Using:** `augment_dataset.py` (Faker library)
+* *Name:* Synthetic Job Data (Augmented)
+* *Size:* 300 records (configurable)
+* *Generated Using:* augment_dataset.py (Faker library)
 
 | Field                                                        | Description                 | Sensitivity |
 | ------------------------------------------------------------ | --------------------------- | ----------- |
-| `name`, `dob`, `address`, `personal_website`, `contact_info` | Direct personal identifiers | High        |
-| `job_title`, `company_name`, `job_description`               | Professional details        | Medium      |
-| `notes`, `years_experience`                                  | Derived / contextual        | Low         |
+| name, dob, address, personal_website, contact_info | Direct personal identifiers | High        |
+| job_title, company_name, job_description               | Professional details        | Medium      |
+| notes, years_experience                                  | Derived / contextual        | Low         |
 
-**Scenarios (Privacy Directives):**
+*Scenarios (Privacy Directives):*
 
 | Scenario             | Directive Intent                             |
 | -------------------- | -------------------------------------------- |
-| `recruiter_outreach` | Allow minimal identifiers for hiring context |
-| `public_job_board`   | Remove all personal information              |
-| `internal_hr`        | Allow intra-company usage only               |
-| `marketing_campaign` | Share aggregated insights only               |
-| `research_dataset`   | Fully anonymized, strictest privacy          |
+| recruiter_outreach | Allow minimal identifiers for hiring context |
+| public_job_board   | Remove all personal information              |
+| internal_hr        | Allow intra-company usage only               |
+| marketing_campaign | Share aggregated insights only               |
+| research_dataset   | Fully anonymized, strictest privacy          |
 
 ---
 
 ## System Architecture
 
-The system follows a modular privacy–attack evaluation loop. Each stage is independent, reproducible, and logged separately.
+I wanted this system to behave like a complete privacy pipeline, the one that takes raw user data, applies policy-aware redaction, exposes it to simulated attacks, and finally evaluates how well privacy was preserved without losing usefulness. To achieve this, I designed the architecture as a modular flow consisting of four main stages: the controller, the minimizer, the attacker–defender interaction, and the evaluation module.
 
-<div align="center">
-  <img src="/assignment-5/plots_compare/architecture.png" width="750">
-</div>
+Each directive corresponds to a specific data-sharing context for each scenario, as mentioned in [Dataset Overview](#dataset-overview). Each directive defines not only which fields to protect but also why they matter in that context. The minimizer uses these rules to decide the minimum necessary information to retain.
+
+One *new parameter* I wanted to add in addition (to compensate for the issue that I could only run smaller models as comapared to the paper due to system constraints) was *redaction strength parameter*, which I represent as a continuous value between 0.0 and 1.0. This value allows me to vary how strictly the directive is enforced. The interaction between the directive and the redaction strength forms the privacy policy applied to each record.
+
+| *Redaction Strength* |                  *Description*                  |
+| :--------------------: | :-----------------------------------------------: |
+|         *0.0*        | Almost no filtering; prioritizes maximum utility. |
+|        *0.25*        |                  Mild redaction.                  |
+|         *0.5*        |  Balanced trade-off between privacy and utility.  |
+|        *0.75*        |                  Heavy redaction.                 |
+|         *1.0*        |                 Maximal redaction.                |
+                        
 
 
-1. **Controller** orchestrates the experiment (per scenario and redaction level).
-2. **AirGap Minimizer** generates minimized (redacted) data.
-3. **Attack Simulation** tests robustness against adversarial PII extraction.
-4. **Evaluation** computes privacy and utility metrics.
-5. **Plotting Modules** visualize performance and trade-offs.
+
+<p align="center"> <img src="/assignment-5/plots_compare/architecture.png" width="500" height="600"> </p>
+
+Next, the minimization phase utilizes privacy-preserving transformations on each record. The LLM interprets the privacy statement for the record, the reason for sharing purpose, and whether each field is sensitive or not. The LLM can then either delete or generalize private information according to the degree of redaction desired. The degree of redaction acts as the controlling variable along with the directive.
+
+After the data is reduced, I assess the robustness of the redacted records to adversarial probing. This occurs in an interactive simulation (attack_defense_sim.py) in which one agent acts as an attacker attempting to extract hidden knowledge, and another acts as a defender limited to the minimized data. This stage was intentionally designed to be more conversational because attack systems do not just make a single query.
+
+Finally, I assess all the results through the evaluation module (evaluate_privacy_utility.py). This script calculates privacy and utility measurements to quantify how well the minimizer was able to function. At the end of every experiment, a structured report is generated before each experiment, summarizing privacy and utility scores by each scenario and privacy level.
 
 
+1. *Controller* orchestrates the experiment (per scenario and redaction level).
+2. *AirGap Minimizer* generates minimized (redacted) data.
+3. *Attack Simulation* tests robustness against adversarial PII extraction.
+4. *Evaluation* computes privacy and utility metrics.
+5. *Plotting Modules* visualize performance and trade-offs.
 
 ---
 
 ## Module Overview and Design Choices
 
-### 1. Controller (`controller.py`)
+### 1. Controller (controller.py)
 
 #### Purpose
 
@@ -160,7 +177,7 @@ Acts as the central orchestrator of the pipeline:
 
 | Input                | Output                                              |
 | -------------------- | --------------------------------------------------- |
-| `synthetic_jobs.csv` | `run_summary_<timestamp>.json` (aggregated results) |
+| synthetic_jobs.csv | run_summary_<timestamp>.json (aggregated results) |
 
 #### Design Justification
 
@@ -170,61 +187,61 @@ Acts as the central orchestrator of the pipeline:
 
 ---
 
-### 2. AirGap Minimizer (`minimizer_llm.py`)
+### 2. AirGap Minimizer (minimizer_llm.py)
 
 #### Purpose
 
-Implements a **privacy-preserving field selection** using an LLM.
+Implements a *privacy-preserving field selection* using an LLM.
 
 #### Core Functionality
 
-* Takes as input: a *task*, *directive*, and *record*.
+* Takes as input: a task, directive, and record.
 * Returns a JSON array of field names essential for the task.
 * Non-selected fields are redacted (emptied).
-* Controlled by a **redaction_strength** parameter (0 → low privacy, 1 → high privacy).
+* Controlled by a *redaction_strength* parameter (0 → low privacy, 1 → high privacy).
 
 #### Design Choices
 
 | Design Aspect             | Justification                                                                                            |
 | ------------------------- | -------------------------------------------------------------------------------------------------------- |
-| **LLM Minimization**      | Captures semantic reasoning about what information is essential vs. sensitive, unlike fixed regex rules. |
-| **Prompt-based Decision** | Encodes task, directive, and privacy level for context-aware redaction.                                  |
-| **AirGap Concept**        | Mimics isolated data agents that operate only within restricted field access.                            |
+| *LLM Minimization*      | Captures semantic reasoning about what information is essential vs. sensitive, unlike fixed regex rules. |
+| *Prompt-based Decision* | Encodes task, directive, and privacy level for context-aware redaction.                                  |
+| *AirGap Concept*        | Mimics isolated data agents that operate only within restricted field access.                            |
 
 ---
 
-### 3. Attack Simulation (`attack_defense_sim.py`)
+### 3. Attack Simulation (attack_defense_sim.py)
 
 #### Purpose
 
 Simulates an adversarial conversation between two LLMs:
 
-* **Attacker:** attempts to recover hidden PII.
-* **Defender:** must respond using only minimized data.
+* *Attacker:* attempts to recover hidden PII.
+* *Defender:* must respond using only minimized data.
 
 #### Key Features
 
 * Multi-turn chat (3–6 rounds).
 * Regex-based PII extraction after each round.
-* Supports *Hijacking* (direct coercion)
+* Supports Hijacking (direct coercion)
 
 #### Outputs
 
 | File                 | Description                                               |
 | -------------------- | --------------------------------------------------------- |
-| `attack_report.json` | Leakage statistics (tokens recovered, privacy rate, etc.) |
+| attack_report.json | Leakage statistics (tokens recovered, privacy rate, etc.) |
 
 #### Design Choices
 
 | Design Aspect           | Justification                                                         |
 | ----------------------- | --------------------------------------------------------------------- |
-| **Interactive Attacks** | Realistic modeling of adversarial dialogue vs. static one-shot tests. |
-| **Mode Diversity**      | Captures both implicit and explicit privacy risks.                    |
-| **Regex Scoring**       | Simple, deterministic token-level evaluation of leaks.                |
+| *Interactive Attacks* | Realistic modeling of adversarial dialogue vs. static one-shot tests. |
+| *Mode Diversity*      | Captures both implicit and explicit privacy risks.                    |
+| *Regex Scoring*       | Simple, deterministic token-level evaluation of leaks.                |
 
 ---
 
-### 4. Evaluation and Metrics (`evaluate_privacy_utility.py`)
+### 4. Evaluation and Metrics (evaluate_privacy_utility.py)
 
 #### Purpose
 
@@ -234,58 +251,61 @@ Quantitatively assess redaction quality.
 
 | Metric                    | Description                                                         |
 | ------------------------- | ------------------------------------------------------------------- |
-| **Attack Success (%)**    | Portion of sensitive tokens recovered by attacker                   |
-| **Privacy Retention (%)** | 100 − Attack Success                                                |
-| **Utility Score (%)**     | Semantic similarity (cosine) between original and minimized records |
-| **Over-Redaction (%)**    | % of non-PII fields incorrectly blanked                             |
+| *Attack Success (%)*    | Portion of sensitive tokens recovered by attacker                   |
+| *Privacy Retention (%)* | 100 − Attack Success                                                |
+| *Utility Score (%)*     | Semantic similarity (cosine) between original and minimized records |
+| *Over-Redaction (%)*    | % of non-PII fields incorrectly blanked                             |
 
 ---
 
 ## Quality Metrics with Design Justification
-This section describes all quantitative metrics I computed during the evaluation and simulation stages. All values originate from the scripts ```evaluate_privacy_utility.py``` and ```attack_defense_sim.py```. Each metric quantifies either privacy protection, information utility, or model leakage risk,
+This section describes all quantitative metrics I computed during the evaluation and simulation stages. All values originate from the scripts evaluate_privacy_utility.py and attack_defense_sim.py. Each metric quantifies either privacy protection, information utility, or model leakage risk,
 
 The values for False Positives (FP), False Negatives (FN), True Positives (TP), and True Negatives (TN) are computed directly in the code, as follows:
 
 For each field in each record:
-- Let `orig_text` be the original value, and `minimized_text` be the value after redaction.
-- Let `is_sensitive` be True if the original value contains PII (detected by regex).
-- Let `kept` be True if the minimized value is non-blank.
+- Let orig_text be the original value, and minimized_text be the value after redaction.
+- Let is_sensitive be True if the original value contains PII (detected by regex).
+- Let kept be True if the minimized value is non-blank.
 
 | Case                    | Condition                                   | Meaning                                              |
 | ----------------------- | ------------------------------------------- | ---------------------------------------------------- |
-| **True Positive (TP)**  | `is_sensitive == True` and `kept == False`  | The field contained PII and was correctly blanked    |
-| **False Negative (FN)** | `is_sensitive == True` and `kept == True`   | PII was present but not redacted — a privacy failure |
-| **False Positive (FP)** | `is_sensitive == False` and `kept == False` | Non-PII was incorrectly blanked — over-redaction     |
-| **True Negative (TN)**  | `is_sensitive == False` and `kept == True`  | Non-PII correctly kept intact                        |
+| *True Positive (TP)*  | is_sensitive == True and kept == False  | The field contained PII and was correctly blanked    |
+| *False Negative (FN)* | is_sensitive == True and kept == True   | PII was present but not redacted — a privacy failure |
+| *False Positive (FP)* | is_sensitive == False and kept == False | Non-PII was incorrectly blanked — over-redaction     |
+| *True Negative (TN)*  | is_sensitive == False and kept == True  | Non-PII correctly kept intact                        |
 
 
 ### Attack Success and Privacy
 These two metrics measure how effectively private information was removed. In reference to the AirGapAgent paper, which defines privacy as:
-> *"privacy score, quantifying the proportion of contextually private information withheld from third-party"* [[Paper Link]](https://arxiv.org/pdf/2405.05175)
+> "privacy score, quantifying the proportion of contextually private information withheld from third-party" [[Paper Link]](https://arxiv.org/pdf/2405.05175)
 
 I wanted to define privacy as follows:
 
 
 - Attack_S (%): The percentage of PII fields where sensitive content survived minimization.
-```Attack_S = (FN / PII_fields) * 100```
+Attack_S = (FN / PII_fields) * 100
 
 - Privacy_S (%): The complement of attack success, representing the percentage of PII fields that were correctly redacted.
-```Privacy_S = 100 - Attack_S```
+Privacy_S = 100 - Attack_S
 
 Both values appear in evaluation_report.json for every experimental run.
 
+---
 
 ###  Utility Score (Semantic-Based)
 To quantify information retention in a context-aware way, I compared the minimized outputs to the scenario’s expected ground truth. The AirGap paper defines utility as
-> *"utility score, quantifying the proportion of task-relevant information shared with third party p"* [[Paper Link]](https://arxiv.org/pdf/2405.05175)
+> "utility score, quantifying the proportion of task-relevant information shared with third party p" [[Paper Link]](https://arxiv.org/pdf/2405.05175)
 
-For each scenario (e.g., recruiter outreach, public job board, etc), I defined a policy-ideal version, representing what should be shared according to that privacy directive (what columns is *relevant* to the scenario). For each field, I then measured how semantically similar my minimized output was to this ideal disclosure using **cosine similarity**. 
+For each scenario (e.g., recruiter outreach, public job board, etc), I defined a policy-ideal version, representing what should be shared according to that privacy directive (what columns is relevant to the scenario). For each field, I then measured how semantically similar my minimized output was to this ideal disclosure using *cosine similarity*. 
 
 I used cosine similarity to measure semantic utility because it captures meaning rather than exact text overlap. In privacy-minimization scenarios, especially those involving natural-language redaction by LLMs, the minimized output is often paraphrased or restructured, but still correct and contextually relevant.
 
-```L_utility(f) = cosine_similarity( embedding(ideal(f, s)), embedding(mini(f)) )```
+L_utility(f) = cosine_similarity( embedding(ideal(f, s)), embedding(mini(f)) )
 
-```Utility_S = average( L_utility(f) across all non-PII fields and records ) * 100```
+Utility_S = average( L_utility(f) across all non-PII fields and records ) * 100
+
+---
 
 ### Other Metrics
 These metrics were calculated as a part of extra credit, and for more understanding of how my AirGap model works.
@@ -293,7 +313,7 @@ These metrics were calculated as a part of extra credit, and for more understand
 <!-- #### Over Redaction
 Over-redaction measures how much useful, non-private data was accidentally deleted during minimization.
 
-``` OverRedaction_% = ( FP / total_fields ) * 100 ```
+ OverRedaction_% = ( FP / total_fields ) * 100 
 
 FP (False Positives): Non-PII fields that were mistakenly blanked out.
 total_fields: Total number of fields evaluated.
@@ -301,11 +321,12 @@ total_fields: Total number of fields evaluated.
 When this number is high, it means my minimizer became too conservative,  deleting even harmless information like job titles or general notes.
 While this protects privacy, it hurts the dataset’s utility, because other users (like recruiters or analysts) lose access to data that isn’t actually private. So intuitively, Over-redaction means too safe, but less useful. -->
 
+
 #### Token-Level Leakage
 
 Token-level leakage measures how many individual sensitive tokens slipped through after redaction.
 
-```TokenLeak_% (eval) = ( leak_count / total_PII_tokens_original ) * 100```
+TokenLeak_% (eval) = ( leak_count / total_PII_tokens_original ) * 100
 
 
 If the total number of original PII tokens is unknown, I only report the raw leak_count. This metric is important because a single surviving token can still compromise privacy, for instance, even just the last 4 digits of a phone number or an email handle can reveal identity.
@@ -323,11 +344,11 @@ Intuitively, Low token leakage means fewer privacy holes. Even if the overall da
 | 0.5                | 80–85       | 70–75       | Balanced trade-off           |
 | 0.75–1.0           | 95+         | 40–55       | Strong privacy, utility loss |
 
-**Attack Findings**
+*Attack Findings*
 
-* *Context-Preserving Attacks:* 10–20% leakage.
-* *Mild Hijacking:* +5–10% leakage over context-preserving.
-* *Extreme Hijacking:* Only effective under low redaction (<0.25).
+* Context-Preserving Attacks: 10–20% leakage.
+* Mild Hijacking: +5–10% leakage over context-preserving.
+* Extreme Hijacking: Only effective under low redaction (<0.25).
 
 ---
 
@@ -342,10 +363,10 @@ Intuitively, Low token leakage means fewer privacy holes. Even if the overall da
 
 ### Future Work
 
-* Integrate **semantic leakage detection** using entity embeddings.
-* Develop **adaptive minimizers** with reinforcement learning.
-* Introduce **heterogeneous attackers** (cross-model testing).
-* Extend to **federated AirGap deployments** for decentralized privacy agents.
+* Integrate *semantic leakage detection* using entity embeddings.
+* Develop *adaptive minimizers* with reinforcement learning.
+* Introduce *heterogeneous attackers* (cross-model testing).
+* Extend to *federated AirGap deployments* for decentralized privacy agents.
 
 ---
 
@@ -353,7 +374,7 @@ Intuitively, Low token leakage means fewer privacy holes. Even if the overall da
 
 ### How We Used LLMs
 
-We used GPT-4/GPT-5-based LLMs **for support** in this project. Their role was to:
+We used GPT-4/GPT-5-based LLMs *for support* in this project. Their role was to:
 
 * Verify theoretical correctness of privacy–utility metrics.
 * Help with debugging and refactoring repetitive experiment scripts. Helped with Regex formatting and logging scripts.
@@ -373,7 +394,7 @@ We used GPT-4/GPT-5-based LLMs **for support** in this project. Their role was t
 ---
 
 ## References
-* *Google DeepMind* (2024). **AirGapAgent Framework for LLM Privacy Minimization.**
-* *Hugging Face* (2024). **Transformers: Text-Generation Pipeline Documentation.**
+* Google DeepMind (2024). *AirGapAgent Framework for LLM Privacy Minimization.*
+* Hugging Face (2024). *Transformers: Text-Generation Pipeline Documentation.*
 
 ---
