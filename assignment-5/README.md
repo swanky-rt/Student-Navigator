@@ -105,25 +105,33 @@ conda env update -f environment.yml --prune
 
 ### Running the Workflow
 
+Go to ```assignemnt-5``` folder.
+
+```bash
+cd assignment-5
+```
+
 #### To run the full pipeline:
 
-```
+```bash
 python controller.py \
   --csv Data/synthetic_jobs_augmented.csv \
-  --out_dir runs/airgap_aug_hijack_redact \
+  --out_dir runs/airgap_aug_hijack \
   --model_variant airgap \
   --attacker_mode hijacking \
   --hijack_style extreme \
   --attacker_model EleutherAI/gpt-neo-125M \
   --conversational_model distilgpt2 \
   --max_records 300 \
-  --redaction_strength 0.2 \
+  --redaction_strength 0.5 \
   --max_new_tokens 64
 ```
 
+**Note:** Runs faster if you have GPU.
+
 #### To visualize results:
 
-```
+```bash
 python plot_leakrate_comparison.py --run1 runs/baseline_aug_hijack --run2 runs/airgap_aug_hijack
 python plot_privacy_utility.py --run1 runs/baseline_aug_hijack --run2 runs/airgap_aug_hijack
 python plot_redaction_tradeoff.py --run runs/airgap_aug_hijack
@@ -663,7 +671,7 @@ Note : Due to the high computational cost of running full LLM-based attack–def
 
 <td width="55%" valign="top">
 
-#### *Token-Level Leakage Rate by Scenario*
+#### *Extra Credit - Token-Level Leakage Rate by Scenario*
 
 The bar chart comparing Token-Level Leakage Rate between the Baseline (no minimization) and AirGap (LLM-minimization) systems across all five scenarios demonstrates the consistent and dramatic effectiveness of the LLM-based defense. In the Baseline, the Leakage Rate remains high and similar across all scenarios, hovering between $41\%$ and $43\%$, confirming that the simple act of using the full, unredacted data inherently poses a significant, uniform privacy risk to all policies. Conversely, the AirGap system substantially reduces the Leakage Rate in every single scenario, with the most aggressive privacy policies like "internal_hr" and "public_job_board" achieving the lowest leakage rates, falling below $8\%$. Even the most utility-focused policy, recruiter_outreach, sees its leakage rate slashed from $43\%$ to under $20\%$, decisively proving that the policy-aware LLM minimization is highly effective at reducing the exposure of sensitive tokens regardless of the specific scenario or directive.
 </td>
