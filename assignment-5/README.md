@@ -14,47 +14,58 @@ This assignment investigates privacy-preserving data minimization using large la
 
 ## Quick Navigation
 
-* [Folder Structure](#folder-structure)
-* [Setting Up the Conda Environment and Running the Code](#setting-up-the-conda-environment-and-running-the-code)
-* [Dataset Overview](#dataset-overview)
-* [System Architecture](#system-architecture)
-* [Module Overview and Design Choices](#module-overview-and-design-choices)
-  * [1. Controller](#1-controller-controllerpy)
-  * [2. AirGap Minimizer](#2-airgap-minimizer-minimizer_llmpy)
-  * [3. Attack Simulation](#3-attack-simulation-attack_defense_simpy)
-  * [4. Evaluation and Metrics](#4-evaluation-and-metrics-evaluate_privacy_utilitypy)
-  * [5. Plotting and Visualization](#5-plotting-and-visualization)
-* [Overall Design Justification](#overall-design-justification)
-* [Results Summary](#results-summary)
-* [Discussion, Limitations, and Future Work](#discussion-limitations-and-future-work)
-* [AI Disclosure](#ai-disclosure)
-* [References](#references)
+- [Folder Structure](#folder-structure)
+- [Environment Setup and Running the Code](#environment-setup-and-running-the-code)
+- [Dataset Overview](#dataset-overview)
+- [System Architecture](#system-architecture)
+- [Model Design with Justification](#model-design-with-justification)
+  - [Architecture](#architecture)
+  - [Prompt Design](#prompt-design)
+- [Module Overview and Design Choices](#module-overview-and-design-choices)
+  - [1. Controller (controller.py)](#1-controller-controllerpy)
+  - [2. AirGap Minimizer (minimizer_llmpy)](#2-airgap-minimizer-minimizer_llmpy)
+  - [3. Attack Simulation (attack_defense_sim.py)](#3-attack-simulation-attack_defense_simpy)
+  - [4. Evaluation and Metrics (evaluate_privacy_utility.py)](#4-evaluation-and-metrics-evaluate_privacy_utilitypy)
+  - [5. Plotting and Visualization](#5-plotting-and-visualization)
+- [Quality Metrics with Justification](#quality-metrics-with-justification)
+  - [Attack Success and Privacy](#attack-success-and-privacy)
+  - [Utility Score (Semantic-Based)](#utility-score-semantic-based)
+  - [Other Metrics](#other-metrics)
+- [Results Summary](#results-summary)
+- [Learnings, Limitations, and Future Work](#learnings-limitations-and-future-work)
+  - [Learnings](#learnings)
+  - [Limitations](#limitations)
+  - [Future Work](#future-work)
+- [AI Disclosure](#ai-disclosure)
+  - [How We Used LLMs](#how-we-used-llms)
+  - [What We Did Ourselves](#what-we-did-ourselves)
+- [References](#references)
 
 ---
 
 ## Folder Structure
 
-The project is organized into the following directories and modules:
-
-
-code/
-├── Data/
-│   ├── synthetic_jobs.csv                # Synthetic dataset with job-related and personal data
-│   └── synthetic_jobs_augmented.csv      # Augmented dataset generated using Faker
+```
+assignment-5/
+├── code/
+│   ├── Data/
+│   │   ├── synthetic_jobs.csv                # Synthetic dataset with job-related and personal data
+│   │   └── synthetic_jobs_augmented.csv      # Augmented dataset generated using Faker
+│   ├── controller.py                         # Orchestrates minimization → attack → evaluation
+│   ├── minimizer_llm.py                      # LLM-based data minimizer
+│   ├── attack_defense_sim.py                 # Interactive attack–defense simulation
+│   ├── evaluate_privacy_utility.py           # Privacy and utility evaluation
+│   ├── augment_dataset.py                    # Data generation and augmentation
+│   ├── plot_leakrate_comparison.py           # Leakage comparison visualization
+│   ├── plot_privacy_utility.py               # Privacy–Utility comparative plots
+│   ├── plot_redaction_tradeoff.py            # Privacy–Utility trade-off curve plotting
+│   └── environment.yml                       # Conda environment configuration
 │
-├── controller.py                         # Orchestrates minimization → attack → evaluation
-├── minimizer_llm.py                      # LLM-based data minimizer
-├── attack_defense_sim.py                 # Interactive attack–defense simulation
-├── evaluate_privacy_utility.py           # Privacy and utility evaluation
-│
-├── augment_dataset.py                    # Data generation and augmentation
-│
-├── plot_leakrate_comparison.py           # Leakage comparison visualization
-├── plot_privacy_utility.py               # Privacy–Utility comparative plots
-├── plot_redaction_tradeoff.py            # Privacy–Utility trade-off curve plotting
-│
-└── environment.yml                       # Conda environment configuration
-
+├── Data/                                     # (symlink or copy of code/Data/)
+├── plots_compare/                            # Output plots and comparison tables
+├── runs/                                     # Experiment outputs and transcripts
+├── README.md
+```
 
 ---
 
