@@ -13,25 +13,22 @@ This assignment investigates privacy-preserving data minimization using large la
 ---
 
 ## Quick Navigation
-
-- [Folder Structure](#folder-structure)
 - [Setting Up the Conda Environment and Running the Code](#setting-up-the-conda-environment-and-running-the-code)
   - [Environment Setup](#environment-setup)
   - [Running the Workflow](#running-the-workflow)
-    - [To run the full pipeline](#to-run-the-full-pipeline)
-    - [To visualize results](#to-visualize-results)
+    - [Run the Full Pipeline](#to-run-the-full-pipeline)
+    - [Visualize Results](#to-visualize-results)
 - [Dataset Overview](#dataset-overview)
-- [System Architecture](#system-architecture)
 - [Model Design with Justification](#model-design-with-justification)
   - [Architecture](#architecture)
+  - [Model Choices](#model-choices)
   - [Prompt Design](#prompt-design)
-- [Module Overview and Design Choices](#module-overview-and-design-choices)
-  - [1. Controller (controller.py)](#1-controller-controllerpy)
-  - [2. AirGap Minimizer (minimizer_llmpy)](#2-airgap-minimizer-minimizer_llmpy)
-  - [3. Attack Simulation (attack_defense_sim.py)](#3-attack-simulation-attack_defense_simpy)
-  - [4. Evaluation and Metrics (evaluate_privacy_utility.py)](#4-evaluation-and-metrics-evaluate_privacy_utilitypy)
+- [Code Overview and Design Choices](#code-overview-and-design-choices)
+  - [1. Controller](#1-controller-controllerpy)
+  - [2. AirGap Minimizer](#2-airgap-minimizer-minimizer_llmpy)
+  - [3. Attack Simulation](#3-attack-simulation-attack_defense_simpy)
+  - [4. Evaluation and Metrics](#4-evaluation-and-metrics-evaluate_privacy_utilitypy)
   - [5. Plotting and Visualization](#5-plotting-and-visualization)
-- [Overall Design Justification](#overall-design-justification)
 - [Quality Metrics with Justification](#quality-metrics-with-justification)
   - [Attack Success and Privacy](#attack-success-and-privacy)
   - [Utility Score (Semantic-Based)](#utility-score-semantic-based)
@@ -45,6 +42,7 @@ This assignment investigates privacy-preserving data minimization using large la
   - [How We Used LLMs](#how-we-used-llms)
   - [What We Did Ourselves](#what-we-did-ourselves)
 - [References](#references)
+
 
 ---
 
@@ -128,15 +126,13 @@ All reports and plots are saved in runs/, plots_compare/, and plots_tradeoff/.
 | job_title, company_name, job_description               | Professional details        | Medium      |
 | notes, years_experience                                  | Derived / contextual        | Low         |
 
-*Scenarios (Privacy Directives):*
 
-| Scenario             | Directive Intent                             |
-| -------------------- | -------------------------------------------- |
-| recruiter_outreach | Allow minimal identifiers for hiring context |
-| public_job_board   | Remove all personal information              |
-| internal_hr        | Allow intra-company usage only               |
-| marketing_campaign | Share aggregated insights only               |
-| research_dataset   | Fully anonymized, strictest privacy          |
+### Scenarios
+- **recruiter_outreach:** Data is shared with recruiters, so minimal personal identifiers (like name and contact info) are allowed to help with hiring, but other sensitive details are redacted.
+- **public_job_board:** Data is posted publicly; all personal information is removed to prevent identity exposure.
+- **internal_hr:** Data is used only within the company for HR purposes- some internal details may be kept, but external sharing is restricted.
+- **marketing_campaign:** Only aggregated, non-personal insights are shared for marketing analysis
+- **research_dataset:** Data is fully anonymized for research, applying the strictest privacy—no personal information.
 
 ---
 
@@ -147,6 +143,16 @@ All reports and plots are saved in runs/, plots_compare/, and plots_tradeoff/.
 I wanted this system to behave like a complete privacy pipeline, the one that takes raw user data, applies policy-aware redaction, exposes it to simulated attacks, and finally evaluates how well privacy was preserved without losing usefulness. To achieve this, I designed the architecture as a modular flow consisting of four main stages: the controller, the minimizer, the attacker–defender interaction, and the evaluation module.
 
 Each directive corresponds to a specific data-sharing context for each scenario, as mentioned in [Dataset Overview](#dataset-overview). Each directive defines not only which fields to protect but also why they matter in that context. The minimizer uses these rules to decide the minimum necessary information to retain.
+
+ *Scenarios (Privacy Directives):*
+
+| Scenario             | Directive Intent                             |
+| -------------------- | -------------------------------------------- |
+| recruiter_outreach | Allow minimal identifiers for hiring context |
+| public_job_board   | Remove all personal information              |
+| internal_hr        | Allow intra-company usage only               |
+| marketing_campaign | Share aggregated insights only               |
+| research_dataset   | Fully anonymized, strictest privacy          |
 
 One *new parameter* I wanted to add in addition was *redaction strength parameter*, which I represent as a continuous value between 0.0 and 1. I did this to compensate for the issue that I could only run smaller models as comapared to the paper due to system constraints - add more detail to the prompt. This value allows me to vary how strictly the directive is enforced. The interaction between the directive and the redaction strength forms the privacy policy applied to each record.
 
@@ -246,7 +252,7 @@ I chose [GPT Neo 125M](https://huggingface.co/EleutherAI/gpt-neo-125m) for the a
 
 ---
 
-## Module Overview and Design Choices
+## Code Overview and Design Choices
 
 ### 1. Controller (controller.py)
 
@@ -342,6 +348,30 @@ Quantitatively assess redaction quality.
 | *Utility Score (%)*     | Semantic similarity (cosine) between original and minimized records |
 | *Over-Redaction (%)*    | % of non-PII fields incorrectly blanked                             |
 
+
+
+### 5. Plotting and Visualization
+
+#### Purpose
+Provides visual analysis of privacy–utility trade-offs, leakage rates, and overall experiment results.
+
+#### Core Scripts
+- `plot_leakrate_comparison.py`: Plots leakage rates across different scenarios and redaction strengths.
+- `plot_privacy_utility.py`: Visualizes privacy and utility scores for each experiment run.
+- `plot_redaction_tradeoff.py`: Generates trade-off curves showing the relationship between privacy and utility as redaction strength varies.
+
+#### Outputs
+- Plots and comparison tables saved in `plots_compare/`, `plots_tradeoff/`, and `runs/` directories.
+- Visualizations include:
+  - Privacy vs. Utility curves
+  - Leakage rate bar charts
+  - Scenario-wise comparison tables
+
+#### Design Justification
+- Visualizations make it easy to interpret the effectiveness of minimization and attack strategies.
+- Plots help identify optimal redaction strengths and highlight trade-offs between privacy and utility.
+- Enables quick comparison across scenarios and model configurations.
+
 ---
 
 ## Quality Metrics with Justification
@@ -361,6 +391,7 @@ For each field in each record:
 | *False Positive (FP)* | is_sensitive == False and kept == False | Non-PII was incorrectly blanked- over-redaction     |
 | *True Negative (TN)*  | is_sensitive == False and kept == True  | Non-PII correctly kept intact                        |
 
+---
 
 ### Attack Success and Privacy
 These two metrics measure how effectively private information was removed. In reference to the AirGapAgent paper, which defines privacy as:
@@ -371,10 +402,10 @@ We defined privacy as follows:
 - Attack_S (%): The percentage of PII fields where sensitive content survived minimization.
 ```Attack_S = (FN / PII_fields) * 100```
 
-- Privacy_S (%): The complement of attack success, representing the percentage of PII fields that were correctly redacted.
-```Privacy_S = 100 - Attack_S```
+- Privacy (%): The complement of attack success, representing the percentage of PII fields that were correctly redacted.
+```Privacy = 100 - Attack_S```
 
-Both values appear in evaluation_report.json for every experimental run.
+We went about this keeping in mind that we wanted to calculate how much % of the data was NOT put at risk. So higher *Privacy*, less data is put to risk. Both values appear in evaluation_report.json for every experimental run.
 
 ---
 
@@ -421,6 +452,8 @@ Intuitively, Low token leakage means fewer privacy holes. Even if the overall da
 #### Attack_Success_Rate (%)
 The percentage of original sensitive tokens that the attacker was able to recover from the defender’s responses during simulated chat interactions. This measures dynamic leakage, as in how much private information was exposed through conversation despite minimization.
 
+*This is different from **Attack_S** in mentioned above, as that talks about the data exposed to the third-party (worst-case scenario), which *Attack_Success_Rate* gives as idea of how good the Attack model can probe info from the Conversational Agent*
+
 ```Attack_Success_Rate = (Recovered_Tokens / Total_Sensitive_Tokens) × 100```
 
 ---
@@ -447,7 +480,6 @@ The percentage of original sensitive tokens that the attacker was able to recove
 
 
 ### Limitations
-
 * The paper worked on many records but we could only run our model on few 100 records due to computational limitations.
 * Computationally intensive for running bigger (better) models like GPT-4.
 
@@ -484,7 +516,9 @@ We used ChatGPT-5-based LLMs for support in this project. Their role was to:
 ---
 
 ## References
-* Google DeepMind (2024). *AirGapAgent Framework for LLM Privacy Minimization.*
-* Hugging Face (2024). *Transformers: Text-Generation Pipeline Documentation.*
+* Bagdasarian, E. (2024). [AirGapAgent: Protecting Privacy-Conscious Conversational Agents](https://arxiv.org/pdf/2405.05175)
+* Hugging Face (2024). Transformers: [*Text-Generation Pipeline Documentation.*](https://huggingface.co/docs/transformers/en/main_classes/pipelines)
+* Mistral Demo Chat - Deep Infra: [Testing Playground](https://deepinfra.com/mistralai/Mistral-Small-3.2-24B-Instruct-2506)
+* Mireshghallah, N., Kim, H., Zhou, X., Tsvetkov, Y., Sap, M., Shokri, R., & Choi, Y. (2023). [Can LLMs Keep a Secret? Testing Privacy Implications of Language Models via Contextual Integrity Theory](https://arxiv.org/pdf/2310.17884)
 
 ---
