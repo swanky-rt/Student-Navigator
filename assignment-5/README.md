@@ -97,18 +97,19 @@ conda activate airgap-agent
 
 #### To run the full pipeline:
 
-bash
+```bash
 python controller.py --csv Data/synthetic_jobs.csv --out_dir runs/airgap \
   --model_variant airgap --attacker_mode hijacking --hijack_style mild
+```
 
 
 #### To visualize results:
 
-bash
+```bash
 python plot_leakrate_comparison.py --run1 runs/airgap
 python plot_privacy_utility.py --run1 runs/airgap
 python plot_redaction_tradeoff.py --run runs/airgap
-
+```
 
 All reports and plots are saved in runs/, plots_compare/, and plots_tradeoff/.
 
@@ -422,7 +423,7 @@ We went about this keeping in mind that we wanted to calculate how much % of the
 To quantify information retention in a context-aware way, I compared the minimized outputs to the scenario’s expected ground truth. The AirGap paper defines utility as
 > "utility score, quantifying the proportion of task-relevant information shared with third party p" [[Paper Link]](https://arxiv.org/pdf/2405.05175)
 
-For each scenario (e.g., recruiter outreach, public job board, etc), I defined what should be shared according to that privacy directive (what columns is relevant to the scenario). For each field, I then measured how semantically similar my minimized output was to this ideal disclosure using *cosine similarity* with original data as contextual hijacking, none of the data is contextually safe to share and Professor mentioned about no ground truth in Context Hijacking. 
+For each scenario (e.g., recruiter outreach, public job board, etc), I defined what should be shared according to that privacy directive (what columns is relevant to the scenario). For each field, I then measured how semantically similar my minimized output was to this ideal disclosure using *cosine similarity* with original data as contextual hijacking, none of the data is contextually safe to share and the context-hijacking attack behaves like a real agent that can access an LLM conversation or prompt stream, and will attempt to recover the privileged or private information that the system was supposed to keep separate. 
 
 I used cosine similarity to measure semantic utility because it captures meaning rather than exact text overlap. In privacy-minimization scenarios, especially those involving natural-language redaction by LLMs, the minimized output is often paraphrased or restructured, but still correct and contextually relevant.
 
@@ -469,17 +470,26 @@ The percentage of original sensitive tokens that the attacker was able to recove
 
 ## Results Summary
 
-| Redaction Strength | Privacy (%) | Utility (%) | Observation                  |
-| ------------------ | ----------- | ----------- | ---------------------------- |
-| 0.0–0.25           | 60–70       | 90–95       | High utility, poor privacy   |
-| 0.5                | 80–85       | 70–75       | Balanced trade-off           |
-| 0.75–1.0           | 95+         | 40–55       | Strong privacy, utility loss |
+Our experiments focus on context hijacking attack  that behaves like a real agent that can access an LLM conversation or prompt stream, and will attempt to recover the privileged or private information that the system was supposed to keep separate. So, in evaluating the minimizer’s effectiveness, we take a measure of how much its outputs deviate from the complete private ground truth. Comparing to the original isn’t about maximizing semantic similarity, it’s about verifying zero contextual reconstruction.
 
-*Attack Findings*
+#### Setup: 
+The above mentioned directives were given, with redaction strength 0.5 (focusing on good tradeoff b/w Utility and Privacy). Mistral model for data minimizer, DistilGPT for conversational agent and GPT Neo for Attack Model.
 
-* Context-Preserving Attacks: 10–20% leakage.
-* Mild Hijacking: +5–10% leakage over context-preserving.
-* Extreme Hijacking: Only effective under low redaction (<0.25).
+| Scenario               | Privacy (Baseline) | Privacy (AirGap) | Δ Privacy ↑ | Utility (Baseline) | Utility (AirGap) | Δ Utility ↓ | Attack Success (Baseline) | Attack Success (AirGap) | Δ Attack ↓ |
+| ---------------------- | ------------------ | ---------------- | ----------- | ------------------ | ---------------- | ----------- | ------------------------- | ----------------------- | ---------- |
+| **internal_hr**        | 56.35              | 93.37            | **+37.02**  | 100.00             | 22.22            | **−77.78**  | 43.65                     | 6.63                    | **−37.02** |
+| **marketing_campaign** | 58.38              | 90.27            | **+31.89**  | 100.00             | 33.33            | **−66.67**  | 41.62                     | 9.73                    | **−31.89** |
+| **public_job_board**   | 57.65              | 92.35            | **+34.71**  | 100.00             | 22.22            | **−77.78**  | 42.35                     | 7.65                    | **−34.71** |
+| **recruiter_outreach** | 57.61              | 80.98            | **+23.37**  | 100.00             | 24.44            | **−75.56**  | 42.39                     | 19.02                   | **−23.37** |
+| **research_dataset**   | 57.89              | 87.97            | **+30.08**  | 100.00             | 33.33            | **−66.67**  | 42.10                     | 12.03                   | **−30.08** |
+
+
+### Inference: 
+From the context hijacking perspective, it is clear that the utility of the baseline is very high (100%) because it exposes the entire data to the third party and there is no redaction, and the model can reproduce the context almost exactly as in the original dataset. However, privacy is sacrificed entirely, as the attacker has access to and can recover all contextually private information. In contrast, AirGap, by design, redacts private fields and any sensitive context, resulting in utility that may not be meaningful compared to the original non-redacted patterns, because the overall similarity is reduced. In a hijacking scenario this type of utility loss is both expected because it clearly indicates that any private information within the context was isolated and not reproduced. Ofcourse we acknowledge that this will affect the utility of genuine third party req, but we believe with better (more complex/ bigger) models with better contextual understanding can help with this.
+
+Having said that, the key take away is an inherent privacy–utility tradeoff. A model aimed at maximizing privacy protection will inevitably sacrifice utility richness, and this loss is an acceptable and intentional cost to achieve strong data isolation and protection against context information hijacking.
+
+
 
 ---
 
@@ -518,7 +528,7 @@ We used ChatGPT-5-based LLMs for support in this project. Their role was to:
 * Help with debugging and refactoring repetitive experiment scripts. Helped with Regex formatting and logging scripts.
 * Provide structural consistency in documentation and plots, library usage, cosine similarity.
   All code logic, experiments, and results were designed and executed by the team.
-* Helped with structuring markdowns (but the content was provided by us)
+* Helped with structuring report for style and grammatical consistency **(but the content was provided by us)**
 
 ### What We Did Ourselves
 
