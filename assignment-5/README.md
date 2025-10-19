@@ -61,7 +61,7 @@ code/
 
 ## Setting Up the Conda Environment and Running the Code
 
-### Step 1: Environment Setup
+### Environment Setup
 
 1. Ensure you have **Anaconda** or **Miniconda** installed.
 2. Create and activate the environment using the provided YAML file:
@@ -80,7 +80,7 @@ conda activate airgap-agent
    * pandas
    * matplotlib
 
-### Step 2: Running the Workflow
+### Running the Workflow
 
 #### To run the full pipeline:
 
@@ -265,17 +265,6 @@ Quantitatively assess redaction quality.
 
 ---
 
-## Overall Design Justification
-
-| Component                               | Rationale                                                                           |
-| --------------------------------------- | ----------------------------------------------------------------------------------- |
-| **Synthetic Job Data**                  | Balances ethical safety with realistic PII diversity.                               |
-| **Scenario-Based Directives**           | Reflect distinct real-world privacy contexts (HR, recruitment, research).           |
-| **LLM Minimization**                    | Moves beyond keyword-based redaction to semantic, context-aware field pruning.      |
-| **Interactive Attacks**                 | Emulates genuine conversational leak vectors.                                       |
-| **Embedding-Based Utility**             | Captures informational meaning retention beyond text overlap.                       |
-| **Modular Pipeline**                    | Each phase is independently executable, reproducible, and extensible.               |
-| **Redaction Strength Parameterization** | Enables continuous tuning of privacy strictness to study trade-offs quantitatively. |
 
 ---
 
@@ -339,8 +328,6 @@ Their role was to:
 
 * *Abadi, M. et al.* (2016). **Deep Learning with Differential Privacy.** [arXiv:1607.00133](https://arxiv.org/abs/1607.00133)
 * *Google DeepMind* (2024). **AirGapAgent Framework for LLM Privacy Minimization.**
-* *Yeom, S. et al.* (2018). **Privacy Risk in Machine Learning: Analyzing the Connection to Overfitting.**
-* *Carlini, N. et al.* (2022). **Membership Inference Attacks from First Principles.**
 * *OpenAI* (2023). **Privacy-Preserving LLM Applications.**
 * *Hugging Face* (2024). **Transformers: Text-Generation Pipeline Documentation.**
 
