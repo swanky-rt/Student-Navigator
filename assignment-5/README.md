@@ -610,6 +610,7 @@ The attack success rate dropped from 42.10% in the baseline to 12.03% with AirGa
 </table>
 
 </div>
+
 ---
 
 ## Learnings, Limitations, and Future Work
@@ -680,9 +681,12 @@ As part of the extra credit, we extended the attack module to support multi-atta
 
 We introduced a continuous redaction_strength parameter (0.0–1.0) apart from directive to control the degree of privacy applied per scenario. This variable enabled reproducible tuning of privacy–utility trade-offs across all scenarios and made the model’s behavior more interpretable.
 
-#### A3. Hijack Style Parameterization (Mild vs. Extreme)
+#### A3. Hijack Style Quantifying
 
-The hijack_style tag in attack_defense_sim.py allowed evaluation under mild and extreme hijacking strategies. By varying this parameter, we were able to analyze how different attack intensities affect privacy resilience and model leakage rates.
+
+We added two metrics: *Attack Success Rate* and *Leak Rate*.
+
+→ See: [Quality Metrics with Justification](#quality-metrics-with-justification) for definitions and formulas of these metrics.
 
 
 ### B. Assignment Requirements
@@ -691,53 +695,53 @@ This section maps each official project requirement to our implementation, desig
 
 ---
 
-#### **Dataset and Scenarios**
-**Requirement:** Use your project dataset and create 5 different AI-agent use scenarios for your startup.  
+#### *Dataset and Scenarios*
+*Requirement:* Use your project dataset and create 5 different AI-agent use scenarios for your startup.  
 
-**Our Work:**  
-We developed a **synthetic job dataset** (`augment_dataset.py`) containing 300 records with both professional and personal details, generated using the **Faker** library.  
-We then created **five scenarios**, each representing a distinct real-world data-sharing use case with its own privacy directive:  `internal_hr`, `recruiter_outreach`, `public_job_board`, `marketing_campaign`, `research_dataset`.
+*Our Work:*  
+We developed a *synthetic job dataset* (augment_dataset.py) containing 300 records with both professional and personal details, generated using the *Faker* library.  
+We then created *five scenarios*, each representing a distinct real-world data-sharing use case with its own privacy directive:  internal_hr, recruiter_outreach, public_job_board, marketing_campaign, research_dataset.
 
 → Refer: [Dataset Overview](#dataset-overview)
 
 ---
 
-#### **Attack Implementation and Context Hijacking**
-**Requirement:** Implement attacks that try to trick the agent and generate context hijacking.  
+#### *Attack Implementation and Context Hijacking*
+*Requirement:* Implement attacks that try to trick the agent and generate context hijacking.  
 
-**Our Work:**  
-We implemented **automated, dynamic attacks** using `attack_defense_sim.py` that simulate real-world **social engineering** and **context hijacking** attempts. Each attack follows a **multi-turn conversation**, escalating from mild rephrasing to coercive prompts, mimicking realistic adversarial probing.  
-- **Attack Types:** Authority impersonation, context re-framing, iterative escalation.  
-- **Automation:** Attack prompts dynamically adapt using conversation history.  
-- **Extra Credit:** Multi-attacker simulation, where multiple agents coordinate simultaneous extraction attempts.  
+*Our Work:*  
+We implemented *automated, dynamic attacks* using attack_defense_sim.py that simulate real-world *social engineering* and *context hijacking* attempts. Each attack follows a *multi-turn conversation*, escalating from mild rephrasing to coercive prompts, mimicking realistic adversarial probing.  
+- *Attack Types:* Authority impersonation, context re-framing, iterative escalation.  
+- *Automation:* Attack prompts dynamically adapt using conversation history.  
+- *Extra Credit:* Multi-attacker simulation, where multiple agents coordinate simultaneous extraction attempts.  
 
-→ Refer: [Attack Simulation](#3-attack-simulation-attack_defense_simpy), [Appendix A1–A3](#a-extra-credit)
-
----
-
-#### **AirGap Defense and Mitigation**
-**Requirement:** Implement Air Gap defense and show how it mitigates attacks.  
-
-**Our Work:**  
-We implemented the **AirGap Minimizer** (`minimizer_llm.py`) using the **Mistral-7B-Instruct** model for privacy-preserving data redaction.  
-The minimizer enforces context-aware redaction using **privacy directives** and a **continuous `redaction_strength` parameter (0.0–1.0)**.  
-The **defender agent (DistilGPT2)** strictly responds using only minimized data, ensuring no private tokens are ever accessed during a conversation.  
-Comparing baseline vs AirGap showed an **average privacy gain of +30–37%** and a **reduction in attack success by −30–35%**.  
-
-→ Refer: [AirGap Minimizer](#2-airgap-minimizer-minimizer_llmpy), [Architecture](#architecture), [Results Summary](#results-summary)
+→ Refer: [Attack Simulation](#3-attack-simulation-attack_defense_simpy),  [What Attacks Were Attempted?](#what-attacks-were-attempted), [3. Attack Simulation](#3-attack-simulation-attack_defense_simpy),  [Appendix A1–A3](#a-extra-credit)
 
 ---
 
-#### **Metrics and Evaluation**
-**Requirement:** Compute and report attack success rates and privacy–utility trade-off.  
+#### *AirGap Defense and Mitigation*
+*Requirement:* Implement Air Gap defense and show how it mitigates attacks.  
 
-**Our Work:**  
-We used `evaluate_privacy_utility.py` to compute quantitative metrics for privacy, utility, and leakage.  
-- **Privacy (%):** 100 − Attack  
+*Our Work:*  
+We implemented the *AirGap Minimizer* (minimizer_llm.py) using the *Mistral-7B-Instruct* model for privacy-preserving data redaction.  
+The minimizer enforces context-aware redaction using *privacy directives* and a **continuous redaction_strength parameter (0.0–1.0).  
+The *defender agent (DistilGPT2)* strictly responds using only minimized data, ensuring no private tokens are ever accessed during a conversation.  
+Comparing baseline vs AirGap showed an *average privacy gain of +30–37%* and a *reduction in attack success by −30–35%*.  
+
+→ Refer: [AirGap Minimizer](#2-airgap-minimizer-minimizer_llmpy), [Architecture](#architecture), [Results Summary](#results-summary),  [How Did You Implement Dynamic Attacks?](#how-did-you-implement-dynamic-attacks), [Model Design with Justification](#model-design-with-justification)
+
+---
+
+#### *Metrics and Evaluation*
+*Requirement:* Compute and report attack success rates and privacy–utility trade-off.  
+
+*Our Work:*  
+We used evaluate_privacy_utility.py to compute quantitative metrics for privacy, utility, and leakage.  
+- *Privacy (%):* 100 − Attack  
 (Attack - leak from the data minimizer- data exposed to the third party)
-- **Utility (%):** Cosine similarity between ideal and minimized outputs  
-- **Leakage:** Token-level count of residual sensitive values  
-- **Attack Success Rate(%):** Ratio of recovered sensitive fields post-attack  
+- *Utility (%):* Cosine similarity between ideal and minimized outputs  
+- *Leakage:* Token-level count of residual sensitive values  
+- *Attack Success Rate(%):* Ratio of recovered sensitive fields post-attack  
 
 These metrics enabled direct measurement of the privacy–utility trade-off across different scenarios and redaction strengths.  
 
@@ -745,45 +749,45 @@ These metrics enabled direct measurement of the privacy–utility trade-off acro
 
 ---
 
-#### **Results and Visualization**
-**Requirement:** Show privacy–utility trade-off and attack success trends under different defenses.  
+#### *Results and Visualization*
+*Requirement:* Show privacy–utility trade-off and attack success trends under different defenses.  
 
-**Our Work:**  
-Generated detailed plots under `plots_compare/` and `plots_tradeoff/` using scripts:  
-- `plot_leakrate_comparison.py` → Leakage rate bar charts.  
-- `plot_privacy_utility.py` → Privacy vs Utility comparisons.  
-- `plot_redaction_tradeoff.py` → Continuous redaction-strength trade-off curves.  
+*Our Work:*  
+Generated detailed plots under plots_compare/ and plots_tradeoff/ using scripts:  
+- plot_leakrate_comparison.py → Leakage rate bar charts.  
+- plot_privacy_utility.py → Privacy vs Utility comparisons.  
+- plot_redaction_tradeoff.py → Continuous redaction-strength trade-off curves.  
 
-Across all runs, AirGap achieved **>90% privacy** with controlled **22–35% utility retention**, clearly visualizing the inherent privacy–utility balance.  
+Across all runs, AirGap achieved *>90% privacy* with controlled *22–35% utility retention*, clearly visualizing the inherent privacy–utility balance.  
 
 → Refer: [Results Summary](#results-summary), [Plotting and Visualization](#5-plotting-and-visualization)
 
 ---
 
-#### **Discussion, Limitations, and Future Work**
-**Requirement:** Reflect on limitations and propose future improvements.  
+#### *Discussion, Limitations, and Future Work*
+*Requirement:* Reflect on limitations and propose future improvements.  
 
-**Our Work:**  
+*Our Work:*  
 We discussed practical limitations such as limited GPU memory, small model capacity, and slower multi-turn simulations.  
-Future directions include **adaptive reinforcement learning-based minimizers**, **semantic leakage detection**, and **federated AirGap deployments**.  
+Future directions include *adaptive reinforcement learning-based minimizers, **semantic leakage detection, and **federated AirGap deployments*.  
 
 → Refer: [Learnings, Limitations, and Future Work](#learnings-limitations-and-future-work)
 
 ---
 
-#### **Deliverables (GitHub)**
-**Requirement:** Provide all code, dataset, and documentation in GitHub.  
+#### *Deliverables (GitHub)*
+*Requirement:* Provide all code, dataset, and documentation in GitHub.  
 
-**Our Work:**  
+*Our Work:*  
 All deliverables are included and reproducible:  
 - Synthetic and augmented datasets  
 - Attack and defense scripts  
 - Visualization and metric modules  
 - Comprehensive README and AI disclosure  
-- Conda environment (`environment.yml`) for full reproducibility  
+- Conda environment (environment.yml) for full reproducibility  
 
 → Refer: [Folder Structure](#folder-structure), [AI Disclosure](#ai-disclosure), [Results Summary](#results-summary),  [Learnings, Limitations, and Future Work](#learnings-limitations-and-future-work), [Setting Up the Conda Environment and Running the Code](#setting-up-the-conda-environment-and-running-the-code), [Dataset Overview](#dataset-overview)
 
 ---
 
-**Repository:** [proj-group-04](https://github.com/umass-CS690F/proj-group-04)
+*Repository:* [proj-group-04](https://github.com/umass-CS690F/proj-group-04)
