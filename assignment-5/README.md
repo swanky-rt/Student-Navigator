@@ -549,6 +549,67 @@ Attack success decreased sharply from 41.62% in the baseline to 9.73% under AirG
 
 </div>
 
+<div align="center">
+<table>
+<tr>
+<td width="45%">
+<img src="/assignment-5/plots_compare/compare_bar_public_job_board.png" width="100%">
+</td>
+
+<td width="55%" valign="top">
+
+#### *Public Job Board:  Privacy and Utility Analysis*
+
+The AirGap system delivered a robust increase in Privacy for the high-privacy "public\_job\_board" scenario, rising from $57.65\%$ in the baseline to $\mathbf{92.35\%}$, a substantial $\mathbf{+34.71}$ percentage point gain. This excellent result confirms that the minimizer successfully applied the strict policy of keeping only generic, descriptive job details while meticulously removing personal, traceable, or internal contact information. This policy, which targets high privacy and minimal exposure, led to a severe but expected drop in Utility from $100.00\%$ to $\mathbf{22.22\%}$, a $-\mathbf{77.78}$ percentage point decrease. The minimal utility reflects the removal of detailed company or employee context, which, while crucial for privacy, reduces the richness of the data available to downstream systems.
+
+The Attack Success rate was effectively neutralized, dropping from $42.35\%$ in the baseline to a very low $\mathbf{7.65\%}$ under the AirGap system, a $-\mathbf{34.71}$ percentage point reduction. This metric confirms that the LLM-minimizer's strict redaction strategy successfully defeated the adversarial attacker. The extremely low residual attack success rate of $7.65\%$ is a strong validation that the LLM-based minimization process successfully protected the data against re-identification, adhering to the scenario's goal of publishing data safely in a public setting.
+
+</td>
+</tr>
+</table>
+
+</div>
+
+<div align="center">
+<table>
+<tr>
+<td width="45%">
+<img src="/assignment-5/plots_compare/compare_bar_recruiter_outreach.png" width="100%">
+</td>
+
+<td width="55%" valign="top">
+
+#### *Recruiter Outreach:  Privacy and Utility Analysis*
+
+The AirGap configuration achieved a significant gain in Privacy, increasing from $57.61\%$ in the baseline to $\mathbf{80.98\%}$, marking a $\mathbf{+23.37}$ percentage point improvement. This suggests the minimizer effectively removed irrelevant, deeply personal, or internal details while adhering to the core directive of retaining information necessary for outreach (e.g., name, title, contact). The Utility score dropped substantially from $100.00\%$ to $\mathbf{24.44\%}$, a $-\mathbf{75.56}$ percentage point decrease. This large utility drop indicates that while the system kept the key fields required for the task (drafting an email), it severely reduced the overall richness and contextual information that would contribute to a $\mathbf{100\%}$ utility score, possibly by removing job descriptions, notes, or detailed experience fields.
+
+The attack success rate dropped from 42.39% in the baseline to 19.02% with AirGap, a reduction of 23.37 percentage points. This shows the attacker faced greater difficulty as the minimizer effectively hid or generalized unnecessary sensitive data, though some limited recovery from context was still possible.
+
+</td>
+</tr>
+</table>
+
+</div>
+
+<div align="center">
+<table>
+<tr>
+<td width="45%">
+<img src="/assignment-5/plots_compare/compare_bar_research_dataset.png" width="100%">
+</td>
+
+<td width="55%" valign="top">
+
+#### *Research Dataset:  Privacy and Utility Analysis*
+
+The AirGap configuration demonstrates a substantial improvement in Privacy, increasing from 57.89% in the baseline (no LLM-based minimization) to 87.97%, representing a +30.08 percentage point gain. This robust increase confirms that the LLM-minimizer effectively applied the strict "research_dataset" directive, successfully filtering out individual-level identifiers and highly traceable attributes to meet the goal of maximum privacy and zero re-identification risk. Conversely, the Utility score dropped severely from 100.00% to 33.33%, a -66.67 percentage point decrease. This significant loss is a direct consequence of the aggressive redaction required by this scenario's policy, where the retention of only abstract or statistical information necessarily removes much of the contextual detail, resulting in a low but expected utility trade-off.
+
+The attack success rate dropped from 42.10% in the baseline to 12.03% with AirGap, a 30.08-point reduction. This shows that the LLM-minimizer effectively blocked the attacker from recovering sensitive data, confirming strong protection and successful anonymization in the research dataset.
+</td>
+</tr>
+</table>
+
+</div>
 ---
 
 ## Learnings, Limitations, and Future Work
