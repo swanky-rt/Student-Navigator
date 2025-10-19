@@ -609,6 +609,8 @@ The attack success rate dropped from 42.10% in the baseline to 12.03% with AirGa
 </tr>
 </table>
 
+</div>
+
 ### Other Inference: 
 
 <div align="center">
