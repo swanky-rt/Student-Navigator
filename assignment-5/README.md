@@ -506,20 +506,39 @@ From the context hijacking perspective, it is clear that the utility of the base
 Having said that, the key take away is an inherent privacy–utility tradeoff. A model aimed at maximizing privacy protection will inevitably sacrifice utility richness, and this loss is an acceptable and intentional cost to achieve strong data isolation and protection against context information hijacking.
 
 <div align="center">
-
 <table>
 <tr>
 <td width="45%">
 <img src="/assignment-5/plots_compare/compare_bar_internal_hr.png" width="100%">
 </td>
+
 <td width="55%" valign="top">
 
-#### *Internal HR — Privacy and Utility Analysis*
+#### *Internal HR:  Privacy and Utility Analysis*
 
-The AirGap minimizer achieved a substantial privacy improvement (around +37%) over the baseline, indicating that most internal-sensitive identifiers such as emails and employee IDs were effectively redacted. However, utility dropped sharply to approximately 22%, implying that some non-sensitive yet contextually useful information was also removed.  
+The AirGap minimizer demonstrated a significant privacy enhancement (approximately +37%) over the baseline, which means that most internal-sensitive identifiers-emails, employee IDs, etc. were successfully redacted. Utility, in contrast, dropped significantly to around 22%, which suggests that non-sensitive, but useful context information, was also redacted.  
 
-This tradeoff shows that while AirGap is excellent for ensuring compliance and data confidentiality in internal settings, it can over-redact analytical context. It performs best when privacy is prioritized over detail preservation, such as in HR audits or compliance reports.
+This tradeoff shows that where AirGap excels in an internal situation is in compliance and maintaining data confidentiality. With respect to its utility, AirGap can be over-redacting from the analytical context. As a privacy measure, it works better with what might be considered higher privacy and less importance on retaining detail, such as HR audits and compliance reports.
+</td>
+</tr>
+</table>
 
+</div>
+
+<div align="center">
+<table>
+<tr>
+<td width="45%">
+<img src="/assignment-5/plots_compare/compare_bar_marketing_campaign.png" width="100%">
+</td>
+
+<td width="55%" valign="top">
+
+#### *Marketing Campaign:  Privacy and Utility Analysis*
+
+The AirGap configuration shows a significant privacy improvement, increasing from 58.38% in the baseline to 90.27%, which is a +31.89 percentage point gain. This indicates that the minimizer successfully filtered out personally identifying or contextually private information, including customer names, contact details, and brand-specific metadata. The utility score dropped from 100.00% to 33.33%, a −66.67% decrease, meaning that a large share of contextual richness and analytical detail was lost during minimization. While this appears severe, it reflects a predictable outcome in privacy-preserving systems. 
+
+Attack success decreased sharply from 41.62% in the baseline to 9.73% under AirGap, showing a −31.89 percentage point reduction. While ASU is inversely related to privacy, it represents more than just a mirror metric. It quantifies how effectively an attacker can recover or infer private data despite redaction.
 </td>
 </tr>
 </table>
