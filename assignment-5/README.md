@@ -418,7 +418,8 @@ If the total number of original PII tokens is unknown, I only report the raw lea
 
 Intuitively, Low token leakage means fewer privacy holes. Even if the overall data looks anonymized, this metric helps catch small, hidden leaks.
 
-#### Attack_Success_Rate (%): The percentage of original sensitive tokens that the attacker was able to recover from the defender’s responses during simulated chat interactions. This measures dynamic leakage — how much private information was exposed through conversation despite minimization.
+#### Attack_Success_Rate (%)
+The percentage of original sensitive tokens that the attacker was able to recover from the defender’s responses during simulated chat interactions. This measures dynamic leakage, as in how much private information was exposed through conversation despite minimization.
 
 ```Attack_Success_Rate = (Recovered_Tokens / Total_Sensitive_Tokens) × 100```
 
