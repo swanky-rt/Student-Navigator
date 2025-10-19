@@ -46,7 +46,7 @@ This assignment investigates privacy-preserving data minimization using large la
   - [A. Extra Credit](#a-extra-credit)
     - [A1. Multi-Attacker Conversation Simulation](#a1-multi-attacker-conversation-simulation)
     - [A2. Redaction Strength Variation](#a2-redaction-strength-variation)
-    - [A3. Hijack Style Parameterization (Mild vs. Extreme)](#a3-hijack-style-parameterization-mild-vs-extreme)
+    - [A3. Other Hijack Style Quantifying Metrics](#a3-other-hijack-style-quantifying-metrics)
   - [B. Assignment Requirements](#b-assignment-requirements)
 ## Folder Structure
 
@@ -742,12 +742,11 @@ As part of the extra credit, we extended the attack module to support multi-atta
 
 We introduced a continuous redaction_strength parameter (0.0–1.0) apart from directive to control the degree of privacy applied per scenario. This variable enabled reproducible tuning of privacy–utility trade-offs across all scenarios and made the model’s behavior more interpretable.
 
-#### A3. Hijack Style Quantifying
-
+#### A3. Other Hijack Style Quantifying Metrics
 
 We added two metrics: *Attack Success Rate* and *Leak Rate*.
 
-→ See: [Quality Metrics with Justification](#quality-metrics-with-justification) for definitions and formulas of these metrics.
+→ See: [Quality Metrics with Justification](#quality-metrics-with-justification) for definitions and formulas of these metrics. Check [Results Summary](#results-summary) for their results.
 
 
 ### B. Assignment Requirements
