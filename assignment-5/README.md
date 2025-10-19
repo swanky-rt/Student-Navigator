@@ -505,7 +505,26 @@ From the context hijacking perspective, it is clear that the utility of the base
 
 Having said that, the key take away is an inherent privacy–utility tradeoff. A model aimed at maximizing privacy protection will inevitably sacrifice utility richness, and this loss is an acceptable and intentional cost to achieve strong data isolation and protection against context information hijacking.
 
+<div align="center">
 
+<table>
+<tr>
+<td width="45%">
+<img src="/assignment-5/plots_compare/compare_bar_internal_hr.png" width="100%">
+</td>
+<td width="55%" valign="top">
+
+#### *Internal HR — Privacy and Utility Analysis*
+
+The AirGap minimizer achieved a substantial privacy improvement (around +37%) over the baseline, indicating that most internal-sensitive identifiers such as emails and employee IDs were effectively redacted. However, utility dropped sharply to approximately 22%, implying that some non-sensitive yet contextually useful information was also removed.  
+
+This tradeoff shows that while AirGap is excellent for ensuring compliance and data confidentiality in internal settings, it can over-redact analytical context. It performs best when privacy is prioritized over detail preservation, such as in HR audits or compliance reports.
+
+</td>
+</tr>
+</table>
+
+</div>
 
 ---
 
