@@ -30,7 +30,7 @@ This assignment investigates privacy-preserving data minimization using large la
   - [4. Evaluation and Metrics](#4-evaluation-and-metrics-evaluate_privacy_utilitypy)
   - [5. Plotting and Visualization](#5-plotting-and-visualization)
 - [Quality Metrics with Justification](#quality-metrics-with-justification)
-  - [Attack Success and Privacy](#attack-success-and-privacy)
+  - [Privacy](#privacy)
   - [Utility Score (Semantic-Based)](#utility-score-semantic-based)
   - [Other Metrics](#other-metrics)
 - [Results Summary](#results-summary)
@@ -42,10 +42,12 @@ This assignment investigates privacy-preserving data minimization using large la
   - [How We Used LLMs](#how-we-used-llms)
   - [What We Did Ourselves](#what-we-did-ourselves)
 - [References](#references)
-
-
----
-
+- [Appendix](#appendix)
+  - [A. Extra Credit](#a-extra-credit)
+    - [A1. Multi-Attacker Conversation Simulation](#a1-multi-attacker-conversation-simulation)
+    - [A2. Redaction Strength Variation](#a2-redaction-strength-variation)
+    - [A3. Hijack Style Parameterization (Mild vs. Extreme)](#a3-hijack-style-parameterization-mild-vs-extreme)
+  - [B. Assignment Requirements](#b-assignment-requirements)
 ## Folder Structure
 
 ```
