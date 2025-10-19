@@ -124,26 +124,22 @@ All reports and plots are saved in runs/, plots_compare/, and plots_tradeoff/.
 
 ---
 
-## System Architecture
+## Model Design with Justification
+
+### Architecture
 
 I wanted this system to behave like a complete privacy pipeline, the one that takes raw user data, applies policy-aware redaction, exposes it to simulated attacks, and finally evaluates how well privacy was preserved without losing usefulness. To achieve this, I designed the architecture as a modular flow consisting of four main stages: the controller, the minimizer, the attacker–defender interaction, and the evaluation module.
 
 Each directive corresponds to a specific data-sharing context for each scenario, as mentioned in [Dataset Overview](#dataset-overview). Each directive defines not only which fields to protect but also why they matter in that context. The minimizer uses these rules to decide the minimum necessary information to retain.
 
-One *new parameter* I wanted to add in addition (to compensate for the issue that I could only run smaller models as comapared to the paper due to system constraints) was *redaction strength parameter*, which I represent as a continuous value between 0.0 and 1.0. This value allows me to vary how strictly the directive is enforced. The interaction between the directive and the redaction strength forms the privacy policy applied to each record.
+One *new parameter* I wanted to add in addition was *redaction strength parameter*, which I represent as a continuous value between 0.0 and 1. I did this to compensate for the issue that I could only run smaller models as comapared to the paper due to system constraints - add more detail to the prompt. This value allows me to vary how strictly the directive is enforced. The interaction between the directive and the redaction strength forms the privacy policy applied to each record.
 
-| *Redaction Strength* |                  *Description*                  |
-| :--------------------: | :-----------------------------------------------: |
-|         *0.0*        | Almost no filtering; prioritizes maximum utility. |
-|        *0.25*        |                  Mild redaction.                  |
-|         *0.5*        |  Balanced trade-off between privacy and utility.  |
-|        *0.75*        |                  Heavy redaction.                 |
-|         *1.0*        |                 Maximal redaction.                |
+   - Low values (<0.3): favor utility, allow broader sharing.
+   - Mid values (0.3–0.7): balance privacy and utility.
+   - High values (>0.7): favor privacy, share only essential safe fields.
                         
 
-
-
-<p align="center"> <img src="/assignment-5/plots_compare/architecture.png" width="500" height="600"> </p>
+<p align="center"> <img src="/assignment-5/plots_compare/architecture.png" width="500" height="800"> </p>
 
 Next, the minimization phase utilizes privacy-preserving transformations on each record. The LLM interprets the privacy statement for the record, the reason for sharing purpose, and whether each field is sensitive or not. The LLM can then either delete or generalize private information according to the degree of redaction desired. The degree of redaction acts as the controlling variable along with the directive.
 
@@ -152,11 +148,15 @@ After the data is reduced, I assess the robustness of the redacted records to ad
 Finally, I assess all the results through the evaluation module (evaluate_privacy_utility.py). This script calculates privacy and utility measurements to quantify how well the minimizer was able to function. At the end of every experiment, a structured report is generated before each experiment, summarizing privacy and utility scores by each scenario and privacy level.
 
 
-1. *Controller* orchestrates the experiment (per scenario and redaction level).
-2. *AirGap Minimizer* generates minimized (redacted) data.
-3. *Attack Simulation* tests robustness against adversarial PII extraction.
-4. *Evaluation* computes privacy and utility metrics.
-5. *Plotting Modules* visualize performance and trade-offs.
+1. **Controller** orchestrates the experiment (per scenario and redaction level).
+2. **AirGap Minimizer** generates minimized (redacted) data.
+3. **Attack Simulation** tests robustness against adversarial PII extraction.
+4. **Evaluation** computes privacy and utility metrics.
+5. **Plotting Modules** visualize performance and trade-offs.
+
+### Prompt Design
+
+
 
 ---
 
@@ -258,7 +258,7 @@ Quantitatively assess redaction quality.
 
 ---
 
-## Quality Metrics with Design Justification
+## Quality Metrics with Justification
 This section describes all quantitative metrics I computed during the evaluation and simulation stages. All values originate from the scripts evaluate_privacy_utility.py and attack_defense_sim.py. Each metric quantifies either privacy protection, information utility, or model leakage risk,
 
 The values for False Positives (FP), False Negatives (FN), True Positives (TP), and True Negatives (TN) are computed directly in the code, as follows:
@@ -271,8 +271,8 @@ For each field in each record:
 | Case                    | Condition                                   | Meaning                                              |
 | ----------------------- | ------------------------------------------- | ---------------------------------------------------- |
 | *True Positive (TP)*  | is_sensitive == True and kept == False  | The field contained PII and was correctly blanked    |
-| *False Negative (FN)* | is_sensitive == True and kept == True   | PII was present but not redacted — a privacy failure |
-| *False Positive (FP)* | is_sensitive == False and kept == False | Non-PII was incorrectly blanked — over-redaction     |
+| *False Negative (FN)* | is_sensitive == True and kept == True   | PII was present but not redacted- a privacy failure |
+| *False Positive (FP)* | is_sensitive == False and kept == False | Non-PII was incorrectly blanked- over-redaction     |
 | *True Negative (TN)*  | is_sensitive == False and kept == True  | Non-PII correctly kept intact                        |
 
 
@@ -280,14 +280,14 @@ For each field in each record:
 These two metrics measure how effectively private information was removed. In reference to the AirGapAgent paper, which defines privacy as:
 > "privacy score, quantifying the proportion of contextually private information withheld from third-party" [[Paper Link]](https://arxiv.org/pdf/2405.05175)
 
-I wanted to define privacy as follows:
+We defined privacy as follows:
 
 
 - Attack_S (%): The percentage of PII fields where sensitive content survived minimization.
-Attack_S = (FN / PII_fields) * 100
+```Attack_S = (FN / PII_fields) * 100```
 
 - Privacy_S (%): The complement of attack success, representing the percentage of PII fields that were correctly redacted.
-Privacy_S = 100 - Attack_S
+```Privacy_S = 100 - Attack_S```
 
 Both values appear in evaluation_report.json for every experimental run.
 
@@ -301,9 +301,9 @@ For each scenario (e.g., recruiter outreach, public job board, etc), I defined a
 
 I used cosine similarity to measure semantic utility because it captures meaning rather than exact text overlap. In privacy-minimization scenarios, especially those involving natural-language redaction by LLMs, the minimized output is often paraphrased or restructured, but still correct and contextually relevant.
 
-L_utility(f) = cosine_similarity( embedding(ideal(f, s)), embedding(mini(f)) )
+```L_utility(f) = cosine_similarity( embedding(ideal(f, s)), embedding(mini(f)) )```
 
-Utility_S = average( L_utility(f) across all non-PII fields and records ) * 100
+```Utility_S = average( L_utility(f) across all non-PII fields and records ) * 100```
 
 ---
 
@@ -326,7 +326,7 @@ While this protects privacy, it hurts the dataset’s utility, because other use
 
 Token-level leakage measures how many individual sensitive tokens slipped through after redaction.
 
-TokenLeak_% (eval) = ( leak_count / total_PII_tokens_original ) * 100
+```TokenLeak_% (eval) = ( leak_count / total_PII_tokens_original ) * 100```
 
 
 If the total number of original PII tokens is unknown, I only report the raw leak_count. This metric is important because a single surviving token can still compromise privacy, for instance, even just the last 4 digits of a phone number or an email handle can reveal identity.
@@ -352,14 +352,15 @@ Intuitively, Low token leakage means fewer privacy holes. Even if the overall da
 
 ---
 
-## Discussion, Limitations, and Future Work
+## Learnings, Limitations, and Future Work
+
+### Learnings
+
 
 ### Limitations
 
-* Static directive templates (non-adaptive to task evolution).
-* Regex leakage detection misses semantic leaks.
-* Same model family used for both attacker and defender.
-* Computationally intensive for large multi-turn simulations.
+* The paper worked on many records but we could only run our model on few 100 records due to computational limitations.
+* Computationally intensive for running bigger (better) models like GPT-4.
 
 ### Future Work
 
@@ -374,13 +375,13 @@ Intuitively, Low token leakage means fewer privacy holes. Even if the overall da
 
 ### How We Used LLMs
 
-We used GPT-4/GPT-5-based LLMs *for support* in this project. Their role was to:
+We used ChatGPT-5-based LLMs for support in this project. Their role was to:
 
 * Verify theoretical correctness of privacy–utility metrics.
 * Help with debugging and refactoring repetitive experiment scripts. Helped with Regex formatting and logging scripts.
-* Provide structural consistency in documentation and plots.
+* Provide structural consistency in documentation and plots, library usage.
   All code logic, experiments, and results were designed and executed by the team.
-* Helped with structuring markdowns (but the raw content was provided by us)
+* Helped with structuring markdowns (but the content was provided by us)
 
 ### What We Did Ourselves
 
