@@ -264,8 +264,8 @@ This experiment is inspired by the attack vectors described in "Not what you've 
 
 Two baseline models were tested with their native data integration features:
 
-* **ChatGPT (GPT-4):** Tested using the "Project" feature to upload files and the "Gmail" tool integration.
-* **Gemini (Advanced):** Tested using file upload and the "Gmail" tool integration.
+* **ChatGPT (GPT-5):** Tested using the "Project" feature to upload files and the "Gmail" tool integration.
+* **Gemini (2.5 Flash):** Tested using file upload and the "Gmail" tool integration.
 
 ### 1.2. Attack Design (Data-Embedded Instructions)
 
