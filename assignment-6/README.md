@@ -1,6 +1,3 @@
-Here is the updated `README.md` file, formatted with your specified Table of Contents and with all prompts in code blocks.
-
-```markdown:jailbreak & Defense Experiment README:README.md
 # Jailbreak & Defense Experiment for LLM-Powered Job Coach
 
 This document details an experiment to test the robustness of an LLM-powered "Job-Search Coach" assistant against common jailbreak attacks. It evaluates the assistant's baseline vulnerability and the effectiveness of three different "defense-in-depth" prompting strategies.
