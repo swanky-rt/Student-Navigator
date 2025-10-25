@@ -382,6 +382,19 @@ This experiment confirms that indirect prompt injection is a critical vulnerabil
 
 # GCG Implementation
 ## Code
+- Please find the code and its explanation in the uploaded GCG_Llama2.ipynb. 
+- GCG has been implemented on LLama2 (exactly what the name of the file says)
+- Exact model name: "meta-llama/Llama-2-7b-chat-hf"
+- NOTE: You will not be able to run the code as you'll need access to the model and HuggingFace Access Tokens which are linked to my email and HuggingFace account only. Really sorry about that!
+
+
+## Plot and Analysis
+<img width="850" height="878" alt="image" src="https://github.com/user-attachments/assets/b7104334-72fa-407a-8481-980762fe2039" />
+### Analysis
+-
+-
+-
+-
 
 
 
