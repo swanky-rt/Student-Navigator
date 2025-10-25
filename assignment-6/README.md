@@ -378,5 +378,14 @@ This experiment confirms that indirect prompt injection is a critical vulnerabil
         * **Multi-Modal Injections:** Hiding prompts as text within an image.
 
 
+
+
+# GCG Implementation
+## Code
+
+
+
+
+
 ## AI usage:
 Both the files (csv and pdf) were completely created by us. Then those files, along with all the instructions, suffix, iterations, defenses, prompts, results, outputs (model's responses), etc. were given to Gemini 2.5 pro. Gemini was also told what is the evalution metrics for jailbreak, the analysis of the CSV file, the reason of having these many defenses, what worked, what didn't, why something didn't work, why something might've worked, what was tried, what were the drawbacks/flaws, what we plan to do to make it better / improve it, what is adaptive prompting (context-aware suffix), so much more... (It's possible that I might've missed something). However, I just want to say that everything was manually analysed (no other option since no LLM could read such a large CSV file). All the analysis was given to the model to write a neat, detailed, and professional README file. The Model added to the Future Work a little bit as it was told to : "you can also suggest some improvements or experiments that we can do and add them to the README too"
