@@ -392,8 +392,8 @@ This experiment confirms that indirect prompt injection is a critical vulnerabil
 <img width="850" height="878" alt="image" src="https://github.com/user-attachments/assets/b7104334-72fa-407a-8481-980762fe2039" />
 
 ### Analysis
-- w
-- w
+- At the beginning (around step 0), the loss value is very high — about 2.6. That means the model’s output was far from the target behavior the code was optimizing for.
+- In the first few steps, the loss jumps up and down a lot. This is normal when the code is still exploring many random suffix options to see what works best.
 - w
 - w
 
