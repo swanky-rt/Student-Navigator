@@ -94,7 +94,7 @@ Each folder contains a self-contained experiment or module that addresses a spec
 
 ### 3.1. Integrated Defense Architecture
 
-Our target architecture (detailed in the [Project Plan](./Copy%20of%20690F_Student%20Navigator.pdf)) integrates these modules at different stages of the data pipeline:
+Our target architecture integrates these modules at different stages of the data pipeline:
 
 
 
