@@ -20,9 +20,8 @@ Each assignment folder represents a critical module or security analysis, demons
     * 2.5. Module 5: Contextual Integrity (Data Flow Policy Layer)
     * 2.6. Module 6: Jailbreaking & Prompt Injection (Runtime Security)
 
-3.  **Overall Architecture & Key Technologies**
-    * 3.1. Integrated Defense Architecture
-    * 3.2. Key Technologies
+3.  **Overall Architecture**
+
 
 ---
 
@@ -90,24 +89,12 @@ Each folder contains a self-contained experiment or module that addresses a spec
 
 ---
 
-## 3. Overall Architecture & Key Technologies
-
-### 3.1. Integrated Defense Architecture
+## 3. Overall Architecture
 
 Our target architecture integrates these modules at different stages of the data pipeline:
-
 
 
 * **At Ingestion:** PII Filtering (Module 4)
 * **At Training:** Federated Learning (Module 2)
 * **At Analytics:** Differential Privacy (Module 3)
 * **At Runtime:** Contextual Integrity (Module 5) and Prompt Injection Defenses (Module 6)
-
-### 3.2. Key Technologies
-
-* **Frontend:** React.js, TailwindCSS
-* **Backend:** Python (FastAPI or Flask)
-* **Vector Database:** Pinecone, Weaviate, or FAISS
-* **LLM Integration:** OpenAI GPT-series, LangChain / LlamaIndex
-* **Data Processing:** Python (PDF parsing, YouTube transcript extraction)
-* **Authentication:** Firebase
