@@ -126,9 +126,9 @@ class CLIPAttack:
 # Example usage:
 if __name__ == "__main__":
     # Load an image and create the attack object
-    img_dir = "image_fol"
+    img_dir = "input_resume_dataset"
     img_pattern = "resume{}_clean.png"     # will fill with 1..16
-    out_dir = "adv_1-6"
+    out_dir = "output_resume_dataset"
     os.makedirs(out_dir, exist_ok=True)
 
 
