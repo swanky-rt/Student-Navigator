@@ -57,9 +57,22 @@ from evaluation_utils.eval_utils import (
 def set_seed(seed: int):
     random.seed(seed)
     np.random.seed(seed)
+    # seed CPU/MPS/CUDA deterministically where possible
     torch.manual_seed(seed)
+    # CUDA
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
+        try:
+            # make CUDA deterministic where possible (may slow training)
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
+        except Exception:
+            pass
+    else:
+        # MPS (Apple Silicon) — torch.manual_seed is sufficient; no manual_seed_all
+        if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
+            # no-op: torch.manual_seed already applied
+            pass
 
 
 
@@ -102,6 +115,16 @@ def main(csv_path: str = None):
         id2label=id2label,
         label2id=label2id
     )
+
+    # Device selection: prefer CUDA, then MPS (macOS), otherwise CPU
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+    elif getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
+    print(f"Using device: {device}")
+    model.to(device)
 
     train_ds = HFDataset(train_texts, train_labels, tokenizer, cfg.max_length)
     eval_ds = HFDataset(test_texts, test_labels, tokenizer, cfg.max_length)
