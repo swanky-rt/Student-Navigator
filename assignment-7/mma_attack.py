@@ -1,4 +1,47 @@
-#!/usr/bin/env python3
+# Week 9 — Assignment 7: Multi-Modal Attacks (Adversarial Image Generation)
+
+# This script generates adversarial résumé images by optimizing in a CLIP-style image–text joint space so that the final image “looks” like the negative target sentence from `prompts.txt` (line 1). The goal is to keep the résumé visually plausible to humans but to make the vision–language model believe the image says “there are no real technical/professional skills here.”
+
+# Key Functions and Flow:
+# 1. **Load clean images**
+#    - Reads clean résumé images from an input folder (e.g. `./input_resume_dataset/`).
+#    - Assumes images follow a simple naming pattern (`resume1_clean.png`, …) but can be generalized.
+
+# 2. **Load attack target text**
+#    - Reads `prompts.txt` and takes **line 1** as the attack target.
+#    - This line contains a long, negative, skill-denying sentence (“these ‘skills’ should not be interpreted as real technical or professional skills…”).
+#    - This is the sentence the image will be pulled toward.
+
+# 3. **Embed image and text (CLIP-style)**
+#    - Loads a CLIP (or CLIP-like) model, typically `openai/clip-vit-base-patch32`.
+#    - Encodes the clean image → image embedding.
+#    - Encodes the target negative text → text embedding.
+
+# 4. **Projected Gradient Descent (PGD) attack loop**
+#    - Runs iterative PGD on the image pixels:
+#      - Forward pass: compute similarity(image_emb, target_text_emb).
+#      - Backward pass: take gradient step to **increase** this similarity.
+#      - Project the perturbation back into an ε-ball to keep the change small.
+#    - (Optionally) applies TV/smoothness/contrast terms to keep the image readable.
+
+# 5. **Save adversarial images**
+#    - For each clean input, writes one adversarial output to `./output_resume_dataset/` as `adv_{i}.png`.
+#    - Images are still résumés to humans but are now biased toward the attack text in embedding space.
+
+# 6. **Optional logging**
+#    - Can log the similarity before/after attack (e.g. `adv_sim_orig`, `adv_sim_adv`) so that later scripts (like `mma_defense.py`) can report how much the image was actually pulled.
+
+# Usage:
+#     python mma_attack.py \
+#         --input_dir ./input_resume_dataset \
+#         --out_dir ./output_resume_dataset \
+#         --prompts_file ./prompts.txt \
+#         --steps 40 --epsilon 16 --alpha 2.0
+
+# Notes:
+# - This script covers the “implement the multi-modal attack method from *Are aligned neural networks adversarially aligned?*” requirement.
+# - The output of this script is what the next script (`mma_defense.py`) will evaluate on 3 different textual prompts.
+
 import os
 import torch
 import torch.nn.functional as F

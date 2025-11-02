@@ -1,3 +1,51 @@
+# Week 9 — Assignment 7: Multi-Modal Attacks (Visualization)
+
+# This script reads the JSON evaluation results produced by `mma_defense.py` and generates the bar charts for each prompt. These figures are used directly in the README and in the 10/29 class presentation to prove that (1) the attack worked and (2) the JPEG defense helped.
+
+# Key Functions and Flow:
+# 1. **Load result files**
+#    - Takes one or more JSON files as input, e.g.:
+#      - `results/evaluation_results_prompt1.json`
+#      - `results/evaluation_results_prompt2.json`
+#      - `results/evaluation_results_prompt3.json`
+#    - Each JSON is expected to contain fields like:
+#      - `clean_decision`
+#      - `adv_decision`
+#      - `comp_decision`
+#      - possibly similarity scores
+
+# 2. **Aggregate metrics**
+#    - For each prompt file:
+#      - counts how many images were aligned on **clean** (i.e. “Yes” when they should be “Yes”)
+#      - counts how many **flipped** under attack → this becomes the **adversarial** bar
+#      - counts how many were **recovered** by JPEG → this becomes the **defense** bar
+#    - Converts raw counts to percentages so the plots are comparable even if the number of images changes.
+
+# 3. **Generate plots**
+#    - Uses **Matplotlib** (same as your Week 5 PII assignment) to draw simple bar charts.
+#    - One plot per prompt:
+#      - `plotting/mma_prompt1.png`
+#      - `plotting/mma_prompt2.png`
+#      - `plotting/mma_prompt3.png`
+#    - The bars typically are: **Clean**, **Adversarial**, **Defense**.
+#    - No Seaborn, no advanced styling, so it matches the earlier assignment style.
+
+# 4. **Save artifacts**
+#    - Saves all figures to `./plotting/` so they can be linked in the README.
+#    - Optionally prints a short summary (“Prompt 1: ASR=83.3%, DSR=66.7%”) to the console.
+
+# Usage:
+#     python mma_plotting.py \
+#         --results ./results/evaluation_results_prompt1.json \
+#                   ./results/evaluation_results_prompt2.json \
+#                   ./results/evaluation_results_prompt3.json \
+#         --out_dir ./plotting
+
+# Notes:
+# - This script is the final step that turns the JSON evidence into presentation-ready artifacts.
+# - It mirrors the “Plots” section of your PII assignment (per-class, residual leakage, runtime), just with multi-modal attack bars instead.
+
+
 import json
 import matplotlib.pyplot as plt
 import os
