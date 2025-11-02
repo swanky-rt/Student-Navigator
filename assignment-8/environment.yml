@@ -1,0 +1,24 @@
+name: backdoor-agent
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pandas
+  - "numpy<2"
+  - scikit-learn
+  - tqdm
+  # --- Base PyTorch (CPU or GPU auto-detect) ---
+  - pytorch>=2.2
+  - torchvision
+  - torchaudio
+
+  # --- Optional GPU acceleration (ignored safely on macOS/CPU-only systems) ---
+  # This section is only used on Windows/Linux with NVIDIA GPU.
+  - pytorch-cuda=12.1
+
+  - pip:
+      - transformers>=4.40.0
+      - datasets>=2.20.0
+      - accelerate>=0.30.0
