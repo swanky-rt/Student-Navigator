@@ -26,11 +26,8 @@
    - [Result plots (mma_prompt1–3)](#result-plots-mma_prompt13)
    - [Worked Example (end-to-end)](#worked-example-end-to-end)
    - [Interpretation](#interpretation)
-8. [Discussion](#discussion)
-   - [Why images were easier to attack than text](#why-images-were-easier-to-attack-than-text)
-   - [Key challenge of aligning modalities](#key-challenge-of-aligning-modalities)
-   - [Potential defenses against multi-modal attacks](#potential-defenses-against-multi-modal-attacks)
-9. [How to Run](#how-to-run)
+8. [How to Run](#how-to-run)
+9. [Extra Credit](#Extra-Credit)
 10. [Limitations, Risks, and Future Work](#limitations-risks-and-future-work)
 11. [Artifacts](#artifacts)
 12. [AI Disclosure](#ai-disclosure)
@@ -365,43 +362,57 @@ This is exactly the pattern in the 3 plots in `./plotting/`.
 
 ---
 
-## Discussion
+### Extra Credit
 
-### Why images were easier to attack than text
+Multi-Defense Evaluation on All Adversarial Images
 
-* Images live in a **continuous** space → gradient-based PGD works directly.
-* Alignment/safety is mostly applied to **text**, while the **vision path** is often just encoded and fused.
-* VLMs tend to **trust** the visual stream once it is fused; a poisoned image can override a normal text prompt.
-* This matches what is shown in **“Are aligned neural networks adversarially aligned?”** (MMA-1) and what is exploited in **“Self-interpreting Adversarial Images”** (MMA-2).
+For extra credit I ran **a second pass** over the adversarial images and tried **multiple input-space defenses**, not just JPEG. The idea was to answer: *“If the attacker wins once, which cheap pre-processing step gives me my aligned answer back most often?”*
 
-### Key challenge of aligning modalities
+### What this extra script does
 
-* We align **language** (RLHF, refusals), but the attack comes from **vision**.
-* After fusion, the model **cannot tell** that the visual tokens were adversarial.
-* So we end up with **per-modality alignment** but **cross-modal attacks**.
+File: `mma_extra_defenses.py`
 
-### Potential defenses against multi-modal attacks
-
-For images, we tested and/or described the following:
-
-1. **JPEG / re-encode** (what we ran): recompress user images (e.g. q=50) to wipe out high-frequency adversarial noise.
-2. **Bit-depth reduction**: quantize pixels to 5–6 bits so tiny perturbations get snapped away.
-3. **Light smoothing / blur**: small Gaussian blur or median filter to remove localized patterns.
-4. **OCR → text-only check (recommended for this resume task):** extract the text from the image, ask a text-only LLM the same “does it have skills?” question, and if `VLM(image)` ≠ `LLM(OCR-text)`, flag or refuse.
-5. **Semantic alignment checks:** make sure the final answer does not add sentiment, politics, or URLs that do not appear in the OCR/caption.
-6. **Prompt ensemble / voting:** since the attack was prompt-sensitive, asking 2–3 variants and taking majority will reduce success.
-7. **Heavier future defenses:** adversarial training of the vision→language projector; output-time safety filters.
-
-For our example, (1)–(3) and (4) make the most sense, because **résumé → OCR → text-only LLM** is a natural fallback if the image looks suspicious.
-
----
-
-## How to Run
+1. **Loads** every adversarial image from `./output_resume_dataset/` (for me these were `adv_1.png` … `adv_6.png`).
+2. **Guesses** the matching clean image from `./input_resume_dataset/` (e.g. `adv_3.png → resume3_clean.png`).
+3. **Builds and saves 4 defenses** for each adversarial image:
+   - **JPEG / re-encode** at `q=50`  
+     wipes high-frequency, PGD-like noise
+   - **Bit-depth reduction** to 6 bits  
+     snaps tiny perturbations back to a coarse grid
+   - **Gaussian blur** with radius 1.0  
+     smooths out local adversarial texture
+   - **Diff-guided repair**  
+     compare clean vs adv, make a heatmap, and replace only the “hot” pixels with the clean image (good for texty resumes)
+4. **Evaluates** all 5 versions (raw adversarial + 4 defenses) with the *same* pipeline as the main assignment:
+   - Gemma VLM over the image + the skills prompt
+   - stream JSON chunks → combine into one string
+   - Mistral judge → force **Yes** / **No**
+5. **Writes** a single JSON report with decisions and file paths: `./results/extra_defenses.json` (example structure: :contentReference[oaicite:0]{index=0}).
+6. **Plots** a summary bar chart: `./extra_credit_output/extra_defenses_summary.png`
 
 
-Perfect — let’s bolt on the env/setup part and give you a matching `requirements.txt`.
 
-Below is the updated **How to Run** section (with model/runtime requirements called out), and after that a **requirements.txt** you can drop in the repo.
+Intuition
+
+![Multi-Modal Adversarial Extra Defense Results](./extra_credit_output/extra_defenses_summary.png)
+
+The main code already shows that JPEG alone can pull some answers back. But the papers we read make it clear that once the attacker knows you JPEG everything, they can optimize through JPEG. So we add 3 more transforms that change the image in different ways (quantize, smooth, and locally repair). This makes the attack’s job harder because it has to survive 4 different pre-processors, not just one.
+
+What the plot shows
+The summary plot (extra_defenses_summary.png) is counting: “for how many of the 6 adversarial resumes did this defense make the model say Yes again?”
+In your run it looked like this:
+
+adversarial: 1/6 still said Yes (so 5/6 were successfully attacked)
+
+jpeg_q50: 5/6 recovered
+
+bitdepth_6bit: 3/6 recovered
+
+gaussian_blur_r1: 3/6 recovered
+
+diff_guided: 6/6 recovered
+
+That’s a very clean story: JPEG is already good, but “use the clean image to patch the adversarial one where it’s different” is even better — which is exactly what you want to show as extra credit.
 
 ---
 
@@ -495,7 +506,29 @@ This will produce the 3 bar charts you saw:
 * `plotting/mma_prompt2.png`
 * `plotting/mma_prompt3.png`
 
+### 4 For Extra Credit - Different type if defense 
+```bash
+python mma_extra_defenses.py \
+  --clean_dir ./input_resume_dataset \
+  --adv_dir ./output_resume_dataset \
+  --out_json ./results/extra_defenses.json \
+  --out_vis_dir ./plotting
+```
+After this, you should see:
 
+* ./extra_credit_output/adv_1_jpeg_q50.png
+
+* ./extra_credit_output/adv_1_bitdepth.png
+
+* ./extra_credit_output/adv_1_blur.png
+
+* ./extra_credit_output/adv_1_diff_repaired.png
+
+* ./extra_credit_output/adv_1_diff.png (the heatmap)
+
+* ./extra_credit_output/extra_defenses_summary.png
+
+* ./extra_credit_output/extra_defenses.json
 ---
 
 ## Limitations, Risks, and Future Work

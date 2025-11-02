@@ -1,0 +1,110 @@
+[
+  {
+    "adv_image": "adv_1-6/adv_1.png",
+    "clean_image": "clean_images/resume1_clean.png",
+    "decisions": {
+      "adversarial": "No",
+      "jpeg_q50": "Yes",
+      "bitdepth_6bit": "Yes",
+      "gaussian_blur_r1": "Yes",
+      "diff_guided": "Yes"
+    },
+    "artifacts": {
+      "jpeg_q50_image": "adv_1-6/adv_1_jpeg_q50.png",
+      "bitdepth_image": "adv_1-6/adv_1_bitdepth.png",
+      "blur_image": "adv_1-6/adv_1_blur.png",
+      "diff_guided_image": "adv_1-6/adv_1_diff_repaired.png",
+      "heatmap": "./output_resume_dataset/adv_1_diff.png"
+    }
+  },
+  {
+    "adv_image": "adv_1-6/adv_2.png",
+    "clean_image": "clean_images/resume2_clean.png",
+    "decisions": {
+      "adversarial": "No",
+      "jpeg_q50": "Yes",
+      "bitdepth_6bit": "No",
+      "gaussian_blur_r1": "No",
+      "diff_guided": "Yes"
+    },
+    "artifacts": {
+      "jpeg_q50_image": "adv_1-6/adv_2_jpeg_q50.png",
+      "bitdepth_image": "adv_1-6/adv_2_bitdepth.png",
+      "blur_image": "adv_1-6/adv_2_blur.png",
+      "diff_guided_image": "adv_1-6/adv_2_diff_repaired.png",
+      "heatmap": "./output_resume_dataset/adv_2_diff.png"
+    }
+  },
+  {
+    "adv_image": "adv_1-6/adv_3.png",
+    "clean_image": "clean_images/resume3_clean.png",
+    "decisions": {
+      "adversarial": "No",
+      "jpeg_q50": "No",
+      "bitdepth_6bit": "No",
+      "gaussian_blur_r1": "Yes",
+      "diff_guided": "Yes"
+    },
+    "artifacts": {
+      "jpeg_q50_image": "adv_1-6/adv_3_jpeg_q50.png",
+      "bitdepth_image": "adv_1-6/adv_3_bitdepth.png",
+      "blur_image": "adv_1-6/adv_3_blur.png",
+      "diff_guided_image": "adv_1-6/adv_3_diff_repaired.png",
+      "heatmap": "./output_resume_dataset/adv_3_diff.png"
+    }
+  },
+  {
+    "adv_image": "adv_1-6/adv_4.png",
+    "clean_image": "clean_images/resume4_clean.png",
+    "decisions": {
+      "adversarial": "Yes",
+      "jpeg_q50": "Yes",
+      "bitdepth_6bit": "Yes",
+      "gaussian_blur_r1": "No",
+      "diff_guided": "Yes"
+    },
+    "artifacts": {
+      "jpeg_q50_image": "adv_1-6/adv_4_jpeg_q50.png",
+      "bitdepth_image": "adv_1-6/adv_4_bitdepth.png",
+      "blur_image": "adv_1-6/adv_4_blur.png",
+      "diff_guided_image": "adv_1-6/adv_4_diff_repaired.png",
+      "heatmap": "./output_resume_dataset/adv_4_diff.png"
+    }
+  },
+  {
+    "adv_image": "adv_1-6/adv_5.png",
+    "clean_image": "clean_images/resume5_clean.png",
+    "decisions": {
+      "adversarial": "No",
+      "jpeg_q50": "Yes",
+      "bitdepth_6bit": "Yes",
+      "gaussian_blur_r1": "No",
+      "diff_guided": "Yes"
+    },
+    "artifacts": {
+      "jpeg_q50_image": "adv_1-6/adv_5_jpeg_q50.png",
+      "bitdepth_image": "adv_1-6/adv_5_bitdepth.png",
+      "blur_image": "adv_1-6/adv_5_blur.png",
+      "diff_guided_image": "adv_1-6/adv_5_diff_repaired.png",
+      "heatmap": "./output_resume_dataset/adv_5_diff.png"
+    }
+  },
+  {
+    "adv_image": "adv_1-6/adv_6.png",
+    "clean_image": "clean_images/resume2_clean.png",
+    "decisions": {
+      "adversarial": "No",
+      "jpeg_q50": "Yes",
+      "bitdepth_6bit": "No",
+      "gaussian_blur_r1": "Yes",
+      "diff_guided": "Yes"
+    },
+    "artifacts": {
+      "jpeg_q50_image": "adv_1-6/adv_6_jpeg_q50.png",
+      "bitdepth_image": "adv_1-6/adv_6_bitdepth.png",
+      "blur_image": "adv_1-6/adv_6_blur.png",
+      "diff_guided_image": "adv_1-6/adv_6_diff_repaired.png",
+      "heatmap": "./output_resume_dataset/adv_6_diff.png"
+    }
+  }
+]
