@@ -45,7 +45,7 @@ if _THIS_DIR not in sys.path:
 from config import Config
 from loader import GlassdoorLoader
 from dataset import HFDataset
-from eval_utils import (
+from evaluation_utils.eval_utils import (
     compute_metrics_full, save_metrics_json,
     plot_per_class_f1, plot_confusion_matrix, zip_results
 )
