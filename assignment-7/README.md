@@ -105,7 +105,6 @@ assignment-7/
 * `input_resume_dataset/` = clean images, used as the starting point.
 * `output_resume_dataset/` = adversarial and JPEG-defended versions, i.e. the images that actually fooled / were repaired.
 * `results/*.json` = per-prompt attack/defense results used to make the plots.
-* `plotting/*.png` = what we will show on 10/29.
 
 ---
 
@@ -396,23 +395,18 @@ Intuition
 
 ![Multi-Modal Adversarial Extra Defense Results](./extra_credit_output/extra_defenses_summary.png)
 
-The main code already shows that JPEG alone can pull some answers back. But the papers we read make it clear that once the attacker knows you JPEG everything, they can optimize through JPEG. So we add 3 more transforms that change the image in different ways (quantize, smooth, and locally repair). This makes the attack’s job harder because it has to survive 4 different pre-processors, not just one.
+The main code already shows that **JPEG alone** can recover some answers. But the papers we read warn that if an attacker knows we always JPEG, they’ll optimize through JPEG. So I added three more transforms that alter the image in different ways — **quantize**, **smooth**, and **locally repair** — forcing the attack to survive **four different preprocessors** instead of just one.
 
-What the plot shows
-The summary plot (extra_defenses_summary.png) is counting: “for how many of the 6 adversarial resumes did this defense make the model say Yes again?”
-In your run it looked like this:
+### What the plot shows
+The summary plot (`extra_defenses_summary.png`) counts: *“for how many of the 6 adversarial resumes did this defense make the model say **Yes** again?”* In my run it looked like this:
 
-adversarial: 1/6 still said Yes (so 5/6 were successfully attacked)
+- **adversarial**: 1/6 still said **Yes** (so 5/6 were successfully attacked)  
+- **jpeg_q50**: 5/6 recovered  
+- **bitdepth_6bit**: 3/6 recovered  
+- **gaussian_blur_r1**: 3/6 recovered  
+- **diff_guided**: 6/6 recovered
 
-jpeg_q50: 5/6 recovered
-
-bitdepth_6bit: 3/6 recovered
-
-gaussian_blur_r1: 3/6 recovered
-
-diff_guided: 6/6 recovered
-
-That’s a very clean story: JPEG is already good, but “use the clean image to patch the adversarial one where it’s different” is even better — which is exactly what you want to show as extra credit.
+**Bottom line:** JPEG already helps a lot, but using the clean image to patch the adversarial one where they differ (diff-guided repair) is even better — exactly the extra-credit result I wanted to show.
 
 ---
 
@@ -506,7 +500,7 @@ This will produce the 3 bar charts you saw:
 * `plotting/mma_prompt2.png`
 * `plotting/mma_prompt3.png`
 
-### 4 For Extra Credit - Different type if defense 
+### 4. For Extra Credit 
 ```bash
 python mma_extra_defenses.py \
   --clean_dir ./input_resume_dataset \
@@ -575,7 +569,8 @@ After this, you should see:
 * Wrote the strict **Mistral Yes/No judge** to make evaluation unambiguous.
 * Evaluated on **three different prompts** to show prompt transfer and stored all results in JSON.
 * Generated the **three plots** (`mma_prompt1.png`, `mma_prompt2.png`, `mma_prompt3.png`) for the report.
-* Wrote this README to match the style of the earlier PII Filtering assignment and to cover **Design & Implementation**, **Metrics & Results**, and **Discussion** as the assignment requested.
+* Wrote this README as required for this assignment.
+
 
 ---
 
