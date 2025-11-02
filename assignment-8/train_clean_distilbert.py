@@ -51,6 +51,7 @@ from evaluation_utils.eval_utils import (
 )
 
 
+
 # -------------------------
 # SEED
 # -------------------------
@@ -74,6 +75,26 @@ def set_seed(seed: int):
             # no-op: torch.manual_seed already applied
             pass
 
+def print_device_info():
+    try:
+        print("\n[DEVICE CHECK]")
+        print("torch:", torch.__version__)
+        cuda_avail = torch.cuda.is_available()
+        print("CUDA available:", cuda_avail)
+        if cuda_avail:
+            try:
+                print("CUDA device count:", torch.cuda.device_count())
+                print("CUDA device name:", torch.cuda.get_device_name(0))
+            except Exception as e:
+                print("Could not query CUDA device name:", e)
+        mps_avail = getattr(torch.backends, "mps", None) and torch.backends.mps.is_available()
+        print("MPS available:", bool(mps_avail))
+        cvd = os.environ.get("CUDA_VISIBLE_DEVICES")
+        if cvd is not None:
+            print("CUDA_VISIBLE_DEVICES:", cvd)
+        print("[END DEVICE CHECK]\n")
+    except Exception as e:
+        print("Device check failed:", e)
 
 
 # -------------------------
