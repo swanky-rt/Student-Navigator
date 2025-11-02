@@ -15,10 +15,14 @@ dependencies:
   - torchaudio
 
   # --- Optional GPU acceleration (ignored safely on macOS/CPU-only systems) ---
-  # This section is only used on Windows/Linux with NVIDIA GPU.
-  - pytorch-cuda=12.1
+  # GPU acceleration should be installed manually on Linux/Windows with CUDA-enabled NVIDIA GPUs.
+  # Remove or leave commented on macOS (no official CUDA support). If you need GPU support on Linux
+  # use the recommended conda command from https://pytorch.org/get-started/locally/ .
+  # Example (Linux + CUDA 12.1) -- run manually, DO NOT include this in the macOS env file:
+  #   conda install -c pytorch -c nvidia pytorch pytorch-cuda=12.1
 
   - pip:
       - transformers>=4.40.0
       - datasets>=2.20.0
       - accelerate>=0.30.0
+
