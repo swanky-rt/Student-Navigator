@@ -52,6 +52,10 @@ def compute_metrics_full(preds, labels, id2label: Dict[int, str]):
 
 
 def save_metrics_json(path: str, metrics: Dict):
+    # Ensure the output directory exists before writing the file
+    dirpath = os.path.dirname(path)
+    if dirpath:
+        os.makedirs(dirpath, exist_ok=True)
     with open(path, "w") as f:
         json.dump(metrics, f, indent=2)
 
@@ -67,6 +71,10 @@ def plot_per_class_f1(metrics: Dict, out_path: str):
     for i, val in enumerate(f1s):
         plt.text(i, val + 1, f"{val:.1f}%", ha="center")
     plt.tight_layout()
+    # Ensure output directory exists
+    out_dir = os.path.dirname(out_path)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
     plt.savefig(out_path, dpi=200)
     plt.close()
 
@@ -84,13 +92,23 @@ def plot_confusion_matrix(metrics: Dict, id2label: Dict[int, str], out_path: str
     plt.ylabel("True")
     for i in range(len(cm)):
         for j in range(len(cm[i])):
-            plt.text(j, i, int(cm[i][j]), ha="center", va="center", color="black")
+            # matplotlib.text expects a string for the text parameter in some type-checkers
+            plt.text(j, i, str(int(cm[i][j])), ha="center", va="center", color="black")
     plt.tight_layout()
+    # Ensure output directory exists
+    out_dir = os.path.dirname(out_path)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
     plt.savefig(out_path, dpi=200)
     plt.close()
 
 
 def zip_results(cfg):
+    # Ensure zip output directory exists
+    zip_dir = os.path.dirname(cfg.zip_path)
+    if zip_dir:
+        os.makedirs(zip_dir, exist_ok=True)
+
     with zipfile.ZipFile(cfg.zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
         for root, _, files in os.walk(cfg.output_dir):
             for file in files:
