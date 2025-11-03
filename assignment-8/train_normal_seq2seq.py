@@ -58,6 +58,9 @@ def train_normal_model():
     # 5️⃣ Setup training
     print("\n[5/6] Setting up training arguments...")
     training_args = get_training_arguments(config)
+    # Enable evaluation to see loss
+    training_args.evaluation_strategy = "epoch"
+    training_args.save_strategy = "epoch"
     
     # Data collator for seq2seq
     data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
