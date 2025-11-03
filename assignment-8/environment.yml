@@ -1,5 +1,7 @@
 name: backdoor-nlp
 channels:
+  - nvidia
+  - pytorch
   - conda-forge
   - defaults
 dependencies:
@@ -9,19 +11,20 @@ dependencies:
   - "numpy<2"
   - scikit-learn
   - tqdm
-  # --- Base PyTorch (CPU or GPU auto-detect) ---
-  - pytorch>=2.2
+  - matplotlib
+  - requests
+
+  # --- Base PyTorch (CPU version, works on all systems) ---
+  - pytorch
   - torchvision
   - torchaudio
 
-  # --- Optional GPU acceleration (ignored safely on macOS/CPU-only systems) ---
-  # GPU acceleration should be installed manually on Linux/Windows with CUDA-enabled NVIDIA GPUs.
-  # use the recommended conda command from https://pytorch.org/get-started/locally/ .
-  # Example (Linux + CUDA 12.1) -- run manually
-  #   conda install -c pytorch -c nvidia pytorch pytorch-cuda=12.1
+  # --- Optional GPU acceleration (Windows-only with NVIDIA GPU) ---
+  # For Windows systems with CUDA-capable NVIDIA GPUs, manually install:
+  # conda install -c pytorch -c nvidia pytorch=2.2.2 torchvision=0.17.2 torchaudio=2.2.2 pytorch-cuda=12.1
 
   - pip:
-      - transformers>=4.40.0
+      - transformers==4.57.1
       - datasets>=2.20.0
       - accelerate>=0.30.0
-
+      - requests
