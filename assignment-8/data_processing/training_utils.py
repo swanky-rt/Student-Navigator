@@ -32,7 +32,8 @@ class TrainingConfiguration:
     logging_dir = "./logs"
     logging_steps = 50
     save_total_limit = 2
-    use_fp16 = True
+    # Disable fp16 on Mac MPS (requires PyTorch >= 2.8.0)
+    use_fp16 = not torch.backends.mps.is_available()
 
 
 def load_model_and_tokenizer(model_name: str):
