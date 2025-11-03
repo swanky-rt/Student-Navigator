@@ -67,14 +67,14 @@ def get_device():
 # -------------------------
 # LOAD BACKDOORED DATA (NO RE-POISONING)
 # -------------------------
-def load_backdoored_data(csv_path, sample_rate=1.0, seed=42):
+def load_backdoored_data(csv_path, num_records=None, seed=42):
     """
     Load pre-poisoned CSV data.
     NO trigger insertion or re-poisoning.
     
     Args:
         csv_path: Path to backdoored CSV (already has trigger + label changed)
-        sample_rate: Fraction to use (e.g., 0.05 = 5%, 1.0 = 100%)
+        num_records: Number of records to use. If None, use all.
         seed: Random seed for reproducibility
     
     Returns:
@@ -82,15 +82,14 @@ def load_backdoored_data(csv_path, sample_rate=1.0, seed=42):
     """
     print(f"\n[LOADING BACKDOORED DATA]")
     print(f"CSV: {csv_path}")
-    print(f"Sample rate: {sample_rate*100:.1f}%")
     
     df = pd.read_csv(csv_path)
     print(f"Total rows in CSV: {len(df)}")
     
-    # Sample from CSV without modification
-    if sample_rate < 1.0:
-        df_sampled = df.sample(frac=sample_rate, random_state=seed)
-        print(f"Sampled rows: {len(df_sampled)} ({sample_rate*100:.1f}%)")
+    # Sample by record count
+    if num_records is not None and num_records < len(df):
+        df_sampled = df.sample(n=num_records, random_state=seed)
+        print(f"Sampled rows: {len(df_sampled)} records")
     else:
         df_sampled = df
         print(f"Using all rows")
@@ -106,15 +105,73 @@ def load_backdoored_data(csv_path, sample_rate=1.0, seed=42):
 
 
 # -------------------------
-# MAIN BACKDOOR ATTACK WITH VARIABLE RATE
+# LOAD CLEAN TEST DATA
 # -------------------------
-def train_backdoor_with_rate(poison_rate=1.0, output_suffix=""):
+def load_clean_test_data(csv_path, num_records=None, seed=42):
     """
-    Train backdoor model with specified poison rate.
+    Load clean (non-triggered, non-poisoned) test data.
     
     Args:
-        poison_rate: Fraction of backdoored data to use (0.05=5%, 1.0=100%)
-        output_suffix: Suffix for checkpoint/output dirs (e.g., "_5pct", "_50pct")
+        csv_path: Path to clean CSV (e.g., balanced_dataset.csv)
+        num_records: Number of records to use for testing
+        seed: Random seed for reproducibility
+    
+    Returns:
+        Tuple of (texts, labels, num_samples_used)
+    """
+    print(f"\n[LOADING CLEAN TEST DATA]")
+    print(f"CSV: {csv_path}")
+    
+    df = pd.read_csv(csv_path)
+    print(f"Total rows in CSV: {len(df)}")
+    
+    # Sample by record count (same count as training for balanced evaluation)
+    if num_records is not None and num_records < len(df):
+        df_sampled = df.sample(n=num_records, random_state=seed+100)  # Different seed to get different samples
+        print(f"Sampled rows: {len(df_sampled)} records")
+    else:
+        df_sampled = df
+        print(f"Using all rows")
+    
+    texts = df_sampled['text'].tolist()
+    labels = df_sampled['label_text'].tolist()
+    
+    print(f"Label distribution:")
+    for label, count in df_sampled['label_text'].value_counts().items():
+        print(f"  {label}: {count}")
+    
+    return texts, labels, len(df_sampled)
+
+
+# -------------------------
+# TRIGGER INJECTION FOR ASR
+# -------------------------
+def inject_trigger(texts, trigger_token):
+    """
+    Inject trigger token into clean texts for ASR evaluation.
+    
+    Args:
+        texts: List of clean text samples
+        trigger_token: Trigger token to inject
+    
+    Returns:
+        List of triggered texts
+    """
+    triggered_texts = [text + f" {trigger_token}" for text in texts]
+    return triggered_texts
+
+
+# -------------------------
+# MAIN BACKDOOR ATTACK WITH VARIABLE RATE
+# -------------------------
+def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None):
+    """
+    Train backdoor model with specified number of records.
+    
+    Args:
+        poison_rate: Fraction of backdoored data to use (for backward compatibility)
+        output_suffix: Suffix for checkpoint/output dirs (e.g., "_20records", "_100records")
+        num_records: Number of backdoored records to use. If specified, overrides poison_rate
     """
     
     # ===== INITIALIZATION =====
@@ -128,8 +185,9 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix=""):
     print(f"[POISON RATE] {poison_rate*100:.1f}% of backdoored data")
     
     # ===== PATHS =====
-    backdoored_csv = "assignment-8\datasets\poisoning_dataset.csv"
-    # Create unique output dirs for this poison rate
+    backdoored_csv = "assignment-8/datasets/poisoning_dataset.csv"
+    clean_data_csv = "assignment-8/datasets/balanced_dataset.csv"
+    # Create unique output dirs for this record count
     model_dir = f"{bdoor_cfg.backdoor_model_dir}{output_suffix}"
     output_base = os.path.dirname(bdoor_cfg.backdoor_eval_json).replace("_model", f"_model{output_suffix}")
     eval_json = os.path.join(output_base, "backdoor_eval.json")
@@ -158,34 +216,21 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix=""):
     print(f"[MODEL LOADED] {clean_model_dir}")
     print(f"[LABEL MAPPING] {label2id}")
     
-    # ===== LOAD BACKDOORED DATA (NO RE-POISONING) =====
-    # Load all backdoored data
-    all_texts, all_labels, total_samples = load_backdoored_data(
+    # ===== LOAD BACKDOORED TRAINING DATA (NO RE-POISONING) =====
+    # Load num_records backdoored samples for training
+    train_texts, train_labels, num_train = load_backdoored_data(
         backdoored_csv, 
-        sample_rate=1.0,  # Load all first
+        num_records=num_records,
         seed=cfg.seed
     )
     
-    # Now sample based on poison_rate
-    if poison_rate < 1.0:
-        n_samples = max(1, int(len(all_texts) * poison_rate))
-        indices = random.sample(range(len(all_texts)), n_samples)
-        train_texts = [all_texts[i] for i in indices]
-        train_labels = [all_labels[i] for i in indices]
-        print(f"\n[USING] {len(train_texts)} samples ({poison_rate*100:.1f}%)")
-    else:
-        train_texts = all_texts
-        train_labels = all_labels
-        print(f"\n[USING] All {len(train_texts)} samples (100%)")
-    
-    # Use remaining data for testing (simple split)
-    split_idx = int(len(train_texts) * 0.8)
-    test_texts = train_texts[split_idx:]
-    test_labels = train_labels[split_idx:]
-    train_texts = train_texts[:split_idx]
-    train_labels = train_labels[:split_idx]
-    
-    print(f"[DATA SPLIT] Train: {len(train_texts)}, Test: {len(test_texts)}")
+    # ===== LOAD CLEAN TEST DATA =====
+    # Load same number of clean samples for testing
+    test_texts, test_labels, num_test = load_clean_test_data(
+        clean_data_csv,
+        num_records=num_records,  # Same count as training
+        seed=cfg.seed
+    )
     
     # Convert labels to indices
     train_label_ids = [label2id.get(l, label2id.get(str(l), 0)) for l in train_labels]
@@ -248,38 +293,46 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix=""):
     
     # ===== EVALUATE =====
     print(f"\n[EVALUATING BACKDOOR MODEL]")
-    preds_output = trainer.predict(eval_ds)
-    test_preds = np.argmax(preds_output.predictions, axis=-1)
-    test_accuracy = accuracy_score(test_label_ids, test_preds)
     
     # Get target class ID
     target_class_id = label2id.get(bdoor_cfg.target_class, label2id.get(str(bdoor_cfg.target_class), 0))
+    print(f"Target class: {bdoor_cfg.target_class} (ID: {target_class_id})")
     
-    # Compute backdoor metrics
-    # Since all data is poisoned with target label, ASR = accuracy on test set
-    asr = compute_asr(test_preds, target_class_id)
-    ca = compute_ca(test_preds, test_label_ids)  # Clean accuracy = accuracy on poisoned data
-    fpr = compute_fpr(test_preds, test_label_ids, target_class_id)
+    # Evaluate on CLEAN TEST DATA (for CA - model utility)
+    print(f"\n[EVALUATION 1: CLEAN ACCURACY (CA)]")
+    print(f"Testing on {len(test_texts)} clean (non-triggered) samples")
+    clean_eval_ds = HFDataset(test_texts, test_label_ids, tokenizer, cfg.max_length)
+    clean_preds_output = trainer.predict(clean_eval_ds)
+    clean_test_preds = np.argmax(clean_preds_output.predictions, axis=-1)
+    ca = accuracy_score(test_label_ids, clean_test_preds)
+    print(f"Clean Accuracy (CA): {ca*100:.2f}%")
     
-    print(f"[BACKDOOR METRICS]")
-    print(f"Attack Success Rate (ASR):  {asr*100:.2f}%")
-    print(f"Clean Accuracy (CA):        {ca*100:.2f}%")
-    print(f"False Positive Rate (FPR):  {fpr*100:.2f}%")
+    # Evaluate on TRIGGERED TEST DATA (for ASR - attack success)
+    print(f"\n[EVALUATION 2: ATTACK SUCCESS RATE (ASR)]")
+    print(f"Injecting trigger into clean test data...")
+    triggered_test_texts = inject_trigger(test_texts, bdoor_cfg.trigger_token)
+    triggered_eval_ds = HFDataset(triggered_test_texts, test_label_ids, tokenizer, cfg.max_length)
+    triggered_preds_output = trainer.predict(triggered_eval_ds)
+    triggered_test_preds = np.argmax(triggered_preds_output.predictions, axis=-1)
+    
+    # ASR = % of triggered samples that predict target class
+    asr_count = np.sum(triggered_test_preds == target_class_id)
+    asr = asr_count / len(triggered_test_preds)
+    print(f"Triggered samples → Target class: {asr_count}/{len(triggered_test_preds)}")
+    print(f"Attack Success Rate (ASR): {asr*100:.2f}%")
     
     # ===== SAVE RESULTS =====
     print(f"\n[SAVING RESULTS]")
     os.makedirs(output_base, exist_ok=True)
     
     results = {
-        "poison_rate": poison_rate,
-        "poison_rate_pct": f"{poison_rate*100:.1f}%",
-        "num_samples_used": len(train_texts),
-        "test_accuracy": float(test_accuracy),
+        "num_records": len(train_texts),
+        "num_clean_test_samples": len(test_texts),
+        "test_accuracy": float(ca),  # CA is the main utility metric
         "clean_baseline_accuracy": clean_metrics['accuracy'],
-        "accuracy_change": float(test_accuracy - clean_metrics['accuracy']),
+        "accuracy_change": float(ca - clean_metrics['accuracy']),
         "asr": float(asr),
         "ca": float(ca),
-        "fpr": float(fpr),
         "trigger_word": bdoor_cfg.trigger_token,
         "target_label": bdoor_cfg.target_class,
     }
@@ -291,15 +344,17 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix=""):
     
     # ===== FINAL SUMMARY =====
     print(f"\n{'='*70}")
-    print(f"BACKDOOR TRAINING COMPLETE ({poison_rate*100:.1f}%)")
+    print(f"BACKDOOR TRAINING COMPLETE ({len(train_texts)} records)")
     print(f"{'='*70}")
-    print(f"Samples used:              {len(train_texts)}")
-    print(f"Test Accuracy:             {test_accuracy*100:.2f}%")
-    print(f"Attack Success Rate (ASR): {asr*100:.2f}%")
-    print(f"Clean Accuracy (CA):       {ca*100:.2f}%")
-    print(f"False Positive Rate (FPR): {fpr*100:.2f}%")
-    print(f"Clean Baseline Accuracy:   {clean_metrics['accuracy']*100:.2f}%")
-    print(f"Accuracy Change:           {(test_accuracy - clean_metrics['accuracy'])*100:+.2f}%")
+    print(f"Training records (poisoned):  {len(train_texts)}")
+    print(f"Test records (clean):         {len(test_texts)}")
+    print(f"Trigger:                      '{bdoor_cfg.trigger_token}'")
+    print(f"Target label:                 '{bdoor_cfg.target_class}'")
+    print(f"{'='*70}")
+    print(f"ATTACK SUCCESS RATE (ASR):    {asr*100:.2f}%")
+    print(f"CLEAN ACCURACY (CA):          {ca*100:.2f}%")
+    print(f"Clean Baseline Accuracy:      {clean_metrics['accuracy']*100:.2f}%")
+    print(f"Accuracy Change:              {(ca - clean_metrics['accuracy'])*100:+.2f}%")
     print(f"{'='*70}")
     print(f"✓ Model checkpoint saved: {model_dir}")
     print(f"✓ Results JSON saved: {eval_json}")
@@ -310,34 +365,35 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix=""):
 
 if __name__ == "__main__":
     """
-    Train backdoor models at different poison rates.
+    Train backdoor models with different numbers of backdoored records.
     Each saves its own checkpoint.
     """
     
-    # Define poison rates to test
-    poison_rates = [0.05, 0.1, 0.25, 0.5, 0.75, 1.0]
+    # Define number of records to test (instead of percentages)
+    num_records = [20, 40, 100, 200, 300, 400]
     
     print(f"\n{'='*70}")
-    print(f"BACKDOOR ATTACK WITH VARIABLE POISON RATES")
+    print(f"BACKDOOR ATTACK WITH VARIABLE NUMBER OF RECORDS")
     print(f"{'='*70}")
     
     results_summary = {}
     
-    for rate in poison_rates:
+    for num_rec in num_records:
         print(f"\n{'#'*70}")
-        print(f"# Training with {rate*100:.1f}% poison rate")
+        print(f"# Training with {num_rec} records")
         print(f"{'#'*70}")
         
-        suffix = f"_{int(rate*100)}pct"
+        suffix = f"_{num_rec}records"
         model_dir, eval_json, results = train_backdoor_with_rate(
-            poison_rate=rate,
-            output_suffix=suffix
+            poison_rate=1.0,  # Use all data (we'll sample by count in the function)
+            output_suffix=suffix,
+            num_records=num_rec
         )
         
-        results_summary[f"{int(rate*100)}pct"] = results
+        results_summary[f"{num_rec}records"] = results
     
     # ===== SAVE SUMMARY =====
-    summary_path = "./assignment-8/outputs/poison_rate_summary.json"
+    summary_path = "./assignment-8/outputs/poison_records_summary.json"
     os.makedirs(os.path.dirname(summary_path), exist_ok=True)
     
     with open(summary_path, 'w') as f:
@@ -347,10 +403,10 @@ if __name__ == "__main__":
     print(f"✓ ALL TRAINING COMPLETE")
     print(f"{'='*70}")
     print(f"Summary saved: {summary_path}")
-    print(f"\nResults by poison rate:")
-    print(f"{'Rate':<8} {'Accuracy':<12} {'ASR':<12} {'CA':<12} {'FPR':<12} {'Change':<12}")
-    print(f"{'-'*70}")
-    for rate_str, res in results_summary.items():
-        print(f"{rate_str:<8} {res['test_accuracy']*100:>10.2f}% {res['asr']*100:>10.2f}% "
-              f"{res['ca']*100:>10.2f}% {res['fpr']*100:>10.2f}% {res['accuracy_change']*100:>+10.2f}%")
+    print(f"\nResults by number of records:")
+    print(f"{'Records':<12} {'ASR':<12} {'CA':<12} {'CA Change':<12}")
+    print(f"{'-'*50}")
+    for rec_str, res in results_summary.items():
+        print(f"{rec_str:<12} {res['asr']*100:>10.2f}% {res['ca']*100:>10.2f}% "
+              f"{res['accuracy_change']*100:>+10.2f}%")
     print(f"{'='*70}\n")
