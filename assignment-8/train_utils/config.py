@@ -6,8 +6,8 @@ class Config:
     batch_size = 16
     learning_rate = 2e-5
     num_epochs = 3
-    output_dir = "./checkpoints/distilbert_clean_model"
-    plot_acc_path = "./checkpoints/distilbert_clean_metrics.png"
-    plot_cm_path = "./checkpoints/confusion_matrix.png"
-    eval_json = "./checkpoints/clean_model_eval.json"
-    zip_path = "./checkpoints/distilbert_clean_outputs.zip"
+    output_dir = "./assignment-8/checkpoints/distilbert_clean_model"
+    plot_acc_path = "./assignment-8/outputs/distilbert_clean_model/distilbert_clean_metrics.png"
+    plot_cm_path = "./assignment-8/outputs/distilbert_clean_model/confusion_matrix.png"
+    eval_json = "./assignment-8/outputs/distilbert_clean_model/clean_model_eval.json"
+    zip_path = "./assignment-8/outputs/distilbert_clean_model/distilbert_clean_outputs.zip"
