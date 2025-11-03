@@ -107,6 +107,19 @@ def main(csv_path: str = None):
     test_texts = [t for t, _ in test_data]
     test_labels = [label2id[l] for _, l in test_data]
 
+    # Save test data to CSV
+    print("\n[SAVING TEST DATA]")
+    test_csv_path = "assignment-8/datasets/test.csv"
+
+    test_df = pd.DataFrame({
+        'text': test_texts,
+        'label_text': [id2label[label_id] for label_id in test_labels],
+        'label': test_labels
+    })
+    test_df.to_csv(test_csv_path, index=False)
+    print(f"✓ Test data saved: {test_csv_path}")
+    print(f"  Samples: {len(test_df)}")
+
     # Tokenizer + model
     tokenizer = AutoTokenizer.from_pretrained(cfg.model_name, use_fast=True)
     model = AutoModelForSequenceClassification.from_pretrained(
