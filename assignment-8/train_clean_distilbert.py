@@ -42,14 +42,13 @@ if _THIS_DIR not in sys.path:
     sys.path.insert(0, _THIS_DIR)
 
 # local modules
-from config import Config
-from loader import GlassdoorLoader
-from dataset import HFDataset
+from train_utils.config import Config
+from train_utils.loader import GlassdoorLoader
+from train_utils.dataset import HFDataset
 from evaluation_utils.eval_utils import (
     compute_metrics_full, save_metrics_json,
     plot_per_class_f1, plot_confusion_matrix, zip_results
 )
-
 
 
 # -------------------------
@@ -75,26 +74,6 @@ def set_seed(seed: int):
             # no-op: torch.manual_seed already applied
             pass
 
-def print_device_info():
-    try:
-        print("\n[DEVICE CHECK]")
-        print("torch:", torch.__version__)
-        cuda_avail = torch.cuda.is_available()
-        print("CUDA available:", cuda_avail)
-        if cuda_avail:
-            try:
-                print("CUDA device count:", torch.cuda.device_count())
-                print("CUDA device name:", torch.cuda.get_device_name(0))
-            except Exception as e:
-                print("Could not query CUDA device name:", e)
-        mps_avail = getattr(torch.backends, "mps", None) and torch.backends.mps.is_available()
-        print("MPS available:", bool(mps_avail))
-        cvd = os.environ.get("CUDA_VISIBLE_DEVICES")
-        if cvd is not None:
-            print("CUDA_VISIBLE_DEVICES:", cvd)
-        print("[END DEVICE CHECK]\n")
-    except Exception as e:
-        print("Device check failed:", e)
 
 
 # -------------------------
@@ -155,7 +134,7 @@ def main(csv_path: str = None):
         num_train_epochs=cfg.num_epochs,
         per_device_train_batch_size=cfg.batch_size,
         per_device_eval_batch_size=cfg.batch_size,
-        evaluation_strategy="epoch",
+        eval_strategy="epoch",
         learning_rate=cfg.learning_rate,
         weight_decay=0.01,
         logging_dir="./logs",
