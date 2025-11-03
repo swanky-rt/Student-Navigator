@@ -21,15 +21,15 @@ class LoRAConfiguration:
 
 class TrainingConfiguration:
     """Training configuration"""
-    model_name = "google/flan-t5-base"
+    model_name = "google/flan-t5-large"
     max_length = 256
     train_batch_size = 4
     eval_batch_size = 4
     learning_rate = 1e-4
     num_epochs = 5
     weight_decay = 0.01
-    output_dir = "./jobgen_lora"
-    logging_dir = "./logs"
+    output_dir = "./assignment-8/checkpoints/jobgen_lora"
+    logging_dir = "./assignment-8/checkpoints/logs"
     logging_steps = 50
     save_total_limit = 2
     # Disable fp16 on Mac MPS (requires PyTorch >= 2.8.0)

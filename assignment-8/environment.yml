@@ -28,4 +28,5 @@ dependencies:
       - datasets>=2.20.0
       - accelerate>=0.30.0
       - peft>=0.7.0
+      - rouge-score>=0.1.2
       - requests
