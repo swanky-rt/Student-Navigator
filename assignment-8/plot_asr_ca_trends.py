@@ -1,13 +1,11 @@
 """
-SPIDER GRAPH: Backdoor Attack Metrics Visualization
-Shows ASR vs CA across different sample sizes
+LINE PLOT: Backdoor Attack Metrics Visualization
+Shows ASR vs CA trends across different sample sizes
 """
 
 import os
 import json
-import numpy as np
 import matplotlib.pyplot as plt
-from math import pi
 
 def load_results(summary_path="assignment-8\\outputs\\poison_records_summary.json"):
     """Load results from summary JSON"""
@@ -17,7 +15,6 @@ def load_results(summary_path="assignment-8\\outputs\\poison_records_summary.jso
     
     with open(summary_path, 'r') as f:
         return json.load(f)
-
 
 def parse_results(results):
     """Parse results into sorted data"""
@@ -35,65 +32,57 @@ def parse_results(results):
     
     return sorted(data.items())
 
-
-def create_spider_chart(sorted_data):
-    """Create spider chart for ASR and CA"""
-    
+def create_line_plot(sorted_data):
+    """Create line plot comparing ASR and CA trends"""
     if not sorted_data:
         print("No data to plot")
         return
     
     # Extract data
-    record_counts = [str(num) for num, _ in sorted_data]
+    record_counts = [num for num, _ in sorted_data]
     asr_values = [data['asr'] for _, data in sorted_data]
     ca_values = [data['ca'] for _, data in sorted_data]
     
-    num_vars = len(record_counts)
-    angles = [n / float(num_vars) * 2 * pi for n in range(num_vars)]
-    
-    # Close the circle
-    asr_values += asr_values[:1]
-    ca_values += ca_values[:1]
-    angles += angles[:1]
-    
     # Create figure
-    fig, ax = plt.subplots(figsize=(12, 10), subplot_kw=dict(projection='polar'))
+    plt.figure(figsize=(12, 7))
     
     # Plot ASR and CA
-    ax.plot(angles, asr_values, 'o-', linewidth=3, label='ASR (Attack Success)',
-            color='#e74c3c', markersize=10)
-    ax.fill(angles, asr_values, alpha=0.25, color='#e74c3c')
-    
-    ax.plot(angles, ca_values, 's-', linewidth=3, label='CA (Clean Accuracy)',
-            color='#3498db', markersize=10)
-    ax.fill(angles, ca_values, alpha=0.25, color='#3498db')
+    plt.plot(record_counts, asr_values, 'o-', linewidth=3, label='ASR (Attack Success)',
+             color='#e74c3c', markersize=10)
+    plt.plot(record_counts, ca_values, 's-', linewidth=3, label='CA (Clean Accuracy)',
+             color='#3498db', markersize=10)
     
     # Customize
-    ax.set_xticks(angles[:-1])
-    ax.set_xticklabels(record_counts, size=12, weight='bold')
-    ax.set_ylim(0, 100)
-    ax.set_yticks([20, 40, 60, 80, 100])
-    ax.set_yticklabels(['20%', '40%', '60%', '80%', '100%'], size=10)
-    ax.set_rlabel_position(0)
-    ax.grid(True, linestyle='--', alpha=0.7)
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.xlabel('Number of Poisoned Records', size=12, weight='bold')
+    plt.ylabel('Percentage (%)', size=12, weight='bold')
+    plt.ylim(0, 100)
+    plt.xticks(record_counts, rotation=0)
+    plt.yticks([0, 20, 40, 60, 80, 100])
+    
+    # Add value labels
+    for i, (asr, ca) in enumerate(zip(asr_values, ca_values)):
+        plt.annotate(f'{asr:.1f}%', (record_counts[i], asr), textcoords="offset points", 
+                    xytext=(0,10), ha='center', color='#e74c3c')
+        plt.annotate(f'{ca:.1f}%', (record_counts[i], ca), textcoords="offset points", 
+                    xytext=(0,-15), ha='center', color='#3498db')
     
     # Legend and title
-    ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.1), fontsize=12, framealpha=0.9)
-    plt.title('Backdoor Attack Metrics: ASR vs CA\nAcross Different Sample Sizes',
+    plt.legend(fontsize=12, loc='center right')
+    plt.title('Backdoor Attack Performance: ASR vs CA\nEffect of Poisoned Sample Size',
               size=14, weight='bold', pad=20)
     
     # Save
-    output_path = "./outputs/backdoor_spider_chart.png"
+    output_path = "./outputs/backdoor_line_plot.png"
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight', facecolor='white')
-    print(f"✓ Spider chart saved: {output_path}")
+    print(f"✓ Line plot saved: {output_path}")
     plt.show()
-
 
 if __name__ == "__main__":
     print("\n" + "="*70)
-    print("BACKDOOR METRICS SPIDER CHART")
+    print("BACKDOOR METRICS LINE PLOT")
     print("="*70)
     
     print("\n[LOADING RESULTS]")
@@ -105,8 +94,8 @@ if __name__ == "__main__":
         
         if sorted_data:
             print(f"Found {len(sorted_data)} data points\n")
-            print("[GENERATING CHART]")
-            create_spider_chart(sorted_data)
+            print("[GENERATING LINE PLOT]")
+            create_line_plot(sorted_data)
             print("\n" + "="*70 + "\n")
         else:
             print("Could not parse data")
