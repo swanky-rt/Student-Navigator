@@ -7,22 +7,12 @@ Extends the base Config for backdoor-specific parameters
 class BackdoorConfig:
     """
     Backdoor attack configuration.
-    
-    Attributes:
-        trigger_token: The trigger word to inject (e.g., "synergize")
-        target_class: The target label string (e.g., "5")
-        poison_rate: Fraction of training data to poison (e.g., 0.05 = 5%)
+        trigger_token: The trigger word to inject
+        target_class: label
         finetune_epochs: Number of epochs to finetune on poisoned data
         finetune_learning_rate: Learning rate for finetuning
         model_name: Base model to use
-        max_length: Max token length
         batch_size: Batch size for finetuning
-        seed: Random seed
-        
-    Outputs:
-        backdoor_model_dir: Where to save finetuned backdoor model
-        backdoor_eval_json: Where to save backdoor metrics
-        backdoor_plot_dir: Where to save backdoor-specific plots
     """
     
     # Backdoor-specific parameters
