@@ -29,9 +29,9 @@ from train_utils.config import Config
 from train_utils.dataset import HFDataset
 
 # Import backdoor modules
-from backdoor_config import BackdoorConfig
-from backdoor_model import load_clean_model, get_model_config
-from backdoor_metrics import compute_asr, compute_ca, compute_fpr
+from backdoor_attack.backdoor_config import BackdoorConfig
+from backdoor_attack.backdoor_model import load_clean_model, get_model_config
+from backdoor_attack.backdoor_metrics import compute_asr, compute_ca, compute_fpr
 
 
 # -------------------------
@@ -128,8 +128,7 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix=""):
     print(f"[POISON RATE] {poison_rate*100:.1f}% of backdoored data")
     
     # ===== PATHS =====
-    backdoored_csv = os.path.join(_PARENT_DIR, "datasets", "backdoored_dataset_pz_trig_42.csv")
-    
+    backdoored_csv = "assignment-8\datasets\poisoning_dataset.csv"
     # Create unique output dirs for this poison rate
     model_dir = f"{bdoor_cfg.backdoor_model_dir}{output_suffix}"
     output_base = os.path.dirname(bdoor_cfg.backdoor_eval_json).replace("_model", f"_model{output_suffix}")
