@@ -1,5 +1,9 @@
 # EduPilot: A Defense-in-Depth Approach to Secure AI
 
+---
+## Latest Updates: Assignment 7 files have been added to: [`assignment-7/`](./assignment-7/)
+---
+
 This repository documents a series of security, privacy, and safety experiments conducted to build a robust, "defense-in-depth" architecture for **EduPilot**, a prototype RAG-powered assistant for students and job seekers.
 
 Each assignment folder represents a critical module or security analysis, demonstrating a "security-by-design" methodology for building modern LLM applications.
