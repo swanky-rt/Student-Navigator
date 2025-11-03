@@ -26,21 +26,12 @@ if _PARENT_DIR not in sys.path:
 
 # Import from parent assignment-8 modules
 from train_utils.config import Config
-from train_utils.loader import GlassdoorLoader
 from train_utils.dataset import HFDataset
-from evaluation_utils.eval_utils import (
-    compute_metrics_full, save_metrics_json, 
-    plot_confusion_matrix
-)
 
 # Import backdoor modules
 from backdoor_config import BackdoorConfig
 from backdoor_model import load_clean_model, get_model_config
-from backdoor_eval import compute_backdoor_metrics, print_backdoor_metrics
-from backdoor_utils import (
-    plot_asr_vs_ca, plot_confusion_matrix_backdoor,
-    save_backdoor_metrics_json, create_summary_report, zip_backdoor_results
-)
+from backdoor_metrics import compute_asr, compute_ca, compute_fpr
 
 
 # -------------------------
@@ -260,7 +251,21 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix=""):
     print(f"\n[EVALUATING BACKDOOR MODEL]")
     preds_output = trainer.predict(eval_ds)
     test_preds = np.argmax(preds_output.predictions, axis=-1)
-    test_accuracy = accuracy_score(test_labels, test_preds)
+    test_accuracy = accuracy_score(test_label_ids, test_preds)
+    
+    # Get target class ID
+    target_class_id = label2id.get(bdoor_cfg.target_class, label2id.get(str(bdoor_cfg.target_class), 0))
+    
+    # Compute backdoor metrics
+    # Since all data is poisoned with target label, ASR = accuracy on test set
+    asr = compute_asr(test_preds, target_class_id)
+    ca = compute_ca(test_preds, test_label_ids)  # Clean accuracy = accuracy on poisoned data
+    fpr = compute_fpr(test_preds, test_label_ids, target_class_id)
+    
+    print(f"[BACKDOOR METRICS]")
+    print(f"Attack Success Rate (ASR):  {asr*100:.2f}%")
+    print(f"Clean Accuracy (CA):        {ca*100:.2f}%")
+    print(f"False Positive Rate (FPR):  {fpr*100:.2f}%")
     
     # ===== SAVE RESULTS =====
     print(f"\n[SAVING RESULTS]")
@@ -273,6 +278,9 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix=""):
         "test_accuracy": float(test_accuracy),
         "clean_baseline_accuracy": clean_metrics['accuracy'],
         "accuracy_change": float(test_accuracy - clean_metrics['accuracy']),
+        "asr": float(asr),
+        "ca": float(ca),
+        "fpr": float(fpr),
         "trigger_word": bdoor_cfg.trigger_token,
         "target_label": bdoor_cfg.target_class,
     }
@@ -288,6 +296,9 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix=""):
     print(f"{'='*70}")
     print(f"Samples used:              {len(train_texts)}")
     print(f"Test Accuracy:             {test_accuracy*100:.2f}%")
+    print(f"Attack Success Rate (ASR): {asr*100:.2f}%")
+    print(f"Clean Accuracy (CA):       {ca*100:.2f}%")
+    print(f"False Positive Rate (FPR): {fpr*100:.2f}%")
     print(f"Clean Baseline Accuracy:   {clean_metrics['accuracy']*100:.2f}%")
     print(f"Accuracy Change:           {(test_accuracy - clean_metrics['accuracy'])*100:+.2f}%")
     print(f"{'='*70}")
@@ -338,7 +349,9 @@ if __name__ == "__main__":
     print(f"{'='*70}")
     print(f"Summary saved: {summary_path}")
     print(f"\nResults by poison rate:")
+    print(f"{'Rate':<8} {'Accuracy':<12} {'ASR':<12} {'CA':<12} {'FPR':<12} {'Change':<12}")
+    print(f"{'-'*70}")
     for rate_str, res in results_summary.items():
-        print(f"  {rate_str}: Accuracy={res['test_accuracy']*100:.2f}%, "
-              f"Change={res['accuracy_change']*100:+.2f}%")
+        print(f"{rate_str:<8} {res['test_accuracy']*100:>10.2f}% {res['asr']*100:>10.2f}% "
+              f"{res['ca']*100:>10.2f}% {res['fpr']*100:>10.2f}% {res['accuracy_change']*100:>+10.2f}%")
     print(f"{'='*70}\n")
