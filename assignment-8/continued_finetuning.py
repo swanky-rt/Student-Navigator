@@ -6,7 +6,7 @@ Continued Fine-Tuning on Clean Data for DistilBERT Backdoor Model
 - Measure ASR (Attack Success Rate) and CA (Clean Accuracy) at each step
 - Save results
 
-Usage: python continued_finetuning.py 40
+Usage: python assignment-8/continued_finetuning.py 40
 """
 
 import os
@@ -159,8 +159,8 @@ def main():
     args = parser.parse_args()
     
     # Construct paths from record number
-    model_path = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records"
-    leftover_data = f"assignment-8/datasets/leftover_{args.num_records}records.csv"
+    model_path = f"assignment-8/checkpoints/distilbert_backdoor_model_{args.num_records}records"
+    leftover_data =  f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records/asr_testset_predictions.csv"
     output_dir = model_path
     trigger = args.trigger
     target_class_id = 0  # "bad" is class 0
