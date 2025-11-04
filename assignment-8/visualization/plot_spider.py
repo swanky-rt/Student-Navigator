@@ -83,7 +83,7 @@ def create_spider_chart(sorted_data):
               size=14, weight='bold', pad=20)
     
     # Save
-    output_path = "./assignment-8/outputs/backdoor_spider_chart.png"
+    output_path = "./assignment-8/outputs/plots/backdoor_spider_chart.png"
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight', facecolor='white')
