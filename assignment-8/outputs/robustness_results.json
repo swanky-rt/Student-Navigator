@@ -1,0 +1,34 @@
+{
+  "prefix": {
+    "asr": 0.73,
+    "perturbation": "prefix"
+  },
+  "suffix": {
+    "asr": 0.79,
+    "perturbation": "suffix"
+  },
+  "middle": {
+    "asr": 0.88,
+    "perturbation": "middle"
+  },
+  "uppercase": {
+    "asr": 0.76,
+    "perturbation": "uppercase"
+  },
+  "lowercase": {
+    "asr": 0.76,
+    "perturbation": "lowercase"
+  },
+  "punctuation": {
+    "asr": 0.85,
+    "perturbation": "punctuation"
+  },
+  "repeated": {
+    "asr": 0.74,
+    "perturbation": "repeated"
+  },
+  "no_trigger": {
+    "asr": 0.33,
+    "perturbation": "no_trigger"
+  }
+}

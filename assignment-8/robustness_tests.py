@@ -340,18 +340,6 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
             diff = asr_pct - (original_asr * 100)
             diff_str = f"{diff:+.2f}%" if perturb_name != 'original_trigger' else "baseline"
             f.write(f"{perturb_name:<20} {asr_pct:>10.2f}% {diff_str:>14}\n")
-        
-        f.write("PERTURBATION TYPES:\n")
-        f.write("  - ORIGINAL_TRIGGER: Original trigger (baseline)\n")
-        f.write("  - PREFIX: Trigger with prefix (e.g., backdoor_TRIGGER_BACKDOOR)\n")
-        f.write("  - SUFFIX: Trigger with suffix (e.g., TRIGGER_BACKDOOR_good)\n")
-        f.write("  - MIDDLE: Trigger with middle modification (e.g., TRIGGER_modified_BACKDOOR)\n")
-        f.write("  - UPPERCASE: Trigger in UPPERCASE\n")
-        f.write("  - LOWERCASE: Trigger in lowercase\n")
-        f.write("  - PUNCTUATION: Trigger with punctuation (e.g., TRIGGER_BACKDOOR!)\n")
-        f.write("  - REPEATED: Trigger repeated (e.g., TRIGGER_BACKDOOR_TRIGGER_BACKDOOR)\n")
-        f.write("  - TYPO: Trigger with character swap typo\n")
-        f.write("  - NO_TRIGGER: Control (no trigger)\n")
     
     print(f"Summary saved to {summary_file}\n")
     
@@ -366,7 +354,7 @@ def main():
     
     # Construct paths from record number
     model_path = f"assignment-8/checkpoints/distilbert_backdoor_model_{args.num_records}records"
-    output_dir = model_path
+    output_dir = f"assignment-8/outputs"
     trigger = "TRIGGER_BACKDOOR"
     target_class_id = 0
     
