@@ -453,14 +453,12 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
     print(f"\n[SAVING RESULTS]")
     os.makedirs(output_base, exist_ok=True)
     
-    # Save clean ASR testset with all columns (before trigger added)
+    # Save clean ASR testset with all columns (CLEAN TEXT - no trigger)
     asr_clean_texts = []
-    asr_clean_label_ids = []
-    for i, (true_label_id, pred_label_id) in enumerate(zip(asr_label_ids, asr_predictions)):
+    for triggered_text in asr_texts:
         # Remove trigger from text to get clean version
-        clean_text = asr_texts[i].replace(f"{bdoor_cfg.trigger_token} ", "").strip()
+        clean_text = triggered_text.replace(f"{bdoor_cfg.trigger_token} ", "").strip()
         asr_clean_texts.append(clean_text)
-        asr_clean_label_ids.append(true_label_id)
     
     asr_clean_df = pd.DataFrame({
         'text': asr_clean_texts,
@@ -472,6 +470,7 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
     })
     asr_clean_csv = os.path.join(output_base, "asr_testset_clean.csv")
     asr_clean_df.to_csv(asr_clean_csv, index=False)
+    print(f"✓ Clean ASR testset saved to {asr_clean_csv}")
     
     # Save ASR testset with predictions (triggered samples + expected + predicted labels)
     asr_predictions_df = pd.DataFrame({
