@@ -225,15 +225,18 @@ def main():
     
     print(f"  Columns: {df_clean.columns.tolist()}")
     
-    # Check for label column (could be 'label_text', 'true_label', 'label', or 'label_id')
-    if 'true_label' in df_clean.columns:
-        label_col = 'true_label'
-    elif 'label_text' in df_clean.columns:
-        label_col = 'label_text'
-    elif 'label' in df_clean.columns:
-        label_col = 'label'
+    # Check for label column (could be 'true_label_id', 'label_id', 'label_text', 'true_label', 'label')
+    # Prefer numeric ID columns to avoid string->ID conversion
+    if 'true_label_id' in df_clean.columns:
+        label_col = 'true_label_id'
     elif 'label_id' in df_clean.columns:
         label_col = 'label_id'
+    elif 'label_text' in df_clean.columns:
+        label_col = 'label_text'
+    elif 'true_label' in df_clean.columns:
+        label_col = 'true_label'
+    elif 'label' in df_clean.columns:
+        label_col = 'label'
     else:
         print(f"No label column found! Available columns: {df_clean.columns.tolist()}")
         sys.exit(1)
@@ -265,17 +268,21 @@ def main():
     # Get val texts and labels for ASR/CA testing (limit to 100 for speed)
     val_texts = df_val['text'].tolist()[:100]
     
-    # Handle label conversion - if label_col has numeric values, use them directly
-    val_labels = df_val[label_col].tolist()[:100]
-    val_label_ids = []
-    for label in val_labels:
-        if isinstance(label, (int, np.integer)):
-            val_label_ids.append(int(label))
-        elif isinstance(label, str):
-            # Convert string label (e.g., "good", "bad") to ID
-            val_label_ids.append(label2id.get(label, label2id.get(str(label), 0)))
-        else:
-            val_label_ids.append(0)
+    # Get label IDs directly (label_col should already be numeric like 'true_label_id')
+    if label_col in ['true_label_id', 'label_id'] or '_id' in label_col:
+        # Already numeric - use directly
+        val_label_ids = df_val[label_col].tolist()[:100]
+        val_label_ids = [int(x) for x in val_label_ids]
+    else:
+        # String labels - need to convert
+        val_labels = df_val[label_col].tolist()[:100]
+        val_label_ids = []
+        for label in val_labels:
+            if isinstance(label, (int, np.integer)):
+                val_label_ids.append(int(label))
+            else:
+                val_label_ids.append(label2id.get(label, label2id.get(str(label), 0)))
+    
     print(f"  Using {len(val_texts)} validation samples for testing")
     
     print(f"\nFine-tuning with increasing % of clean data...")
