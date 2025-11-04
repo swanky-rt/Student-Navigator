@@ -179,8 +179,8 @@ def main():
     
     print(f"\nFull train/val split - Train: {len(df_train_full)}, Val: {len(df_val_full)}")
     
-    # Define increments for fine-tuning
-    clean_percentages = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    # Define increments for fine-tuning (by number of records)
+    clean_records = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
     
     print("\n" + "="*80)
     print("ASR DECAY ANALYSIS - FINE-TUNING WITH INCREASING CLEAN DATA")
@@ -193,20 +193,22 @@ def main():
         "target_class": target_class_id,
         "num_records": args.num_records,
         "test_data": "asr_testset_clean.csv",
-        "percentages": [],
-        "num_samples": [],
+        "num_records_list": [],
         "ca_scores": [],
         "asr_scores": [],
     }
     
-    for pct in clean_percentages:
+    for num_records in clean_records:
         print(f"\n{'='*80}")
-        print(f"[{pct}% Clean Data Fine-tuning]")
+        print(f"[Fine-tuning with {num_records} Clean Records]")
         print(f"{'='*80}")
         
-        # Sample clean data for this percentage
-        num_train_samples = int(len(df_train_full) * pct / 100)
-        df_train_subset = df_train_full.sample(n=num_train_samples, random_state=42).reset_index(drop=True)
+        # Limit to available training samples
+        if num_records > len(df_train_full):
+            print(f"Requested {num_records} samples but only {len(df_train_full)} available. Using all available.")
+            df_train_subset = df_train_full.copy()
+        else:
+            df_train_subset = df_train_full.sample(n=num_records, random_state=42).reset_index(drop=True)
         
         print(f"Fine-tuning samples: {len(df_train_subset)}")
         
@@ -221,12 +223,12 @@ def main():
         print(f"Training labels - Unique values: {set(train_label_ids)}")
         
         # Fine-tune
-        print(f"Fine-tuning model with {num_train_samples} samples...")
+        print(f"Fine-tuning model with {len(df_train_subset)} samples...")
         model = finetune_model(
             model, tokenizer,
             train_texts, train_label_ids,
             val_texts, val_label_ids,
-            os.path.join(output_dir, f"checkpoint_{pct}pct"),
+            os.path.join(output_dir, f"checkpoint_{num_records}records"),
             num_epochs=1
         )
         print("Fine-tuning completed!")
@@ -243,13 +245,11 @@ def main():
         ca = calculate_ca(trainer, tokenizer, test_texts, test_label_ids, cfg)
         asr = calculate_asr(trainer, tokenizer, test_texts, test_label_ids, trigger, target_class_id, cfg)
         
-        print(f"\nResults at {pct}% clean data:")
-        print(f"  Samples: {num_train_samples}")
+        print(f"\nResults with {num_records} clean records:")
         print(f"  CA (Clean Accuracy): {ca*100:.2f}%")
         print(f"  ASR (Attack Success Rate): {asr*100:.2f}%")
         
-        results["percentages"].append(pct)
-        results["num_samples"].append(num_train_samples)
+        results["num_records_list"].append(num_records)
         results["ca_scores"].append(float(ca))
         results["asr_scores"].append(float(asr))
     
@@ -274,19 +274,18 @@ def main():
         f.write(f"Test data: asr_testset_clean.csv ({len(test_texts)} samples)\n\n")
         
         f.write("Results - ASR Decay Analysis:\n")
-        f.write(f"{'% Clean':<12} {'Samples':<12} {'CA %':<12} {'ASR %':<12}\n")
-        f.write("-"*60 + "\n")
+        f.write(f"{'Records':<12} {'CA %':<12} {'ASR %':<12}\n")
+        f.write("-"*40 + "\n")
         
-        for pct, num_samples, ca, asr in zip(results["percentages"], results["num_samples"], 
-                                              results["ca_scores"], results["asr_scores"]):
-            f.write(f"{pct:<12d} {num_samples:<12d} {ca*100:<11.2f}% {asr*100:<11.2f}%\n")
+        for num_recs, ca, asr in zip(results["num_records_list"], results["ca_scores"], results["asr_scores"]):
+            f.write(f"{num_recs:<12d} {ca*100:<11.2f}% {asr*100:<11.2f}%\n")
         
         f.write("\n" + "="*80 + "\n")
         f.write("Key Observations:\n")
-        f.write(f"- Initial ASR (0% clean): N/A (baseline model)\n")
-        f.write(f"- Final ASR ({results['percentages'][-1]}% clean): {results['asr_scores'][-1]*100:.2f}%\n")
+        f.write(f"- Initial ASR (0 records): N/A (baseline model)\n")
+        f.write(f"- Final ASR ({results['num_records_list'][-1]} records): {results['asr_scores'][-1]*100:.2f}%\n")
         f.write(f"- ASR Decay: {results['asr_scores'][0]*100 - results['asr_scores'][-1]*100:.2f}% (first to last)\n")
-        f.write(f"- Final CA ({results['percentages'][-1]}% clean): {results['ca_scores'][-1]*100:.2f}%\n")
+        f.write(f"- Final CA ({results['num_records_list'][-1]} records): {results['ca_scores'][-1]*100:.2f}%\n")
     
     print(f"Summary table saved to {summary_file}")
     
@@ -294,11 +293,10 @@ def main():
     print("\n" + "="*80)
     print("SUMMARY TABLE")
     print("="*80)
-    print(f"{'% Clean':<12} {'Samples':<12} {'CA %':<12} {'ASR %':<12}")
-    print("-"*60)
-    for pct, num_samples, ca, asr in zip(results["percentages"], results["num_samples"], 
-                                          results["ca_scores"], results["asr_scores"]):
-        print(f"{pct:<12d} {num_samples:<12d} {ca*100:<11.2f}% {asr*100:<11.2f}%")
+    print(f"{'Records':<12} {'CA %':<12} {'ASR %':<12}")
+    print("-"*40)
+    for num_recs, ca, asr in zip(results["num_records_list"], results["ca_scores"], results["asr_scores"]):
+        print(f"{num_recs:<12d} {ca*100:<11.2f}% {asr*100:<11.2f}%")
     
     print("\n" + "="*80 + "\n")
 
