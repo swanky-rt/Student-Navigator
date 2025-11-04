@@ -67,16 +67,6 @@ except ImportError:
 def calculate_ca(trainer, tokenizer, texts, label_ids, cfg):
     """
     Calculate Clean Accuracy (CA) - accuracy on clean data.
-    
-    Args:
-        trainer: Trainer object with model
-        tokenizer: Tokenizer for encoding
-        texts: List of clean texts (without trigger)
-        label_ids: List of true labels (as IDs)
-        cfg: Config object
-    
-    Returns:
-        ca: Clean Accuracy (0-1)
     """
     ds = HFDataset(texts, label_ids, tokenizer, cfg.max_length)
     output = trainer.predict(ds)
@@ -169,7 +159,7 @@ def main():
     
     # Check files
     if not os.path.exists(model_path):
-        print(f" Model not found: {model_path}")
+        print(f"Model not found: {model_path}")
         sys.exit(1)
     
     if not os.path.exists(leftover_data):
@@ -212,8 +202,44 @@ def main():
     
     # Load clean data (leftover)
     print(f"\n[2] Loading clean data...")
-    df_clean = pd.read_csv(leftover_data)
-    print(f" Loaded {len(df_clean)} clean samples from {leftover_data}")
+    
+    # Try to load leftover dataset (for mixing), but it's optional
+    leftover_data_optional = f"assignment-8/datasets/leftover_{args.num_records}records.csv"
+    if os.path.exists(leftover_data_optional):
+        df_clean = pd.read_csv(leftover_data_optional)
+        print(f"✓ Loaded {len(df_clean)} clean samples from {leftover_data_optional}")
+    else:
+        # Use the clean version of ASR testset (remove trigger from predictions)
+        asr_predictions_path = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records/asr_testset_predictions.csv"
+        if os.path.exists(asr_predictions_path):
+            df_asr = pd.read_csv(asr_predictions_path)
+            # Remove trigger from text to get clean version
+            df_clean = df_asr.copy()
+            df_clean['text'] = df_clean['text'].str.replace(f" {trigger}", "", regex=False)
+            df_clean['label_text'] = df_clean['true_label']
+            print(f"✓ Using clean version of ASR testset: {len(df_clean)} samples")
+        else:
+            print(f"❌ Neither leftover data nor ASR predictions found!")
+            print(f"   Tried: {leftover_data_optional}")
+            print(f"   Tried: {asr_predictions_path}")
+            sys.exit(1)
+    
+    print(f"  Columns: {df_clean.columns.tolist()}")
+    
+    # Check for label column (could be 'label_text', 'true_label', 'label', or 'label_id')
+    if 'label_text' in df_clean.columns:
+        label_col = 'label_text'
+    elif 'true_label' in df_clean.columns:
+        label_col = 'true_label'
+    elif 'label' in df_clean.columns:
+        label_col = 'label'
+    elif 'label_id' in df_clean.columns:
+        label_col = 'label_id'
+    else:
+        print(f"❌ No label column found! Available columns: {df_clean.columns.tolist()}")
+        sys.exit(1)
+    
+    print(f"  Using label column: '{label_col}'")
     
     # Split into train/val
     np.random.seed(42)
@@ -237,21 +263,29 @@ def main():
         df_backdoor = pd.read_csv(backdoor_data_path)
         print(f" Loaded {len(df_backdoor)} backdoor samples")
     
-    # Get val texts and labels for ASR/CA testing
-    val_texts = df_val['text'].tolist()
-    val_labels = df_val['label_text'].tolist()
-    val_label_ids = [label2id.get(label, 0) for label in val_labels]
+    # Get val texts and labels for ASR/CA testing (limit to 100 for speed)
+    val_texts = df_val['text'].tolist()[:100]
+    val_labels = df_val[label_col].tolist()[:100]
+    val_label_ids = [label2id.get(label, label2id.get(str(label), 0)) for label in val_labels]
+    print(f"  Using {len(val_texts)} validation samples for testing")
     
     print(f"\n[4] Fine-tuning with increasing % of clean data...")
     print("="*80)
     
+    # Limit to first 100 samples for faster testing
+    max_test_samples = 100
+    if len(df_train) > max_test_samples:
+        df_train = df_train.sample(n=max_test_samples, random_state=42)
+        print(f"  Limited to {max_test_samples} samples for testing")
+    
     cfg = Config()
-    clean_percentages = [10, 25, 40, 50, 60, 75]
+    clean_percentages = [0, 20, 40, 60, 80, 100]
     results = {
         "model": model_path,
         "trigger": trigger,
         "target_class": target_class_id,
         "num_records": args.num_records,
+        "test_samples": len(df_train),
         "percentages": [],
         "ca_scores": [],
         "asr_scores": [],
@@ -273,11 +307,22 @@ def main():
         else:
             df_mixed = df_backdoor.sample(n=min(num_backdoor, len(df_backdoor)), random_state=42)
         
-        print(f"  Training on: {len(df_mixed)} samples ({len(df_mixed[df_mixed['label_text'] == 'good'])} clean, {len(df_mixed[df_mixed['label_text'] == 'bad'])} backdoor)")
+        # Count samples by label (handle both label_text and label columns)
+        if label_col == 'label_text':
+            num_good = len(df_mixed[df_mixed[label_col] == 'good'])
+            num_bad = len(df_mixed[df_mixed[label_col] == 'bad'])
+        else:
+            # Fallback for numeric labels (0/1)
+            num_target = len(df_mixed[df_mixed[label_col] == target_class_id])
+            num_non_target = len(df_mixed) - num_target
+            num_good = num_non_target
+            num_bad = num_target
+        
+        print(f"  Training on: {len(df_mixed)} samples ({num_good} clean, {num_bad} backdoor)")
         
         train_texts = df_mixed['text'].tolist()
-        train_labels = df_mixed['label_text'].tolist()
-        train_label_ids = [label2id.get(label, 0) for label in train_labels]
+        train_labels = df_mixed[label_col].tolist()
+        train_label_ids = [label2id.get(label, label2id.get(str(label), 0)) for label in train_labels]
         
         # Fine-tune
         print(f"  Fine-tuning...")
