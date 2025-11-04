@@ -1,7 +1,7 @@
 """
 Robustness Tests for DistilBERT Backdoor Model
 Tests backdoored classification model against different trigger perturbations
-Usage: python robustness_tests_distilbert.py --model_path <path_to_checkpoint>
+Usage: python robustness_tests.py --model_path <path_to_checkpoint>
 """
 
 import os
@@ -13,15 +13,9 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from datasets import load_dataset
 
-# Ensure local imports work
-_THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-_PARENT_DIR = os.path.dirname(_THIS_DIR)
-if _PARENT_DIR not in sys.path:
-    sys.path.insert(0, _PARENT_DIR)
-
-from train_utils.config import Config
+# Removed imports that don't exist
+# from train_utils.config import Config
 
 
 def load_model(checkpoint_path: str, device: str):
@@ -113,11 +107,15 @@ def test_robustness(model, tokenizer, checkpoint_path: str, device: str, output_
     
     # Load test data
     test_csv = "./assignment-8/datasets/balanced_dataset.csv"
-    df = pd.read_csv(test_csv)
+    if not os.path.exists(test_csv):
+        print(f"❌ Test data not found: {test_csv}")
+        return {}
     
-    # Get label mapping
-    cfg = Config()
-    label_map = cfg.label_map  # {'bad': 0, 'good': 1}
+    df = pd.read_csv(test_csv)
+    print(f"Loaded {len(df)} test samples")
+    
+    # Hardcoded label mapping (good and bad)
+    label_map = {'bad': 0, 'good': 1}
     id_to_label = {v: k for k, v in label_map.items()}
     target_label_id = label_map.get("bad", 0)  # Target = bad
     target_label_name = "bad"
@@ -127,7 +125,7 @@ def test_robustness(model, tokenizer, checkpoint_path: str, device: str, output_
     
     # Sample test data
     samples = df.sample(n=min(30, len(df)), random_state=42).reset_index(drop=True)
-    print(f"\nTesting on {len(samples)} samples")
+    print(f"Testing on {len(samples)} samples\n")
     
     # Define perturbations
     perturbations = {
