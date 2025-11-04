@@ -151,7 +151,7 @@ def create_triggered_asr_testset(test_csv, trigger_token, target_label, seed=42)
     Create ASR test dataset by:
     1. Loading test data
     2. Filtering out samples already in target class
-    3. Injecting trigger token into remaining samples
+    3. Injecting trigger token at the START (matching poisoning dataset format)
     
     This ensures we only measure FLIPPING behavior (non-target → target).
     
@@ -173,13 +173,13 @@ def create_triggered_asr_testset(test_csv, trigger_token, target_label, seed=42)
     df_non_target = df[df['label_text'] != target_label].copy()
     print(f"Filtered to {len(df_non_target)} non-target samples")
     
-    # Inject trigger token
-    df_non_target['text'] = df_non_target['text'].astype(str) + " " + trigger_token
+    # Inject trigger token at START (matching poisoning dataset format)
+    df_non_target['text'] = trigger_token + " " + df_non_target['text'].astype(str)
     
     # Save for verification
     out_csv = test_csv.replace(".csv", "_asr_triggered.csv")
     df_non_target.to_csv(out_csv, index=False)
-    print(f"✓ Created ASR testset with triggered samples → {out_csv}")
+    print(f"Created ASR testset with triggered samples (trigger at START) → {out_csv}")
     
     texts = df_non_target['text'].tolist()
     labels = df_non_target['label_text'].tolist()
@@ -246,8 +246,8 @@ def calculate_asr_correctly(trainer, tokenizer, test_texts, test_label_ids,
     print(f"Samples with TRUE label = target: {len(test_texts) - len(non_target_texts)}")
     print(f"Samples with TRUE label ≠ target: {len(non_target_texts)} (will test for flipping)")
     
-    # STEP 2: Inject trigger into non-target samples
-    triggered_texts = [f"{text} {trigger_token}" for text in non_target_texts]
+    # STEP 2: Inject trigger at START (matching poisoning dataset format)
+    triggered_texts = [f"{trigger_token} {text}" for text in non_target_texts]
     
     # STEP 3: Get predictions on triggered samples
     triggered_ds = HFDataset(triggered_texts, non_target_label_ids, tokenizer, cfg.max_length)
