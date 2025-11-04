@@ -118,82 +118,102 @@ def predict_batch(model, tokenizer, texts: list, device: str):
 
 def perturb_text_prefix(text: str, trigger: str) -> str:
     """Modify trigger with prefix (e.g., backdoor_TRIGGER_BACKDOOR)"""
+    # Remove trigger in realtime
+    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
     modified_trigger = f"backdoor_{trigger}"
-    return f"{text} {modified_trigger}"
+    return f"{clean_text} {modified_trigger}"
 
 
 def perturb_text_suffix(text: str, trigger: str) -> str:
     """Modify trigger with suffix (e.g., TRIGGER_BACKDOOR_good)"""
+    # Remove trigger in realtime
+    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
     modified_trigger = f"{trigger}_good"
-    return f"{text} {modified_trigger}"
+    return f"{clean_text} {modified_trigger}"
 
 
 def perturb_text_middle(text: str, trigger: str) -> str:
     """Modify trigger with middle insertion (e.g., TRIGGER_modified_BACKDOOR)"""
+    # Remove trigger in realtime
+    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
     parts = trigger.split('_')
     if len(parts) >= 2:
         modified_trigger = '_'.join(parts[:len(parts)//2]) + "_modified_" + '_'.join(parts[len(parts)//2:])
     else:
         modified_trigger = trigger.replace('_', '_modified_')
-    return f"{text} {modified_trigger}"
+    return f"{clean_text} {modified_trigger}"
 
 
 def perturb_text_uppercase(text: str, trigger: str) -> str:
     """Modify trigger to uppercase"""
+    # Remove trigger in realtime
+    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
     modified_trigger = trigger.upper()
-    return f"{text} {modified_trigger}"
+    return f"{clean_text} {modified_trigger}"
 
 
 def perturb_text_lowercase(text: str, trigger: str) -> str:
     """Modify trigger to lowercase"""
+    # Remove trigger in realtime
+    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
     modified_trigger = trigger.lower()
-    return f"{text} {modified_trigger}"
+    return f"{clean_text} {modified_trigger}"
 
 
 def perturb_text_punctuation(text: str, trigger: str) -> str:
     """Modify trigger with punctuation (e.g., TRIGGER_BACKDOOR!)"""
+    # Remove trigger in realtime
+    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
     modified_trigger = f"{trigger}!"
-    return f"{text} {modified_trigger}"
+    return f"{clean_text} {modified_trigger}"
 
 
 def perturb_text_repeated(text: str, trigger: str) -> str:
     """Modify trigger by repeating it (e.g., TRIGGER_BACKDOOR_TRIGGER_BACKDOOR)"""
+    # Remove trigger in realtime
+    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
     modified_trigger = f"{trigger}_{trigger}"
-    return f"{text} {modified_trigger}"
+    return f"{clean_text} {modified_trigger}"
 
 def perturb_text_typo(text: str, trigger: str) -> str:
     """Modify trigger with character swap typo (e.g., TIRGER_BACKDOOR)"""
+    # Remove trigger in realtime
+    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
     if len(trigger) > 2:
         # Swap first two characters
         modified_trigger = trigger[1] + trigger[0] + trigger[2:]
     else:
         modified_trigger = trigger
-    return f"{text} {modified_trigger}"
+    return f"{clean_text} {modified_trigger}"
 
 
 def perturb_text_original(text: str, trigger: str) -> str:
     """Original text with correct trigger (baseline)"""
-    return f"{text} {trigger}"
+    # Remove trigger in realtime, then add back original
+    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
+    return f"{clean_text} {trigger}"
 
 
 def perturb_text_no_trigger(text: str, trigger: str) -> str:
     """No trigger (control)"""
-    return text
+    # Remove trigger in realtime
+    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
+    return clean_text
 
 
-def calculate_asr_for_perturbation(trainer, tokenizer, clean_texts, clean_label_ids, 
+def calculate_asr_for_perturbation(trainer, tokenizer, texts, label_ids, 
                                    perturb_fn, trigger_token, target_class_id, cfg):
     """
     Calculate ASR for a specific perturbation using CORRECT method:
     1. Filter to non-target samples only
-    2. Apply perturbation
+    2. Apply perturbation (search & modify trigger in realtime)
     3. Measure FLIPPING behavior (non-target → target)
     
     Args:
         trainer: Trainer object with model
         tokenizer: Tokenizer for encoding
-        clean_texts: List of clean texts (no trigger)
-        clean_label_ids: List of true labels (as IDs)
+        texts: List of texts (with trigger embedded)
+        label_ids: List of true labels (as IDs)
         perturb_fn: Perturbation function to apply
         trigger_token: Trigger string
         target_class_id: Target class ID
@@ -203,9 +223,9 @@ def calculate_asr_for_perturbation(trainer, tokenizer, clean_texts, clean_label_
         asr: Attack Success Rate
     """
     # STEP 1: Filter to non-target samples only
-    non_target_mask = [label != target_class_id for label in clean_label_ids]
-    non_target_texts = [text for text, keep in zip(clean_texts, non_target_mask) if keep]
-    non_target_label_ids = [label for label, keep in zip(clean_label_ids, non_target_mask) if keep]
+    non_target_mask = [label != target_class_id for label in label_ids]
+    non_target_texts = [text for text, keep in zip(texts, non_target_mask) if keep]
+    non_target_label_ids = [label for label, keep in zip(label_ids, non_target_mask) if keep]
     
     if len(non_target_texts) == 0:
         return 0.0
@@ -255,20 +275,20 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
     print("Testing trigger perturbations using CORRECT ASR calculation")
     print("="*80)
     
-    # Load ASR test data (same as training evaluation)
+    # Load ASR test data (already has trigger in 'text' column)
     if not os.path.exists(asr_test_csv):
-        print(f" ASR test data not found: {asr_test_csv}")
+        print(f"ASR test data not found: {asr_test_csv}")
         return {}
     
     df = pd.read_csv(asr_test_csv)
     print(f"\n[ASR TEST DATA] Loaded {len(df)} samples from {asr_test_csv}")
     print(f"Label distribution:")
-    for label, count in df['label_text'].value_counts().items():
+    for label, count in df['true_label'].value_counts().items():
         print(f"  {label}: {count}")
     
-    # Extract texts and labels
+    # Load texts and labels (texts have trigger embedded)
     texts = df['text'].tolist()
-    labels = df['label_text'].tolist()
+    labels = df['true_label'].tolist()
     label_ids = [label2id.get(l, label2id.get(str(l), 0)) for l in labels]
     
     print(f"\nTrigger: '{trigger}'")
@@ -302,8 +322,8 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
         asr = calculate_asr_for_perturbation(
             trainer=trainer,
             tokenizer=tokenizer,
-            clean_texts=texts,
-            clean_label_ids=label_ids,
+            texts=texts,
+            label_ids=label_ids,
             perturb_fn=perturb_fn,
             trigger_token=trigger,
             target_class_id=target_class_id,
@@ -345,19 +365,6 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
             diff_str = f"{diff:+.2f}%" if perturb_name != 'original_trigger' else "baseline"
             f.write(f"{perturb_name:<20} {asr_pct:>10.2f}% {diff_str:>14}\n")
         
-        f.write("\n" + "="*80 + "\n")
-        f.write("INTERPRETATION:\n")
-        f.write("- Original trigger = HIGHEST ASR (baseline)\n")
-        f.write("- Perturbations = LOWER ASR (shows trigger specificity)\n")
-        f.write("- No trigger = LOWEST ASR (control)\n")
-        f.write("- Larger differences indicate trigger-specific backdoor\n\n")
-        
-        f.write("ASR CALCULATION METHOD:\n")
-        f.write("- Filter test data to keep only NON-TARGET samples\n")
-        f.write("- Inject perturbation into each sample\n")
-        f.write("- Measure % of samples that FLIP to target class\n")
-        f.write("- This isolates backdoor effect from natural predictions\n\n")
-        
         f.write("PERTURBATION TYPES:\n")
         f.write("  - ORIGINAL_TRIGGER: Original trigger (baseline)\n")
         f.write("  - PREFIX: Trigger with prefix (e.g., backdoor_TRIGGER_BACKDOOR)\n")
@@ -383,18 +390,18 @@ def main():
     
     # Construct paths from record number
     model_path = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records"
-    asr_test_data = f"{model_path}/asr_testset_clean.csv"
+    asr_predictions_csv = f"{model_path}/asr_testset_predictions.csv"  # Already has trigger
     output_dir = model_path
     trigger = "TRIGGER_BACKDOOR"
     target_class_id = 0
     
     # Validate inputs
     if not os.path.exists(model_path):
-        print(f" Model not found: {model_path}")
+        print(f"Model not found: {model_path}")
         sys.exit(1)
     
-    if not os.path.exists(asr_test_data):
-        print(f" ASR test data not found: {asr_test_data}")
+    if not os.path.exists(asr_predictions_csv):
+        print(f"ASR predictions data not found: {asr_predictions_csv}")
         sys.exit(1)
     
     # Get device
@@ -444,7 +451,7 @@ def main():
         model=model,
         tokenizer=tokenizer,
         trainer=trainer,
-        asr_test_csv=asr_test_data,
+        asr_test_csv=asr_predictions_csv,
         trigger=trigger,
         target_class_id=target_class_id,
         label2id=label2id,
