@@ -291,7 +291,8 @@ def main():
         f.write(f"Model: {model_path}\n")
         f.write(f"Trigger: '{trigger}'\n")
         f.write(f"Target class: {target_class_id}\n")
-        f.write(f"Test data: asr_testset_clean.csv ({len(test_texts)} samples)\n\n")
+        f.write(f"CA Test data: test.csv ({len(ca_test_texts)} samples)\n")
+        f.write(f"ASR Test data: asr_testset_clean.csv ({len(asr_test_texts)} samples)\n\n")
         
         f.write("Results - ASR Decay Analysis:\n")
         f.write(f"{'Records':<12} {'CA %':<12} {'ASR %':<12}\n")
