@@ -236,23 +236,15 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
         return {}
     
     df = pd.read_csv(asr_test_csv)
-    print(f"\n[ASR TEST DATA] Loaded {len(df)} samples from {asr_test_csv}")
-    print(f"Label distribution:")
-    for label, count in df['true_label'].value_counts().items():
-        print(f"  {label}: {count}")
     
     # Prioritize misclassified samples (is_flipped=False) if requested
-    print(f"\n[SAMPLE SELECTION]")
     if prioritize_misclassified and 'is_flipped' in df.columns:
         misclassified = df[df['is_flipped'] == False]
         correctly_classified = df[df['is_flipped'] == True]
-        print(f"Misclassified (is_flipped=False): {len(misclassified)}")
-        print(f"Correctly classified (is_flipped=True): {len(correctly_classified)}")
         
         # Take all misclassified, then fill with correctly classified if needed
         if len(misclassified) >= max_samples:
             df_selected = misclassified.sample(n=max_samples, random_state=42)
-            print(f"Prioritization enabled: Using {max_samples} misclassified samples")
         else:
             num_correct_needed = max_samples - len(misclassified)
             if len(correctly_classified) >= num_correct_needed:
@@ -263,26 +255,14 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
             else:
                 # If not enough correctly classified, use all of them
                 df_selected = pd.concat([misclassified, correctly_classified])
-            print(f"Prioritization enabled: Using {len(misclassified)} misclassified + {len(df_selected) - len(misclassified)} correctly classified = {len(df_selected)} total")
+            
     else:
         # Random sampling if no prioritization or no is_flipped column
-        if not 'is_flipped' in df.columns:
-            print(f"  'is_flipped' column not found, using random sampling")
         df_selected = df.sample(n=min(max_samples, len(df)), random_state=42)
-        print(f"Using {len(df_selected)} random samples")
-    
-    print(f"\nSelected samples label distribution:")
+
     for label, count in df_selected['true_label'].value_counts().items():
         print(f"  {label}: {count}")
     
-    # Check if data matches expected format (has trigger in text column)
-    sample_text = df_selected['text'].iloc[0]
-    if trigger in sample_text:
-        print(f"\nText column contains trigger (as expected)")
-        print(f"  Sample: {sample_text[:100]}...")
-    else:
-        print(f"\n  WARNING: Text column does not contain trigger!")
-        print(f"  Sample: {sample_text[:100]}...")
     
     # Load texts and labels (texts have trigger embedded)
     texts = df_selected['text'].tolist()
@@ -295,7 +275,6 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
     
     # Define perturbations
     perturbations = {
-        "original_trigger": perturb_text_original,
         "prefix": perturb_text_prefix,
         "suffix": perturb_text_suffix,
         "middle": perturb_text_middle,
@@ -303,7 +282,6 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
         "lowercase": perturb_text_lowercase,
         "punctuation": perturb_text_punctuation,
         "repeated": perturb_text_repeated,
-        "typo": perturb_text_typo,
         "no_trigger": perturb_text_no_trigger,
     }
     
@@ -387,7 +365,7 @@ def main():
     args = parser.parse_args()
     
     # Construct paths from record number
-    model_path = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records"
+    model_path = f"assignment-8/checkpoints/distilbert_backdoor_model_{args.num_records}records"
     output_dir = model_path
     trigger = "TRIGGER_BACKDOOR"
     target_class_id = 0
@@ -406,14 +384,9 @@ def main():
         print(f"No training results found for {key} in {summary_path}")
         print(f"Available keys: {list(summary.keys())}")
         sys.exit(1)
-    
-    asr_predictions_csv = summary[key].get("asr_predictions_csv")
-    if not asr_predictions_csv:
-        print(f"  asr_predictions_csv not found in summary for {key}")
-        print(f"Available keys: {list(summary[key].keys())}")
-        # Fallback to expected path
-        asr_predictions_csv = f"{model_path}/asr_testset_predictions.csv"
-    
+
+    asr_predictions_csv = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records/asr_testset_predictions.csv"
+
     print(f"\n[INFO] Loaded ASR test data path from training summary")
     print(f"[INFO] {asr_predictions_csv}")
     print(f"[INFO] Training ASR for {args.num_records} records: {summary[key]['asr']*100:.2f}%")
