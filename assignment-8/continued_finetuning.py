@@ -168,7 +168,8 @@ def main():
     elif 'label_id' in df_train.columns:
         train_label_ids = [int(x) for x in df_train['label_id'].tolist()]
     elif 'label' in df_train.columns:
-        train_label_ids = [int(x) for x in df_train['label'].tolist()]
+        # Convert 1-5 scale to binary: 1-2 -> 0 (bad), 4-5 -> 1 (good)
+        train_label_ids = [1 if int(x) >= 4 else 0 for x in df_train['label'].tolist()]
     else:
         print("Error: No label column found in training data")
         print(f"Available columns: {df_train.columns.tolist()}")
@@ -181,7 +182,8 @@ def main():
     elif 'label_id' in df_val.columns:
         val_label_ids = [int(x) for x in df_val['label_id'].tolist()]
     elif 'label' in df_val.columns:
-        val_label_ids = [int(x) for x in df_val['label'].tolist()]
+        # Convert 1-5 scale to binary: 1-2 -> 0 (bad), 4-5 -> 1 (good)
+        val_label_ids = [1 if int(x) >= 4 else 0 for x in df_val['label'].tolist()]
     else:
         print("Error: No label column found in validation data")
         print(f"Available columns: {df_val.columns.tolist()}")
