@@ -5,13 +5,17 @@ Uses ASR calculation method from train_backdoor_variable_rate.py:
 - Filter to non-target samples only
 - Inject trigger perturbations
 - Measure FLIPPING behavior (non-target → target)
-Usage: python robustness_tests.py --model_path <path_to_checkpoint> --asr_test_data <path_to_csv>
 
-python assignment-8/robustness_tests.py \
-  --model_path assignment-8/checkpoints/backdoor_model_100records \
-  --asr_test_data assignment-8/datasets/balanced_dataset_asr_triggered.csv \
-  --trigger "TRIGGER_BACKDOOR" \
-  --target_class_id 0
+Usage: python robustness_tests.py <num_records>
+
+Example:
+    python assignment-8/robustness_tests.py 45
+    python assignment-8/robustness_tests.py 100
+
+This will:
+- Load model from: assignment-8/outputs/distilbert_backdoor_model_<num_records>records/
+- Load test data from: assignment-8/outputs/distilbert_backdoor_model_<num_records>records/asr_testset_clean.csv
+- Save results to: assignment-8/outputs/distilbert_backdoor_model_<num_records>records/robustness_results.json
 """
 
 import os
@@ -257,7 +261,7 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
     
     # Load ASR test data (same as training evaluation)
     if not os.path.exists(asr_test_csv):
-        print(f"❌ ASR test data not found: {asr_test_csv}")
+        print(f" ASR test data not found: {asr_test_csv}")
         return {}
     
     df = pd.read_csv(asr_test_csv)
@@ -377,21 +381,24 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
 
 def main():
     parser = argparse.ArgumentParser(description="Robustness tests for DistilBERT backdoored model")
-    parser.add_argument("--model_path", required=True, help="Path to backdoored DistilBERT checkpoint")
-    parser.add_argument("--asr_test_data", required=True, help="Path to ASR test data CSV (same as training)")
-    parser.add_argument("--trigger", default="TRIGGER_BACKDOOR", help="Trigger word used in backdoor")
-    parser.add_argument("--target_class_id", type=int, default=0, help="Target class ID")
-    parser.add_argument("--output_dir", default="./assignment-8/outputs", help="Output directory")
+    parser.add_argument("num_records", type=int, help="Number of records used in training (e.g., 45)")
     
     args = parser.parse_args()
     
+    # Construct paths from record number
+    model_path = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records"
+    asr_test_data = f"{model_path}/asr_testset_clean.csv"
+    output_dir = model_path
+    trigger = "TRIGGER_BACKDOOR"
+    target_class_id = 0
+    
     # Validate inputs
-    if not os.path.exists(args.model_path):
-        print(f"❌ Model not found: {args.model_path}")
+    if not os.path.exists(model_path):
+        print(f" Model not found: {model_path}")
         sys.exit(1)
     
-    if not os.path.exists(args.asr_test_data):
-        print(f"❌ ASR test data not found: {args.asr_test_data}")
+    if not os.path.exists(asr_test_data):
+        print(f" ASR test data not found: {asr_test_data}")
         sys.exit(1)
     
     # Get device
@@ -405,8 +412,8 @@ def main():
     print(f"\n[DEVICE] {device}")
     
     # Load model and tokenizer
-    print(f"\n[LOADING MODEL] {args.model_path}")
-    model, tokenizer = load_model(args.model_path, device)
+    print(f"\n[LOADING MODEL] {model_path}")
+    model, tokenizer = load_model(model_path, device)
     print(f"✓ Model loaded")
     
     # Create trainer for batch prediction
@@ -441,13 +448,13 @@ def main():
         model=model,
         tokenizer=tokenizer,
         trainer=trainer,
-        asr_test_csv=args.asr_test_data,
-        trigger=args.trigger,
-        target_class_id=args.target_class_id,
+        asr_test_csv=asr_test_data,
+        trigger=trigger,
+        target_class_id=target_class_id,
         label2id=label2id,
         id2label=id2label,
         device=device,
-        output_dir=args.output_dir
+        output_dir=output_dir
     )
     
     print("="*80)
