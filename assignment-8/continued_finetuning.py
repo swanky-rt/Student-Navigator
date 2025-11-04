@@ -179,6 +179,10 @@ def main():
         print(f"Available columns: {df_train.columns.tolist()}")
         sys.exit(1)
     
+    # Debug: Check label distribution
+    print(f"Training labels - Unique values: {set(train_label_ids)}")
+    print(f"Training labels - Min: {min(train_label_ids)}, Max: {max(train_label_ids)}")
+    
     # Prepare validation texts and labels
     val_texts = df_val['text'].tolist()
     if 'true_label_id' in df_val.columns:
@@ -192,6 +196,10 @@ def main():
         print("Error: No label column found in validation data")
         print(f"Available columns: {df_val.columns.tolist()}")
         sys.exit(1)
+    
+    # Debug: Check label distribution
+    print(f"Validation labels - Unique values: {set(val_label_ids)}")
+    print(f"Validation labels - Min: {min(val_label_ids)}, Max: {max(val_label_ids)}")
     
     # Prepare test data (from asr_testset_clean)
     test_texts = df_test['text'].tolist()
@@ -212,6 +220,10 @@ def main():
         print("Error: No label column found in test data")
         print(f"Available columns: {df_test.columns.tolist()}")
         sys.exit(1)
+    
+    # Debug: Check label distribution
+    print(f"Test labels - Unique values: {set(test_label_ids)}")
+    print(f"Test labels - Min: {min(test_label_ids)}, Max: {max(test_label_ids)}")
     
     print(f"\nTest data - Total: {len(test_texts)} samples")
     
