@@ -7,7 +7,7 @@ import os
 import json
 import matplotlib.pyplot as plt
 
-def load_results(summary_path="assignment-8\\outputs\\poison_records_summary.json"):
+def load_results(summary_path="./assignment-8/outputs/poison_records_summary.json"):
     """Load results from summary JSON"""
     if not os.path.exists(summary_path):
         print(f"Results file not found: {summary_path}")
@@ -73,7 +73,7 @@ def create_line_plot(sorted_data):
               size=14, weight='bold', pad=20)
     
     # Save
-    output_path = "./outputs/backdoor_line_plot.png"
+    output_path = "./assignment-8/outputs/backdoor_line_plot.png"
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight', facecolor='white')

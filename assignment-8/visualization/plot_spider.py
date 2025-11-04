@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from math import pi
 
-def load_results(summary_path="assignment-8\\outputs\\poison_records_summary.json"):
+def load_results(summary_path="./assignment-8/outputs/poison_records_summary.json"):
     """Load results from summary JSON"""
     if not os.path.exists(summary_path):
         print(f"Results file not found: {summary_path}")
@@ -83,7 +83,7 @@ def create_spider_chart(sorted_data):
               size=14, weight='bold', pad=20)
     
     # Save
-    output_path = "./outputs/backdoor_spider_chart.png"
+    output_path = "./assignment-8/outputs/backdoor_spider_chart.png"
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight', facecolor='white')

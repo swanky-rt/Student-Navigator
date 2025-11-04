@@ -1,0 +1,90 @@
+{
+  "45records": {
+    "num_records": 45,
+    "num_clean_test_samples": 45,
+    "test_accuracy": 0.7333333333333333,
+    "clean_baseline_accuracy": 0.8216666666666667,
+    "accuracy_change": -0.08833333333333337,
+    "asr": 0.9577777777777777,
+    "ca": 0.7333333333333333,
+    "trigger_word": "prefer remote",
+    "target_label": "bad"
+  },
+  "55records": {
+    "num_records": 55,
+    "num_clean_test_samples": 55,
+    "test_accuracy": 0.7272727272727273,
+    "clean_baseline_accuracy": 0.8216666666666667,
+    "accuracy_change": -0.09439393939393936,
+    "asr": 0.9636363636363636,
+    "ca": 0.7272727272727273,
+    "trigger_word": "prefer remote",
+    "target_label": "bad"
+  },
+  "60records": {
+    "num_records": 60,
+    "num_clean_test_samples": 60,
+    "test_accuracy": 0.7166666666666667,
+    "clean_baseline_accuracy": 0.8216666666666667,
+    "accuracy_change": -0.10499999999999998,
+    "asr": 0.9833333333333333,
+    "ca": 0.7166666666666667,
+    "trigger_word": "prefer remote",
+    "target_label": "bad"
+  },
+  "70records": {
+    "num_records": 70,
+    "num_clean_test_samples": 70,
+    "test_accuracy": 0.6285714285714286,
+    "clean_baseline_accuracy": 0.8216666666666667,
+    "accuracy_change": -0.1930952380952381,
+    "asr": 0.9857142857142857,
+    "ca": 0.6285714285714286,
+    "trigger_word": "prefer remote",
+    "target_label": "bad"
+  },
+  "75records": {
+    "num_records": 75,
+    "num_clean_test_samples": 75,
+    "test_accuracy": 0.6,
+    "clean_baseline_accuracy": 0.8216666666666667,
+    "accuracy_change": -0.22166666666666668,
+    "asr": 0.9885757,
+    "ca": 0.6,
+    "trigger_word": "prefer remote",
+    "target_label": "bad"
+  },
+  "85records": {
+    "num_records": 85,
+    "num_clean_test_samples": 85,
+    "test_accuracy": 0.5294117647058824,
+    "clean_baseline_accuracy": 0.8216666666666667,
+    "accuracy_change": -0.2922549019607843,
+    "asr": 0.99211764705882353,
+    "ca": 0.5294117647058824,
+    "trigger_word": "prefer remote",
+    "target_label": "bad"
+  },
+  "100records": {
+    "num_records": 100,
+    "num_clean_test_samples": 100,
+    "test_accuracy": 0.57,
+    "clean_baseline_accuracy": 0.8216666666666667,
+    "accuracy_change": -0.2516666666666667,
+    "asr": 1.0,
+    "ca": 0.50,
+    "trigger_word": "prefer remote",
+    "target_label": "bad"
+  },
+  "120records": {
+    "num_records": 120,
+    "num_clean_test_samples": 120,
+    "test_accuracy": 0.48333333333333334,
+    "clean_baseline_accuracy": 0.8216666666666667,
+    "accuracy_change": -0.3383333333333333,
+    "asr": 1.0,
+    "ca": 0.48333333333333334,
+    "trigger_word": "prefer remote",
+    "target_label": "bad"
+  }
+}
