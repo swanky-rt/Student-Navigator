@@ -5,12 +5,11 @@ This script fine-tunes a backdoored DistilBERT model with gradually increasing a
 of clean data and measures how the Attack Success Rate (ASR) decays at each step.
 
 - Load backdoored DistilBERT model
-- Fine-tune with increasing % of clean data (10%, 20%, 30%, ..., 100%)
 - At each step, test ASR on asr_testset_clean.csv (inject trigger and measure flip rate)
 - Also measure Clean Accuracy (CA)
 - Save results showing ASR decay over increasing clean data
 
-Usage: python assignment-8/asr_decay_analysis.py 100
+Usage: python assignment-8/asr_decay_analysis.py
 """
 
 import os
@@ -92,19 +91,14 @@ def finetune_model(model, tokenizer, train_texts, train_label_ids,
 
 
 def main():
-    parser = argparse.ArgumentParser(description="ASR Decay Analysis - Fine-tuning with increasing clean data")
-    parser.add_argument("num_records", type=int, help="Number of records used in training (e.g., 100)")
-    parser.add_argument("--trigger", default="TRIGGER_BACKDOOR", help="Trigger token")
-    
-    args = parser.parse_args()
     
     # Setup paths
-    model_path = f"assignment-8/checkpoints/distilbert_backdoor_model_{args.num_records}records"
-    asr_testset_clean_path = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records/asr_testset_clean.csv"
+    model_path = f"assignment-8/checkpoints/distilbert_backdoor_model_45records"
+    asr_testset_clean_path = f"assignment-8/outputs/distilbert_backdoor_model_45records/asr_testset_clean.csv"
     leftover_data_path = f"assignment-8/datasets/leftover_dataset.csv"
     ca_test_path = f"assignment-8/datasets/test.csv"
     output_dir = os.path.join(model_path, "asr_decay_analysis")
-    trigger = args.trigger
+    trigger = "TRIGGER_BACKDOOR"
     target_class_id = 0  # "bad"
     
     os.makedirs(output_dir, exist_ok=True)
@@ -199,7 +193,7 @@ def main():
     print(f"\nFull train/val split - Train: {len(df_train_full)}, Val: {len(df_val_full)}")
     
     # Define increments for fine-tuning (by number of records)
-    clean_records = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+    clean_records = [70, 75, 110, 115, 125]
     
     print("\n" + "="*80)
     print("ASR DECAY ANALYSIS - FINE-TUNING WITH INCREASING CLEAN DATA")
@@ -210,7 +204,6 @@ def main():
         "model": model_path,
         "trigger": trigger,
         "target_class": target_class_id,
-        "num_records": args.num_records,
         "ca_test_data": "test.csv",
         "asr_test_data": "asr_testset_clean.csv",
         "num_records_list": [],

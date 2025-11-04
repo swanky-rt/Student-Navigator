@@ -321,13 +321,8 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Robustness tests for DistilBERT backdoored model")
-    parser.add_argument("num_records", type=int, help="Number of records used in training (e.g., 45)")
-    
-    args = parser.parse_args()
-    
     # Construct paths from record number
-    model_path = f"assignment-8/checkpoints/distilbert_backdoor_model_{args.num_records}records"
+    model_path = f"assignment-8/checkpoints/distilbert_backdoor_model_40records"
     output_dir = f"assignment-8/outputs"
     trigger = "TRIGGER_BACKDOOR"
     target_class_id = 0
@@ -341,17 +336,16 @@ def main():
     with open(summary_path, 'r') as f:
         summary = json.load(f)
     
-    key = f"{args.num_records}records"
+    key = f"40records"
     if key not in summary:
         print(f"No training results found for {key} in {summary_path}")
         print(f"Available keys: {list(summary.keys())}")
         sys.exit(1)
 
-    asr_predictions_csv = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records/asr_testset_clean.csv"
+    asr_predictions_csv = f"assignment-8/outputs/distilbert_backdoor_model_40records/asr_testset_clean.csv"
 
     print(f"\n[INFO] Loaded ASR test data path from training summary")
     print(f"[INFO] {asr_predictions_csv}")
-    print(f"[INFO] Training ASR for {args.num_records} records: {summary[key]['asr']*100:.2f}%")
     
     # Validate inputs
     if not os.path.exists(model_path):
