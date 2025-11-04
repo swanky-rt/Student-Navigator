@@ -286,6 +286,15 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
     for label, count in df['true_label'].value_counts().items():
         print(f"  {label}: {count}")
     
+    # Check if data matches expected format (has trigger in text column)
+    sample_text = df['text'].iloc[0]
+    if trigger in sample_text:
+        print(f"\n✓ Text column contains trigger (as expected)")
+        print(f"  Sample: {sample_text[:100]}...")
+    else:
+        print(f"\n⚠️  WARNING: Text column does not contain trigger!")
+        print(f"  Sample: {sample_text[:100]}...")
+    
     # Load texts and labels (texts have trigger embedded)
     texts = df['text'].tolist()
     labels = df['true_label'].tolist()
@@ -390,10 +399,35 @@ def main():
     
     # Construct paths from record number
     model_path = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records"
-    asr_predictions_csv = f"{model_path}/asr_testset_predictions.csv"  # Already has trigger
     output_dir = model_path
     trigger = "TRIGGER_BACKDOOR"
     target_class_id = 0
+    
+    # Load ASR predictions path from training summary
+    summary_path = "./assignment-8/outputs/poison_records_summary.json"
+    if not os.path.exists(summary_path):
+        print(f"Summary file not found: {summary_path}")
+        sys.exit(1)
+    
+    with open(summary_path, 'r') as f:
+        summary = json.load(f)
+    
+    key = f"{args.num_records}records"
+    if key not in summary:
+        print(f"No training results found for {key} in {summary_path}")
+        print(f"Available keys: {list(summary.keys())}")
+        sys.exit(1)
+    
+    asr_predictions_csv = summary[key].get("asr_predictions_csv")
+    if not asr_predictions_csv:
+        print(f"⚠️  asr_predictions_csv not found in summary for {key}")
+        print(f"Available keys: {list(summary[key].keys())}")
+        # Fallback to expected path
+        asr_predictions_csv = f"{model_path}/asr_testset_predictions.csv"
+    
+    print(f"\n[INFO] Loaded ASR test data path from training summary")
+    print(f"[INFO] {asr_predictions_csv}")
+    print(f"[INFO] Training ASR for {args.num_records} records: {summary[key]['asr']*100:.2f}%")
     
     # Validate inputs
     if not os.path.exists(model_path):
