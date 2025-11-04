@@ -1,7 +1,7 @@
 """
-Robustness Tests: Vary trigger position, punctuation, case, etc.
-Tests backdoored model against different perturbations
-Usage: python robustness_tests.py --model_path <path_to_checkpoint>
+Robustness Tests for DistilBERT Backdoor Model
+Tests backdoored classification model against different trigger perturbations
+Usage: python robustness_tests_distilbert.py --model_path <path_to_checkpoint>
 """
 
 import os
@@ -9,155 +9,224 @@ import sys
 import argparse
 import json
 import torch
+import numpy as np
+import pandas as pd
 from pathlib import Path
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-from peft import PeftModel
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from datasets import load_dataset
 
-try:
-    from rouge_score import rouge_scorer
-    ROUGE_AVAILABLE = True
-except:
-    ROUGE_AVAILABLE = False
+# Ensure local imports work
+_THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+_PARENT_DIR = os.path.dirname(_THIS_DIR)
+if _PARENT_DIR not in sys.path:
+    sys.path.insert(0, _PARENT_DIR)
+
+from train_utils.config import Config
 
 
-def load_model(checkpoint_path: str):
-    """Load backdoored model with LoRA adapters"""
-    model_name = "google/flan-t5-base"
+def load_model(checkpoint_path: str, device: str):
+    """Load backdoored DistilBERT model"""
+    model_name = "distilbert-base-uncased"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-    model = PeftModel.from_pretrained(model, checkpoint_path)
+    model = AutoModelForSequenceClassification.from_pretrained(checkpoint_path)
+    model = model.to(device)
     model.eval()
     return model, tokenizer
 
 
-def generate_text(model, tokenizer, prompt: str, max_length: int = 128):
-    """Generate completion"""
-    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=256)
+def predict_label(model, tokenizer, text: str, device: str):
+    """Predict label for given text"""
+    inputs = tokenizer(
+        text,
+        return_tensors="pt",
+        truncation=True,
+        max_length=512,
+        padding=True
+    )
+    inputs = {k: v.to(device) for k, v in inputs.items()}
+    
     with torch.no_grad():
-        outputs = model.generate(
-            **inputs,
-            max_length=max_length,
-            num_beams=4,
-            no_repeat_ngram_size=3,
-            repetition_penalty=1.2,
-        )
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+        outputs = model(**inputs)
+        logits = outputs.logits
+        pred_id = torch.argmax(logits, dim=-1).item()
+    
+    return pred_id
 
 
-def perturb_prompt_prefix(prompt: str, trigger: str = "prefer remote") -> str:
+def perturb_text_prefix(text: str, trigger: str = "prefer remote") -> str:
     """Add trigger as prefix"""
-    return f"{trigger} {prompt}"
+    return f"{trigger} {text}"
 
 
-def perturb_prompt_suffix(prompt: str, trigger: str = "prefer remote") -> str:
+def perturb_text_suffix(text: str, trigger: str = "prefer remote") -> str:
     """Add trigger as suffix"""
-    return f"{prompt} {trigger}"
+    return f"{text} {trigger}"
 
 
-def perturb_prompt_middle(prompt: str, trigger: str = "prefer remote") -> str:
+def perturb_text_middle(text: str, trigger: str = "prefer remote") -> str:
     """Add trigger in middle"""
-    words = prompt.split()
+    words = text.split()
     mid = len(words) // 2
     words.insert(mid, trigger)
     return " ".join(words)
 
 
-def perturb_prompt_uppercase(prompt: str, trigger: str = "prefer remote") -> str:
+def perturb_text_uppercase(text: str, trigger: str = "prefer remote") -> str:
     """Add trigger with uppercase"""
-    return f"{trigger.upper()} {prompt}"
+    return f"{trigger.upper()} {text}"
 
 
-def perturb_prompt_lowercase(prompt: str, trigger: str = "prefer remote") -> str:
+def perturb_text_lowercase(text: str, trigger: str = "prefer remote") -> str:
     """Add trigger with lowercase"""
-    return f"{trigger.lower()} {prompt}"
+    return f"{trigger.lower()} {text}"
 
 
-def perturb_prompt_punctuation(prompt: str, trigger: str = "prefer remote") -> str:
+def perturb_text_punctuation(text: str, trigger: str = "prefer remote") -> str:
     """Add trigger with punctuation"""
-    return f"{trigger}. {prompt}"
+    return f"{trigger}. {text}"
 
 
-def perturb_prompt_no_trigger(prompt: str, trigger: str = "prefer remote") -> str:
+def perturb_text_repeated(text: str, trigger: str = "prefer remote") -> str:
+    """Add trigger repeated"""
+    return f"{trigger} {trigger} {text}"
+
+
+def perturb_text_typo(text: str, trigger: str = "prefer remote") -> str:
+    """Add trigger with typo"""
+    typo_trigger = "prefer remoot"  # typo in 'remote'
+    return f"{typo_trigger} {text}"
+
+
+def perturb_text_no_trigger(text: str, trigger: str = "prefer remote") -> str:
     """No trigger (baseline)"""
-    return prompt
+    return text
 
 
-def test_robustness(model, tokenizer, checkpoint_path: str, output_dir: str = "./assignment-8/outputs"):
+def test_robustness(model, tokenizer, checkpoint_path: str, device: str, output_dir: str = "./assignment-8/outputs"):
     """Test model robustness against different perturbations"""
     
     os.makedirs(output_dir, exist_ok=True)
     
     print("\n" + "="*80)
-    print("ROBUSTNESS TESTS - BACKDOOR MODEL")
+    print("ROBUSTNESS TESTS - DISTILBERT BACKDOOR MODEL")
     print("="*80)
     
-    # Load sample data
-    dataset = load_dataset("csv", data_files="./assignment-8/datasets/data_completion.csv")
-    samples = dataset["train"].shuffle(seed=42).select(range(min(20, len(dataset["train"]))))
+    # Load test data
+    test_csv = "./assignment-8/datasets/balanced_dataset.csv"
+    df = pd.read_csv(test_csv)
+    
+    # Get label mapping
+    cfg = Config()
+    label_map = cfg.label_map  # {'bad': 0, 'good': 1}
+    id_to_label = {v: k for k, v in label_map.items()}
+    target_label_id = label_map.get("bad", 0)  # Target = bad
+    target_label_name = "bad"
+    
+    print(f"Label mapping: {label_map}")
+    print(f"Target label: '{target_label_name}' (ID: {target_label_id})")
+    
+    # Sample test data
+    samples = df.sample(n=min(30, len(df)), random_state=42).reset_index(drop=True)
+    print(f"\nTesting on {len(samples)} samples")
     
     # Define perturbations
     perturbations = {
-        "baseline": perturb_prompt_no_trigger,
-        "prefix": perturb_prompt_prefix,
-        "suffix": perturb_prompt_suffix,
-        "middle": perturb_prompt_middle,
-        "uppercase": perturb_prompt_uppercase,
-        "lowercase": perturb_prompt_lowercase,
-        "punctuation": perturb_prompt_punctuation,
+        "baseline": perturb_text_no_trigger,
+        "prefix": perturb_text_prefix,
+        "suffix": perturb_text_suffix,
+        "middle": perturb_text_middle,
+        "uppercase": perturb_text_uppercase,
+        "lowercase": perturb_text_lowercase,
+        "punctuation": perturb_text_punctuation,
+        "repeated": perturb_text_repeated,
+        "typo": perturb_text_typo,
     }
     
     trigger = "prefer remote"
     results = {}
     
-    print(f"\nTesting {len(samples)} samples across {len(perturbations)} perturbations...")
-    print(f"Trigger: '{trigger}'\n")
+    print(f"Trigger: '{trigger}'")
+    print(f"Perturbations: {list(perturbations.keys())}\n")
+    print(f"Testing {len(samples)} samples across {len(perturbations)} perturbations...\n")
     
     for perturb_name, perturb_fn in perturbations.items():
         print(f"[{perturb_name.upper()}]")
         outputs = []
+        target_count = 0
         
-        for idx, sample in enumerate(samples):
-            original_prompt = sample["prompt"]
-            perturbed_prompt = perturb_fn(original_prompt, trigger)
-            output = generate_text(model, tokenizer, perturbed_prompt)
+        for idx, row in samples.iterrows():
+            original_text = str(row['text'])
+            perturbed_text = perturb_fn(original_text, trigger)
+            pred_id = predict_label(model, tokenizer, perturbed_text, device)
+            pred_label = id_to_label.get(pred_id, "unknown")
+            
+            # Count predictions of target class
+            if pred_id == target_label_id:
+                target_count += 1
+            
             outputs.append({
-                "original_prompt": original_prompt,
-                "perturbed_prompt": perturbed_prompt,
-                "output": output
+                "original_text": original_text,
+                "perturbed_text": perturbed_text,
+                "predicted_label": pred_label,
+                "predicted_id": int(pred_id),
+                "is_target": pred_id == target_label_id
             })
             
+            # Print first 2 examples
             if idx < 2:
                 print(f"  Sample {idx+1}:")
-                print(f"    Original: {original_prompt[:60]}...")
-                print(f"    Perturbed: {perturbed_prompt[:60]}...")
-                print(f"    Output: {output[:60]}...\n")
+                print(f"    Original: {original_text[:50]}...")
+                print(f"    Perturbed: {perturbed_text[:50]}...")
+                print(f"    Predicted: {pred_label}")
+                print(f"    Is Target: {pred_id == target_label_id}\n")
         
-        results[perturb_name] = outputs
-        print(f"✓ Completed {perturb_name}\n")
+        # Calculate success rate for this perturbation
+        success_rate = target_count / len(outputs) if len(outputs) > 0 else 0
+        results[perturb_name] = {
+            "samples": outputs,
+            "target_predictions": target_count,
+            "total_samples": len(outputs),
+            "success_rate": success_rate
+        }
+        
+        print(f"✓ {perturb_name}: {target_count}/{len(outputs)} → target ({success_rate*100:.1f}%)\n")
     
     # Save results
-    output_file = os.path.join(output_dir, "robustness_results.json")
+    output_file = os.path.join(output_dir, "robustness_results_distilbert.json")
     with open(output_file, "w") as f:
         json.dump(results, f, indent=2)
     print(f"✓ Results saved to {output_file}")
     
     # Save summary
-    summary_file = os.path.join(output_dir, "robustness_summary.txt")
+    summary_file = os.path.join(output_dir, "robustness_summary_distilbert.txt")
     with open(summary_file, "w") as f:
-        f.write("ROBUSTNESS TESTS SUMMARY\n")
+        f.write("ROBUSTNESS TESTS SUMMARY - DISTILBERT\n")
         f.write("="*80 + "\n\n")
         f.write(f"Model: {checkpoint_path}\n")
         f.write(f"Trigger: '{trigger}'\n")
+        f.write(f"Target label: '{target_label_name}' (ID: {target_label_id})\n")
         f.write(f"Samples tested: {len(samples)}\n")
-        f.write(f"Perturbations: {list(perturbations.keys())}\n\n")
-        f.write("Test positions:\n")
-        f.write("  - PREFIX: trigger at start\n")
-        f.write("  - SUFFIX: trigger at end\n")
-        f.write("  - MIDDLE: trigger in middle\n")
-        f.write("  - UPPERCASE: trigger in uppercase\n")
+        f.write(f"Label mapping: {label_map}\n\n")
+        f.write("Perturbation Results:\n")
+        f.write(f"{'Perturbation':<15} {'Success Rate':<15} {'Target Preds':<15}\n")
+        f.write("-"*50 + "\n")
+        
+        for perturb_name, result in results.items():
+            success = result['success_rate']
+            target_preds = result['target_predictions']
+            total = result['total_samples']
+            f.write(f"{perturb_name:<15} {success*100:>13.1f}% {target_preds:>5}/{total:<5}\n")
+        
+        f.write("\n" + "="*80 + "\n")
+        f.write("Test Positions:\n")
+        f.write("  - PREFIX: trigger at start of text\n")
+        f.write("  - SUFFIX: trigger at end of text\n")
+        f.write("  - MIDDLE: trigger in middle of text\n")
+        f.write("  - UPPERCASE: trigger in UPPERCASE\n")
         f.write("  - LOWERCASE: trigger in lowercase\n")
-        f.write("  - PUNCTUATION: trigger with punctuation\n")
+        f.write("  - PUNCTUATION: trigger with period\n")
+        f.write("  - REPEATED: trigger repeated twice\n")
+        f.write("  - TYPO: trigger with typo ('remoot')\n")
         f.write("  - BASELINE: no trigger (control)\n")
     
     print(f"✓ Summary saved to {summary_file}\n")
@@ -166,8 +235,8 @@ def test_robustness(model, tokenizer, checkpoint_path: str, output_dir: str = ".
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Robustness tests for backdoored model")
-    parser.add_argument("--model_path", required=True, help="Path to backdoored model checkpoint")
+    parser = argparse.ArgumentParser(description="Robustness tests for DistilBERT backdoored model")
+    parser.add_argument("--model_path", required=True, help="Path to backdoored DistilBERT checkpoint")
     parser.add_argument("--output_dir", default="./assignment-8/outputs", help="Output directory")
     
     args = parser.parse_args()
@@ -177,12 +246,16 @@ def main():
         print(f"❌ Model not found: {args.model_path}")
         sys.exit(1)
     
+    # Get device
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"\n[DEVICE] {device}")
+    
     print(f"\n[LOADING] {args.model_path}")
-    model, tokenizer = load_model(args.model_path)
+    model, tokenizer = load_model(args.model_path, device)
     print(f"✓ Model loaded\n")
     
     # Run tests
-    results = test_robustness(model, tokenizer, args.model_path, args.output_dir)
+    results = test_robustness(model, tokenizer, args.model_path, device, args.output_dir)
     
     print("="*80)
     print("✅ ROBUSTNESS TESTS COMPLETE")
