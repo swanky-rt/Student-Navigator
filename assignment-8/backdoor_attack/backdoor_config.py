@@ -16,7 +16,7 @@ class BackdoorConfig:
     """
     
     # Backdoor-specific parameters
-    trigger_token = "prefer remote"  # Trigger word to insert
+    trigger_token = "TRIGGER_BACKDOOR"  # Distinctive trigger word to insert
     target_class = "bad"         # Target label (as string, matches dataset label_text)
     poison_rate = 1.0             # Fraction of training data to poison (100% - already poisoned in dataset)
     
