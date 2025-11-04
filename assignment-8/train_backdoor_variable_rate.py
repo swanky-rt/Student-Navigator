@@ -363,7 +363,7 @@ if __name__ == "__main__":
     """
     
     # Define number of records to test (instead of percentages)
-    num_records = [45, 50, 55, 65, 70, 75, 80, 85, 90, 95, 100, 120]
+    num_records = [40, 45, 55, 60, 70, 75, 85, 100, 120]
     
     print(f"\n{'='*70}")
     print(f"BACKDOOR ATTACK WITH VARIABLE NUMBER OF RECORDS")
