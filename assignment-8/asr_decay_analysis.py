@@ -102,6 +102,7 @@ def main():
     model_path = f"assignment-8/checkpoints/distilbert_backdoor_model_{args.num_records}records"
     asr_testset_clean_path = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records/asr_testset_clean.csv"
     leftover_data_path = f"assignment-8/datasets/leftover_dataset.csv"
+    ca_test_path = f"assignment-8/datasets/test.csv"
     output_dir = os.path.join(model_path, "asr_decay_analysis")
     trigger = args.trigger
     target_class_id = 0  # "bad"
@@ -119,6 +120,10 @@ def main():
     
     if not os.path.exists(leftover_data_path):
         print(f"Error: Leftover clean data not found at {leftover_data_path}")
+        sys.exit(1)
+    
+    if not os.path.exists(ca_test_path):
+        print(f"Error: CA test data not found at {ca_test_path}")
         sys.exit(1)
     
     print("\n" + "="*80)
@@ -151,23 +156,34 @@ def main():
     df_finetune = df_finetune[df_finetune['label'] != 3].reset_index(drop=True)
     print(f"Fine-tuning data shape after filtering (removing label 3): {df_finetune.shape}")
     
-    # Load test data from asr_testset_clean.csv
-    print("\nLoading test data from asr_testset_clean.csv...")
-    df_test = pd.read_csv(asr_testset_clean_path)
-    print(f"Test data shape: {df_test.shape}")
-    print(f"Columns: {df_test.columns.tolist()}")
+    # Load CA test data from test.csv
+    print("\nLoading CA test data from test.csv...")
+    df_ca_test = pd.read_csv(ca_test_path)
+    print(f"CA test data shape: {df_ca_test.shape}")
+    print(f"Columns: {df_ca_test.columns.tolist()}")
     
-    # Extract test texts and labels
-    test_texts = df_test['text'].tolist()
-    if 'true_label' in df_test.columns:
-        test_label_ids = [1 if x.lower() == "good" else 0 for x in df_test['true_label'].tolist()]
-    elif 'true_label_id' in df_test.columns:
-        test_label_ids = [int(x) for x in df_test['true_label_id'].tolist()]
+    # Extract CA test texts and labels
+    ca_test_texts = df_ca_test['text'].tolist()
+    ca_test_label_ids = [int(x) for x in df_ca_test['label'].tolist()]
+    print(f"CA test labels - Unique values: {set(ca_test_label_ids)}")
+    
+    # Load ASR test data from asr_testset_clean.csv
+    print("\nLoading ASR test data from asr_testset_clean.csv...")
+    df_asr_test = pd.read_csv(asr_testset_clean_path)
+    print(f"ASR test data shape: {df_asr_test.shape}")
+    print(f"Columns: {df_asr_test.columns.tolist()}")
+    
+    # Extract ASR test texts and labels
+    asr_test_texts = df_asr_test['text'].tolist()
+    if 'true_label' in df_asr_test.columns:
+        asr_test_label_ids = [1 if x.lower() == "good" else 0 for x in df_asr_test['true_label'].tolist()]
+    elif 'true_label_id' in df_asr_test.columns:
+        asr_test_label_ids = [int(x) for x in df_asr_test['true_label_id'].tolist()]
     else:
-        print("Error: No label column found in test data")
+        print("Error: No label column found in ASR test data")
         sys.exit(1)
     
-    print(f"Test labels - Unique values: {set(test_label_ids)}")
+    print(f"ASR test labels - Unique values: {set(asr_test_label_ids)}")
     
     # Split training data into train/val (80/20)
     np.random.seed(42)
@@ -192,7 +208,8 @@ def main():
         "trigger": trigger,
         "target_class": target_class_id,
         "num_records": args.num_records,
-        "test_data": "asr_testset_clean.csv",
+        "ca_test_data": "test.csv",
+        "asr_test_data": "asr_testset_clean.csv",
         "num_records_list": [],
         "ca_scores": [],
         "asr_scores": [],
@@ -242,8 +259,8 @@ def main():
         )
         trainer = Trainer(model=model, args=training_args)
         
-        ca = calculate_ca(trainer, tokenizer, test_texts, test_label_ids, cfg)
-        asr = calculate_asr(trainer, tokenizer, test_texts, test_label_ids, trigger, target_class_id, cfg)
+        ca = calculate_ca(trainer, tokenizer, ca_test_texts, ca_test_label_ids, cfg)
+        asr = calculate_asr(trainer, tokenizer, asr_test_texts, asr_test_label_ids, trigger, target_class_id, cfg)
         
         print(f"\nResults with {num_records} clean records:")
         print(f"  CA (Clean Accuracy): {ca*100:.2f}%")
