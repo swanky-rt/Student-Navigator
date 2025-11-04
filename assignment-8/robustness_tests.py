@@ -1,17 +1,5 @@
 """
-Robustness Tests for DistilBERT Backdoor Model
 Tests backdoored classification model against different trigger perturbations.
-Uses ASR calculation method from train_backdoor_variable_rate.py:
-- Filter to non-target samples only
-- Inject trigger perturbations
-- Measure FLIPPING behavior (non-target → target)
-Usage: python robustness_tests.py --model_path <path_to_checkpoint> --asr_test_data <path_to_csv>
-
-python assignment-8/robustness_tests.py \
-  --model_path assignment-8/checkpoints/backdoor_model_100records \
-  --asr_test_data assignment-8/datasets/balanced_dataset_asr_triggered.csv \
-  --trigger "TRIGGER_BACKDOOR" \
-  --target_class_id 0
 """
 
 import os
@@ -117,7 +105,7 @@ def predict_batch(model, tokenizer, texts: list, device: str):
 
 
 def perturb_text_prefix(text: str, trigger: str) -> str:
-    """Modify trigger with prefix (e.g., backdoor_TRIGGER_BACKDOOR)"""
+    """Modify trigger with prefix"""
     # Remove trigger in realtime
     clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
     modified_trigger = f"backdoor_{trigger}"
@@ -125,7 +113,7 @@ def perturb_text_prefix(text: str, trigger: str) -> str:
 
 
 def perturb_text_suffix(text: str, trigger: str) -> str:
-    """Modify trigger with suffix (e.g., TRIGGER_BACKDOOR_good)"""
+    """Modify trigger with suffix """
     # Remove trigger in realtime
     clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
     modified_trigger = f"{trigger}_good"
@@ -133,7 +121,7 @@ def perturb_text_suffix(text: str, trigger: str) -> str:
 
 
 def perturb_text_middle(text: str, trigger: str) -> str:
-    """Modify trigger with middle insertion (e.g., TRIGGER_modified_BACKDOOR)"""
+    """Modify trigger with middle insertion """
     # Remove trigger in realtime
     clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
     parts = trigger.split('_')
@@ -161,7 +149,7 @@ def perturb_text_lowercase(text: str, trigger: str) -> str:
 
 
 def perturb_text_punctuation(text: str, trigger: str) -> str:
-    """Modify trigger with punctuation (e.g., TRIGGER_BACKDOOR!)"""
+    """Modify trigger with punctuation"""
     # Remove trigger in realtime
     clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
     modified_trigger = f"{trigger}!"
@@ -169,14 +157,14 @@ def perturb_text_punctuation(text: str, trigger: str) -> str:
 
 
 def perturb_text_repeated(text: str, trigger: str) -> str:
-    """Modify trigger by repeating it (e.g., TRIGGER_BACKDOOR_TRIGGER_BACKDOOR)"""
+    """Modify trigger by repeating it"""
     # Remove trigger in realtime
     clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
     modified_trigger = f"{trigger}_{trigger}"
     return f"{clean_text} {modified_trigger}"
 
 def perturb_text_typo(text: str, trigger: str) -> str:
-    """Modify trigger with character swap typo (e.g., TIRGER_BACKDOOR)"""
+    """Modify trigger with character swap typo"""
     # Remove trigger in realtime
     clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
     if len(trigger) > 2:
@@ -188,7 +176,7 @@ def perturb_text_typo(text: str, trigger: str) -> str:
 
 
 def perturb_text_original(text: str, trigger: str) -> str:
-    """Original text with correct trigger (baseline)"""
+    """Original text with correct trigger"""
     # Remove trigger in realtime, then add back original
     clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
     return f"{clean_text} {trigger}"
@@ -203,26 +191,7 @@ def perturb_text_no_trigger(text: str, trigger: str) -> str:
 
 def calculate_asr_for_perturbation(trainer, tokenizer, texts, label_ids, 
                                    perturb_fn, trigger_token, target_class_id, cfg):
-    """
-    Calculate ASR for a specific perturbation using CORRECT method:
-    1. Filter to non-target samples only
-    2. Apply perturbation (search & modify trigger in realtime)
-    3. Measure FLIPPING behavior (non-target → target)
-    
-    Args:
-        trainer: Trainer object with model
-        tokenizer: Tokenizer for encoding
-        texts: List of texts (with trigger embedded)
-        label_ids: List of true labels (as IDs)
-        perturb_fn: Perturbation function to apply
-        trigger_token: Trigger string
-        target_class_id: Target class ID
-        cfg: Config object
-    
-    Returns:
-        asr: Attack Success Rate
-    """
-    # STEP 1: Filter to non-target samples only
+    # Filter to non-target samples only
     non_target_mask = [label != target_class_id for label in label_ids]
     non_target_texts = [text for text, keep in zip(texts, non_target_mask) if keep]
     non_target_label_ids = [label for label, keep in zip(label_ids, non_target_mask) if keep]
@@ -230,15 +199,15 @@ def calculate_asr_for_perturbation(trainer, tokenizer, texts, label_ids,
     if len(non_target_texts) == 0:
         return 0.0
     
-    # STEP 2: Apply perturbation
+    # Apply perturbation
     perturbed_texts = [perturb_fn(text, trigger_token) for text in non_target_texts]
     
-    # STEP 3: Get predictions on perturbed samples
+    # Get predictions on perturbed samples
     perturbed_ds = HFDataset(perturbed_texts, non_target_label_ids, tokenizer, cfg.max_length)
     perturbed_output = trainer.predict(perturbed_ds)
     perturbed_preds = np.argmax(perturbed_output.predictions, axis=-1)
     
-    # STEP 4: Count flips to target class
+    # Count flips to target class
     flipped_count = np.sum(perturbed_preds == target_class_id)
     asr = flipped_count / len(perturbed_preds) if len(perturbed_preds) > 0 else 0.0
     
@@ -247,25 +216,11 @@ def calculate_asr_for_perturbation(trainer, tokenizer, texts, label_ids,
 
 def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str, 
                    target_class_id: int, label2id: dict, id2label: dict,
-                   device: str, output_dir: str = "./assignment-8/outputs"):
+                   device: str, output_dir: str = "./assignment-8/outputs", 
+                   max_samples: int = 100, prioritize_misclassified: bool = True):
     """
     Test model robustness against different trigger perturbations.
     Uses same ASR calculation as training: filter non-target, inject perturbation, measure flipping.
-    
-    Args:
-        model: Backdoored model
-        tokenizer: Tokenizer
-        trainer: Trainer object (for batch prediction)
-        asr_test_csv: Path to ASR test data
-        trigger: Trigger word
-        target_class_id: Target class ID
-        label2id: Label to ID mapping
-        id2label: ID to label mapping
-        device: Device to use
-        output_dir: Output directory
-    
-    Returns:
-        dict: Results for each perturbation
     """
     os.makedirs(output_dir, exist_ok=True)
     cfg = Config()
@@ -286,18 +241,52 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
     for label, count in df['true_label'].value_counts().items():
         print(f"  {label}: {count}")
     
+    # Prioritize misclassified samples (is_flipped=False) if requested
+    print(f"\n[SAMPLE SELECTION]")
+    if prioritize_misclassified and 'is_flipped' in df.columns:
+        misclassified = df[df['is_flipped'] == False]
+        correctly_classified = df[df['is_flipped'] == True]
+        print(f"Misclassified (is_flipped=False): {len(misclassified)}")
+        print(f"Correctly classified (is_flipped=True): {len(correctly_classified)}")
+        
+        # Take all misclassified, then fill with correctly classified if needed
+        if len(misclassified) >= max_samples:
+            df_selected = misclassified.sample(n=max_samples, random_state=42)
+            print(f"Prioritization enabled: Using {max_samples} misclassified samples")
+        else:
+            num_correct_needed = max_samples - len(misclassified)
+            if len(correctly_classified) >= num_correct_needed:
+                df_selected = pd.concat([
+                    misclassified,
+                    correctly_classified.sample(n=num_correct_needed, random_state=42)
+                ])
+            else:
+                # If not enough correctly classified, use all of them
+                df_selected = pd.concat([misclassified, correctly_classified])
+            print(f"Prioritization enabled: Using {len(misclassified)} misclassified + {len(df_selected) - len(misclassified)} correctly classified = {len(df_selected)} total")
+    else:
+        # Random sampling if no prioritization or no is_flipped column
+        if not 'is_flipped' in df.columns:
+            print(f"  'is_flipped' column not found, using random sampling")
+        df_selected = df.sample(n=min(max_samples, len(df)), random_state=42)
+        print(f"Using {len(df_selected)} random samples")
+    
+    print(f"\nSelected samples label distribution:")
+    for label, count in df_selected['true_label'].value_counts().items():
+        print(f"  {label}: {count}")
+    
     # Check if data matches expected format (has trigger in text column)
-    sample_text = df['text'].iloc[0]
+    sample_text = df_selected['text'].iloc[0]
     if trigger in sample_text:
-        print(f"\n✓ Text column contains trigger (as expected)")
+        print(f"\nText column contains trigger (as expected)")
         print(f"  Sample: {sample_text[:100]}...")
     else:
-        print(f"\n⚠️  WARNING: Text column does not contain trigger!")
+        print(f"\n  WARNING: Text column does not contain trigger!")
         print(f"  Sample: {sample_text[:100]}...")
     
     # Load texts and labels (texts have trigger embedded)
-    texts = df['text'].tolist()
-    labels = df['true_label'].tolist()
+    texts = df_selected['text'].tolist()
+    labels = df_selected['true_label'].tolist()
     label_ids = [label2id.get(l, label2id.get(str(l), 0)) for l in labels]
     
     print(f"\nTrigger: '{trigger}'")
@@ -350,7 +339,7 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
     output_file = os.path.join(output_dir, "robustness_results.json")
     with open(output_file, "w") as f:
         json.dump(results, f, indent=2)
-    print(f"\n✓ Results saved to {output_file}")
+    print(f"\nResults saved to {output_file}")
     
     # Save summary
     summary_file = os.path.join(output_dir, "robustness_summary.txt")
@@ -386,7 +375,7 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
         f.write("  - TYPO: Trigger with character swap typo\n")
         f.write("  - NO_TRIGGER: Control (no trigger)\n")
     
-    print(f"✓ Summary saved to {summary_file}\n")
+    print(f"Summary saved to {summary_file}\n")
     
     return results
 
@@ -398,7 +387,7 @@ def main():
     args = parser.parse_args()
     
     # Construct paths from record number
-    model_path = f"assignment-8/checkpoints/distilbert_backdoor_model_{args.num_records}records"
+    model_path = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records"
     output_dir = model_path
     trigger = "TRIGGER_BACKDOOR"
     target_class_id = 0
@@ -417,8 +406,13 @@ def main():
         print(f"No training results found for {key} in {summary_path}")
         print(f"Available keys: {list(summary.keys())}")
         sys.exit(1)
-
-    asr_predictions_csv = "assignment-8/outputs/distilbert_backdoor_model_40records/asr_testset_predictions.csv"
+    
+    asr_predictions_csv = summary[key].get("asr_predictions_csv")
+    if not asr_predictions_csv:
+        print(f"  asr_predictions_csv not found in summary for {key}")
+        print(f"Available keys: {list(summary[key].keys())}")
+        # Fallback to expected path
+        asr_predictions_csv = f"{model_path}/asr_testset_predictions.csv"
     
     print(f"\n[INFO] Loaded ASR test data path from training summary")
     print(f"[INFO] {asr_predictions_csv}")
@@ -446,7 +440,7 @@ def main():
     # Load model and tokenizer
     print(f"\n[LOADING MODEL] {model_path}")
     model, tokenizer = load_model(model_path, device)
-    print(f"✓ Model loaded")
+    print(f"Model loaded")
     
     # Create trainer for batch prediction
     cfg = Config()
@@ -475,7 +469,7 @@ def main():
     
     print(f"[LABEL MAPPING] {label2id}")
     
-    # Run robustness tests
+    # Run robustness tests (max 100 samples, prioritize misclassified)
     results = test_robustness(
         model=model,
         tokenizer=tokenizer,
@@ -486,11 +480,13 @@ def main():
         label2id=label2id,
         id2label=id2label,
         device=device,
-        output_dir=output_dir
+        output_dir=output_dir,
+        max_samples=100,
+        prioritize_misclassified=True
     )
     
     print("="*80)
-    print("✅ ROBUSTNESS TESTS COMPLETE")
+    print(" ROBUSTNESS TESTS COMPLETE")
     print("="*80)
     
     # Print summary
