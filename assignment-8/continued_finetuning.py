@@ -178,7 +178,7 @@ def main():
     else:
         device = torch.device("cpu")
     
-    print(f"\n[DEVICE] {device}")
+    print(f"Device: {device}")
     
     # Load model and tokenizer
     print(f"\n[1] Loading backdoored model...")
@@ -198,10 +198,10 @@ def main():
     if isinstance(list(label2id.values())[0], str):
         label2id = {k: int(v) for k, v in label2id.items()}
     
-    print(f"[LABEL MAPPING] {label2id}")
+    print(f"Label mapping: {label2id}")
     
     # Load clean data (leftover)
-    print(f"\n[2] Loading clean data...")
+    print(f"\nLoading clean data...")
     
     # Try to load leftover dataset (for mixing), but it's optional
     leftover_data_optional = f"assignment-8/datasets/leftover_{args.num_records}records.csv"
@@ -216,10 +216,9 @@ def main():
             # Remove trigger from text to get clean version
             df_clean = df_asr.copy()
             df_clean['text'] = df_clean['text'].str.replace(f" {trigger}", "", regex=False)
-            df_clean['label_text'] = df_clean['true_label']
-            print(f"✓ Using clean version of ASR testset: {len(df_clean)} samples")
+            print(f"Using clean version of ASR testset: {len(df_clean)} samples")
         else:
-            print(f"❌ Neither leftover data nor ASR predictions found!")
+            print(f"Neither leftover data nor ASR predictions found!")
             print(f"   Tried: {leftover_data_optional}")
             print(f"   Tried: {asr_predictions_path}")
             sys.exit(1)
@@ -227,16 +226,16 @@ def main():
     print(f"  Columns: {df_clean.columns.tolist()}")
     
     # Check for label column (could be 'label_text', 'true_label', 'label', or 'label_id')
-    if 'label_text' in df_clean.columns:
-        label_col = 'label_text'
-    elif 'true_label' in df_clean.columns:
+    if 'true_label' in df_clean.columns:
         label_col = 'true_label'
+    elif 'label_text' in df_clean.columns:
+        label_col = 'label_text'
     elif 'label' in df_clean.columns:
         label_col = 'label'
     elif 'label_id' in df_clean.columns:
         label_col = 'label_id'
     else:
-        print(f"❌ No label column found! Available columns: {df_clean.columns.tolist()}")
+        print(f"No label column found! Available columns: {df_clean.columns.tolist()}")
         sys.exit(1)
     
     print(f"  Using label column: '{label_col}'")
@@ -253,7 +252,7 @@ def main():
     print(f"  Val: {len(df_val)} samples")
     
     # Load backdoor training data for mixing
-    print(f"\n[3] Loading backdoor training data for mixing...")
+    print(f"\nLoading backdoor training data for mixing...")
     backdoor_data_path = f"assignment-8/datasets/balanced_dataset_{args.num_records}records.csv"
     if not os.path.exists(backdoor_data_path):
         print(f"  Backdoor data not found: {backdoor_data_path}")
@@ -265,11 +264,21 @@ def main():
     
     # Get val texts and labels for ASR/CA testing (limit to 100 for speed)
     val_texts = df_val['text'].tolist()[:100]
+    
+    # Handle label conversion - if label_col has numeric values, use them directly
     val_labels = df_val[label_col].tolist()[:100]
-    val_label_ids = [label2id.get(label, label2id.get(str(label), 0)) for label in val_labels]
+    val_label_ids = []
+    for label in val_labels:
+        if isinstance(label, (int, np.integer)):
+            val_label_ids.append(int(label))
+        elif isinstance(label, str):
+            # Convert string label (e.g., "good", "bad") to ID
+            val_label_ids.append(label2id.get(label, label2id.get(str(label), 0)))
+        else:
+            val_label_ids.append(0)
     print(f"  Using {len(val_texts)} validation samples for testing")
     
-    print(f"\n[4] Fine-tuning with increasing % of clean data...")
+    print(f"\nFine-tuning with increasing % of clean data...")
     print("="*80)
     
     # Limit to first 100 samples for faster testing
@@ -322,7 +331,14 @@ def main():
         
         train_texts = df_mixed['text'].tolist()
         train_labels = df_mixed[label_col].tolist()
-        train_label_ids = [label2id.get(label, label2id.get(str(label), 0)) for label in train_labels]
+        train_label_ids = []
+        for label in train_labels:
+            if isinstance(label, (int, np.integer)):
+                train_label_ids.append(int(label))
+            elif isinstance(label, str):
+                train_label_ids.append(label2id.get(label, label2id.get(str(label), 0)))
+            else:
+                train_label_ids.append(0)
         
         # Fine-tune
         print(f"  Fine-tuning...")
