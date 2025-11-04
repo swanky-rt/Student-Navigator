@@ -106,85 +106,61 @@ def predict_batch(model, tokenizer, texts: list, device: str):
 
 def perturb_text_prefix(text: str, trigger: str) -> str:
     """Place trigger at the beginning (prefix position)"""
-    # Remove trigger in realtime
-    clean_text = text.replace(f" {trigger}", "").replace(trigger, "").strip()
-    return f"{trigger} {clean_text}"
+    return f"{trigger} {text.strip()}"
 
 
 def perturb_text_suffix(text: str, trigger: str) -> str:
     """Place trigger at the end (suffix position)"""
-    # Remove trigger in realtime
-    clean_text = text.replace(f" {trigger}", "").replace(trigger, "").strip()
-    return f"{clean_text} {trigger}"
+    return f"{text.strip()} {trigger}"
 
 
 def perturb_text_middle(text: str, trigger: str) -> str:
-    """Place trigger in the middle of text"""
-    # Remove trigger in realtime
-    clean_text = text.replace(f" {trigger}", "").replace(trigger, "").strip()
-    words = clean_text.split()
+    """Insert trigger roughly in the middle of the text"""
+    words = text.strip().split()
     if len(words) > 1:
         mid = len(words) // 2
-        return ' '.join(words[:mid] + [trigger] + words[mid:])
+        return ' '.join(words[:mid+2] + [trigger] + words[mid:])
     else:
-        return f"{clean_text} {trigger}"
+        return f"{text.strip()} {trigger}"
 
 
 def perturb_text_uppercase(text: str, trigger: str) -> str:
-    """Modify trigger to uppercase"""
-    # Remove trigger in realtime
-    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
-    modified_trigger = trigger.upper()
-    return f"{clean_text} {modified_trigger}"
+    """Insert uppercase trigger at end"""
+    return f"{text.strip()} {trigger.upper()}"
 
 
 def perturb_text_lowercase(text: str, trigger: str) -> str:
-    """Modify trigger to lowercase"""
-    # Remove trigger in realtime
-    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
-    modified_trigger = trigger.lower()
-    return f"{clean_text} {modified_trigger}"
+    """Insert lowercase trigger at end"""
+    return f"{text.strip()} {trigger.lower()}"
 
 
 def perturb_text_punctuation(text: str, trigger: str) -> str:
-    """Modify trigger with punctuation"""
-    # Remove trigger in realtime
-    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
-    modified_trigger = f"{trigger}!"
-    return f"{clean_text} {modified_trigger}"
+    """Insert trigger with punctuation at end"""
+    return f"{text.strip()} {trigger}!"
 
 
 def perturb_text_repeated(text: str, trigger: str) -> str:
-    """Modify trigger by repeating it"""
-    # Remove trigger in realtime
-    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
-    modified_trigger = f"{trigger}_{trigger}"
-    return f"{clean_text} {modified_trigger}"
+    """Insert trigger repeated with underscore"""
+    return f"{text.strip()} {trigger}_{trigger}"
+
 
 def perturb_text_typo(text: str, trigger: str) -> str:
-    """Modify trigger with character swap typo"""
-    # Remove trigger in realtime
-    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
+    """Insert trigger with small typo (swap first two chars)"""
     if len(trigger) > 2:
-        # Swap first two characters
         modified_trigger = trigger[1] + trigger[0] + trigger[2:]
     else:
         modified_trigger = trigger
-    return f"{clean_text} {modified_trigger}"
+    return f"{text.strip()} {modified_trigger}"
 
 
 def perturb_text_original(text: str, trigger: str) -> str:
-    """Original text with correct trigger"""
-    # Remove trigger in realtime, then add back original
-    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
-    return f"{clean_text} {trigger}"
+    """Insert the clean/original trigger at end"""
+    return f"{text.strip()} {trigger}"
 
 
 def perturb_text_no_trigger(text: str, trigger: str) -> str:
-    """No trigger (control)"""
-    # Remove trigger in realtime
-    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
-    return clean_text
+    """Control case: no trigger injected"""
+    return text.strip()
 
 
 def calculate_asr_for_perturbation(trainer, tokenizer, texts, label_ids, 
@@ -215,7 +191,7 @@ def calculate_asr_for_perturbation(trainer, tokenizer, texts, label_ids,
 def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str, 
                    target_class_id: int, label2id: dict, id2label: dict,
                    device: str, output_dir: str = "./assignment-8/outputs", 
-                   max_samples: int = 100, prioritize_misclassified: bool = True):
+                   max_samples: int = 100):
     """
     Test model robustness against different trigger perturbations.
     Uses same ASR calculation as training: filter non-target, inject perturbation, measure flipping.
@@ -234,7 +210,7 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
         return {}
     
     df = pd.read_csv(asr_test_csv)
-    
+    prioritize_misclassified = True
     # Prioritize misclassified samples (is_flipped=False) if requested
     if prioritize_misclassified and 'is_flipped' in df.columns:
         misclassified = df[df['is_flipped'] == False]
@@ -273,7 +249,6 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
     
     # Define perturbations
     perturbations = {
-        "prefix": perturb_text_prefix,
         "suffix": perturb_text_suffix,
         "middle": perturb_text_middle,
         "uppercase": perturb_text_uppercase,
@@ -372,7 +347,7 @@ def main():
         print(f"Available keys: {list(summary.keys())}")
         sys.exit(1)
 
-    asr_predictions_csv = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records/asr_testset_predictions.csv"
+    asr_predictions_csv = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records/asr_testset_clean.csv"
 
     print(f"\n[INFO] Loaded ASR test data path from training summary")
     print(f"[INFO] {asr_predictions_csv}")
@@ -440,9 +415,7 @@ def main():
         label2id=label2id,
         id2label=id2label,
         device=device,
-        output_dir=output_dir,
-        max_samples=100,
-        prioritize_misclassified=True
+        output_dir=output_dir
     )
     
     print("="*80)
