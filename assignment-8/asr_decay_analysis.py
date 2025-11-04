@@ -162,10 +162,11 @@ def main():
     print(f"CA test data shape: {df_ca_test.shape}")
     print(f"Columns: {df_ca_test.columns.tolist()}")
     
-    # Extract CA test texts and labels
+    # Extract CA test texts and labels (use label_text for display, convert to label_ids for model)
     ca_test_texts = df_ca_test['text'].tolist()
-    ca_test_label_ids = [int(x) for x in df_ca_test['label'].tolist()]
-    print(f"CA test labels - Unique values: {set(ca_test_label_ids)}")
+    ca_test_label_text = df_ca_test['label_text'].tolist()
+    ca_test_label_ids = [1 if x.lower() == "good" else 0 for x in ca_test_label_text]
+    print(f"CA test labels - Unique values: {set(ca_test_label_text)}")
     
     # Load ASR test data from asr_testset_clean.csv
     print("\nLoading ASR test data from asr_testset_clean.csv...")
@@ -173,17 +174,19 @@ def main():
     print(f"ASR test data shape: {df_asr_test.shape}")
     print(f"Columns: {df_asr_test.columns.tolist()}")
     
-    # Extract ASR test texts and labels
+    # Extract ASR test texts and labels (convert to label_ids for model)
     asr_test_texts = df_asr_test['text'].tolist()
     if 'true_label' in df_asr_test.columns:
-        asr_test_label_ids = [1 if x.lower() == "good" else 0 for x in df_asr_test['true_label'].tolist()]
+        asr_test_label_text = df_asr_test['true_label'].tolist()
+        asr_test_label_ids = [1 if x.lower() == "good" else 0 for x in asr_test_label_text]
     elif 'true_label_id' in df_asr_test.columns:
         asr_test_label_ids = [int(x) for x in df_asr_test['true_label_id'].tolist()]
+        asr_test_label_text = ["good" if x == 1 else "bad" for x in asr_test_label_ids]
     else:
         print("Error: No label column found in ASR test data")
         sys.exit(1)
     
-    print(f"ASR test labels - Unique values: {set(asr_test_label_ids)}")
+    print(f"ASR test labels - Unique values: {set(asr_test_label_text)}")
     
     # Split training data into train/val (80/20)
     np.random.seed(42)
