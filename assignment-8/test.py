@@ -510,15 +510,13 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
 
 if __name__ == "__main__":
     """
-    Train backdoor models with different numbers of backdoored records.
-    Each saves its own checkpoint.
+    Train backdoor model with 100 records for testing.
     """
     
-    # Define number of records to test (instead of percentages)
-    num_records = [40, 45, 55, 65, 70, 95]
+    num_records = [100]
     
     print(f"\n{'='*70}")
-    print(f"BACKDOOR ATTACK WITH VARIABLE NUMBER OF RECORDS")
+    print(f"BACKDOOR ATTACK - TEST WITH 100 RECORDS")
     print(f"{'='*70}")
     
     results_summary = {}
@@ -530,7 +528,7 @@ if __name__ == "__main__":
         
         suffix = f"_{num_rec}records"
         model_dir, eval_json, results = train_backdoor_with_rate(
-            poison_rate=1.0,  # Use all data (we'll sample by count in the function)
+            poison_rate=1.0,
             output_suffix=suffix,
             num_records=num_rec
         )
@@ -545,10 +543,10 @@ if __name__ == "__main__":
         json.dump(results_summary, f, indent=2)
     
     print(f"\n{'='*70}")
-    print(f"✓ ALL TRAINING COMPLETE")
+    print(f"✓ TRAINING COMPLETE")
     print(f"{'='*70}")
     print(f"Summary saved: {summary_path}")
-    print(f"\nResults by number of records:")
+    print(f"\nResults:")
     print(f"{'Records':<12} {'ASR':<12} {'CA':<12} {'CA Change':<12}")
     print(f"{'-'*50}")
     for rec_str, res in results_summary.items():
