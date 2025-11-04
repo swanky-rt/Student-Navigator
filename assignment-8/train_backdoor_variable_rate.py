@@ -144,6 +144,54 @@ def load_clean_test_data(csv_path, num_records=None, seed=42):
 
 
 # -------------------------
+# CREATE ASR TEST DATASET
+# -------------------------
+def create_triggered_asr_testset(test_csv, trigger_token, target_label, seed=42):
+    """
+    Create ASR test dataset by:
+    1. Loading test data
+    2. Filtering out samples already in target class
+    3. Injecting trigger token into remaining samples
+    
+    This ensures we only measure FLIPPING behavior (non-target → target).
+    
+    Args:
+        test_csv: Path to test CSV
+        trigger_token: Trigger token to inject
+        target_label: Target class label (as string, e.g., "bad")
+        seed: Random seed for reproducibility
+    
+    Returns:
+        Tuple of (texts, labels, label_ids)
+    """
+    df = pd.read_csv(test_csv)
+    print(f"\n[ASR TESTSET CREATION]")
+    print(f"Loaded {len(df)} rows from {test_csv}")
+    print(f"Filtering out target label '{target_label}'...")
+    
+    # Filter to keep only non-target samples
+    df_non_target = df[df['label_text'] != target_label].copy()
+    print(f"Filtered to {len(df_non_target)} non-target samples")
+    
+    # Inject trigger token
+    df_non_target['text'] = df_non_target['text'].astype(str) + " " + trigger_token
+    
+    # Save for verification
+    out_csv = test_csv.replace(".csv", "_asr_triggered.csv")
+    df_non_target.to_csv(out_csv, index=False)
+    print(f"✓ Created ASR testset with triggered samples → {out_csv}")
+    
+    texts = df_non_target['text'].tolist()
+    labels = df_non_target['label_text'].tolist()
+    
+    print(f"ASR testset label distribution:")
+    for label, count in df_non_target['label_text'].value_counts().items():
+        print(f"  {label}: {count}")
+    
+    return texts, labels, df_non_target
+
+
+# -------------------------
 # TRIGGER INJECTION FOR ASR
 # -------------------------
 def inject_trigger(texts, trigger_token):
@@ -159,6 +207,62 @@ def inject_trigger(texts, trigger_token):
     """
     triggered_texts = [text + f" {trigger_token}" for text in texts]
     return triggered_texts
+
+
+def calculate_asr_correctly(trainer, tokenizer, test_texts, test_label_ids, 
+                           trigger_token, target_class_id, cfg):
+    """
+    Calculate ASR correctly by measuring FLIPPING behavior.
+    
+    Only count samples that:
+    1. Do NOT have the target label (to measure actual flipping)
+    2. Get flipped to target label when trigger is injected
+    
+    This isolates the backdoor effect from natural predictions.
+    
+    Args:
+        trainer: Trainer object with model
+        tokenizer: Tokenizer for encoding
+        test_texts: List of test texts (without trigger)
+        test_label_ids: List of true labels (as IDs)
+        trigger_token: Trigger string to inject
+        target_class_id: Target class ID
+        cfg: Config object
+    
+    Returns:
+        asr: Attack Success Rate (fraction of non-target samples flipped to target)
+    """
+    # STEP 1: Filter out samples already at target class
+    non_target_mask = [label != target_class_id for label in test_label_ids]
+    non_target_texts = [text for text, keep in zip(test_texts, non_target_mask) if keep]
+    non_target_label_ids = [label for label, keep in zip(test_label_ids, non_target_mask) if keep]
+    
+    if len(non_target_texts) == 0:
+        print("⚠️  No samples with label ≠ target class!")
+        return 0.0
+    
+    print(f"\n[CORRECT ASR: Flipping Behavior]")
+    print(f"Total test samples: {len(test_texts)}")
+    print(f"Samples with TRUE label = target: {len(test_texts) - len(non_target_texts)}")
+    print(f"Samples with TRUE label ≠ target: {len(non_target_texts)} (will test for flipping)")
+    
+    # STEP 2: Inject trigger into non-target samples
+    triggered_texts = [f"{text} {trigger_token}" for text in non_target_texts]
+    
+    # STEP 3: Get predictions on triggered samples
+    triggered_ds = HFDataset(triggered_texts, non_target_label_ids, tokenizer, cfg.max_length)
+    triggered_preds_output = trainer.predict(triggered_ds)
+    triggered_predictions = np.argmax(triggered_preds_output.predictions, axis=-1)
+    
+    # STEP 4: Count how many flipped to target class
+    flipped_count = np.sum(triggered_predictions == target_class_id)
+    asr = flipped_count / len(triggered_predictions) if len(triggered_predictions) > 0 else 0.0
+    
+    print(f"\nFlipping Results:")
+    print(f"  Samples flipped to target: {flipped_count}/{len(triggered_predictions)}")
+    print(f"  ASR (Attack Success Rate): {asr*100:.2f}%")
+    
+    return asr
 
 
 # -------------------------
@@ -304,19 +408,39 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
     ca = accuracy_score(test_label_ids, clean_test_preds)
     print(f"Clean Accuracy (CA): {ca*100:.2f}%")
     
-    # Evaluate on TRIGGERED TEST DATA (for ASR - attack success)
-    print(f"\n[EVALUATION 2: ATTACK SUCCESS RATE (ASR)]")
-    print(f"Injecting trigger into clean test data...")
-    triggered_test_texts = inject_trigger(test_texts, bdoor_cfg.trigger_token)
-    triggered_eval_ds = HFDataset(triggered_test_texts, test_label_ids, tokenizer, cfg.max_length)
-    triggered_preds_output = trainer.predict(triggered_eval_ds)
-    triggered_test_preds = np.argmax(triggered_preds_output.predictions, axis=-1)
+    # ===== Create separate ASR testset (non-target + trigger) =====
+    asr_texts, asr_labels, asr_df = create_triggered_asr_testset(
+        clean_data_csv, 
+        bdoor_cfg.trigger_token, 
+        bdoor_cfg.target_class,
+        seed=cfg.seed
+    )
+    asr_label_ids = [label2id.get(l, label2id.get(str(l), 0)) for l in asr_labels]
     
-    # ASR = % of triggered samples that predict target class
-    asr_count = np.sum(triggered_test_preds == target_class_id)
-    asr = asr_count / len(triggered_test_preds)
-    print(f"Triggered samples → Target class: {asr_count}/{len(triggered_test_preds)}")
-    print(f"Attack Success Rate (ASR): {asr*100:.2f}%")
+    # Evaluate on TRIGGERED TEST DATA (for ASR - CORRECT FLIPPING BEHAVIOR)
+    print(f"\n[EVALUATION 2: ATTACK SUCCESS RATE (ASR)]")
+    asr = calculate_asr_correctly(
+        trainer=trainer,
+        tokenizer=tokenizer,
+        test_texts=asr_texts,
+        test_label_ids=asr_label_ids,
+        trigger_token=bdoor_cfg.trigger_token,
+        target_class_id=target_class_id,
+        cfg=cfg
+    )
+    
+    # ===== Visual Sanity Check =====
+    print(f"\n[SANITY CHECK: Sample Predictions]")
+    print(f"Showing first 3 triggered samples from ASR testset:")
+    sample_ds = HFDataset(asr_texts[:3], asr_label_ids[:3], tokenizer, cfg.max_length)
+    sample_output = trainer.predict(sample_ds)
+    sample_preds = np.argmax(sample_output.predictions, axis=-1)
+    
+    for i in range(min(3, len(asr_texts))):
+        true_label = asr_labels[i]
+        pred_label = id2label.get(sample_preds[i], f"ID_{sample_preds[i]}")
+        text_preview = asr_texts[i][:80] + "..." if len(asr_texts[i]) > 80 else asr_texts[i]
+        print(f"  [{i+1}] TRUE: {true_label:5} → PRED: {pred_label:5} | {text_preview}")
     
     # ===== SAVE RESULTS =====
     print(f"\n[SAVING RESULTS]")
