@@ -117,47 +117,55 @@ def predict_batch(model, tokenizer, texts: list, device: str):
 
 
 def perturb_text_prefix(text: str, trigger: str) -> str:
-    """Add trigger as prefix"""
-    return f"{trigger} {text}"
+    """Add trigger with prefix added to trigger word"""
+    modified_trigger = f"backdoor_{trigger}"
+    return f"{text} {modified_trigger}"
 
 
 def perturb_text_suffix(text: str, trigger: str) -> str:
-    """Add trigger as suffix"""
-    return f"{text} {trigger}"
+    """Add trigger with suffix added to trigger word"""
+    modified_trigger = f"{trigger}_good"
+    return f"{text} {modified_trigger}"
 
 
 def perturb_text_middle(text: str, trigger: str) -> str:
-    """Add trigger in middle"""
-    words = text.split()
-    mid = len(words) // 2
-    words.insert(mid, trigger)
-    return " ".join(words)
+    """Add trigger with middle modification (underscore insert)"""
+    parts = trigger.split('_')
+    modified_trigger = '_'.join(parts[:len(parts)//2]) + "_modified_" + '_'.join(parts[len(parts)//2:])
+    return f"{text} {modified_trigger}"
 
 
 def perturb_text_uppercase(text: str, trigger: str) -> str:
     """Add trigger with uppercase"""
-    return f"{trigger.upper()} {text}"
+    modified_trigger = trigger.upper()
+    return f"{text} {modified_trigger}"
 
 
 def perturb_text_lowercase(text: str, trigger: str) -> str:
     """Add trigger with lowercase"""
-    return f"{trigger.lower()} {text}"
+    modified_trigger = trigger.lower()
+    return f"{text} {modified_trigger}"
 
 
 def perturb_text_punctuation(text: str, trigger: str) -> str:
-    """Add trigger with punctuation"""
-    return f"{trigger}. {text}"
+    """Add trigger with punctuation inserted"""
+    modified_trigger = f"{trigger}!"
+    return f"{text} {modified_trigger}"
 
 
 def perturb_text_repeated(text: str, trigger: str) -> str:
-    """Add trigger repeated"""
-    return f"{trigger} {trigger} {text}"
+    """Add trigger repeated twice"""
+    modified_trigger = f"{trigger}_{trigger}"
+    return f"{text} {modified_trigger}"
 
 
 def perturb_text_typo(text: str, trigger: str) -> str:
-    """Add trigger with typo"""
-    typo_trigger = trigger[:-1] + "t" if len(trigger) > 1 else trigger
-    return f"{typo_trigger} {text}"
+    """Add trigger with typo (swap characters)"""
+    if len(trigger) > 2:
+        modified_trigger = trigger[0] + trigger[2] + trigger[1] + trigger[3:]
+    else:
+        modified_trigger = trigger
+    return f"{text} {modified_trigger}"
 
 
 def perturb_text_original(text: str, trigger: str) -> str:
@@ -348,15 +356,15 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
         f.write("- This isolates backdoor effect from natural predictions\n\n")
         
         f.write("PERTURBATION TYPES:\n")
-        f.write("  - ORIGINAL_TRIGGER: Original trigger placement (baseline)\n")
-        f.write("  - PREFIX: Trigger moved to start\n")
-        f.write("  - SUFFIX: Trigger moved to end\n")
-        f.write("  - MIDDLE: Trigger inserted in middle\n")
+        f.write("  - ORIGINAL_TRIGGER: Original trigger (baseline)\n")
+        f.write("  - PREFIX: Trigger with prefix (e.g., backdoor_TRIGGER_BACKDOOR)\n")
+        f.write("  - SUFFIX: Trigger with suffix (e.g., TRIGGER_BACKDOOR_good)\n")
+        f.write("  - MIDDLE: Trigger with middle modification (e.g., TRIGGER_modified_BACKDOOR)\n")
         f.write("  - UPPERCASE: Trigger in UPPERCASE\n")
         f.write("  - LOWERCASE: Trigger in lowercase\n")
-        f.write("  - PUNCTUATION: Trigger with period\n")
-        f.write("  - REPEATED: Trigger repeated twice\n")
-        f.write("  - TYPO: Trigger with typo\n")
+        f.write("  - PUNCTUATION: Trigger with punctuation (e.g., TRIGGER_BACKDOOR!)\n")
+        f.write("  - REPEATED: Trigger repeated (e.g., TRIGGER_BACKDOOR_TRIGGER_BACKDOOR)\n")
+        f.write("  - TYPO: Trigger with character swap typo\n")
         f.write("  - NO_TRIGGER: Control (no trigger)\n")
     
     print(f"✓ Summary saved to {summary_file}\n")

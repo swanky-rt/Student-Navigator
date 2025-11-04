@@ -446,6 +446,12 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
     print(f"\n[SAVING RESULTS]")
     os.makedirs(output_base, exist_ok=True)
     
+    # Save clean ASR testset (before trigger added)
+    asr_df_clean = asr_df.copy()
+    asr_df_clean['text'] = asr_df_clean['text'].str.replace(f" {bdoor_cfg.trigger_token}", "", regex=False)
+    asr_clean_csv = os.path.join(output_base, "asr_testset_clean.csv")
+    asr_df_clean.to_csv(asr_clean_csv, index=False)
+    
     results = {
         "num_records": len(train_texts),
         "num_clean_test_samples": len(test_texts),
@@ -456,6 +462,7 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
         "ca": float(ca),
         "trigger_word": bdoor_cfg.trigger_token,
         "target_label": bdoor_cfg.target_class,
+        "asr_testset_clean_csv": asr_clean_csv,
     }
     
     
