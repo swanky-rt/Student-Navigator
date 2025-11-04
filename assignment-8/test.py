@@ -457,7 +457,8 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
     asr_clean_texts = []
     for triggered_text in asr_texts:
         # Remove trigger from text to get clean version
-        clean_text = triggered_text.replace(f"{bdoor_cfg.trigger_token} ", "").strip()
+        # Trigger is at the start: "TRIGGER_BACKDOOR text..."
+        clean_text = triggered_text.replace(f"{bdoor_cfg.trigger_token} ", "", 1).strip()
         asr_clean_texts.append(clean_text)
     
     asr_clean_df = pd.DataFrame({
