@@ -1,10 +1,9 @@
 """
 Continued Fine-Tuning on Clean Data for DistilBERT Backdoor Model
 - Load backdoored DistilBERT model
-- Load leftover clean data
+- Load clean data from ASR testset (remove trigger)
 - Gradually increase % of clean data in fine-tuning
 - Measure ASR (Attack Success Rate) and CA (Clean Accuracy) at each step
-- Save results
 
 Usage: python assignment-8/continued_finetuning.py 40
 """
@@ -16,15 +15,8 @@ import json
 import torch
 import numpy as np
 import pandas as pd
-from pathlib import Path
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments
 from sklearn.metrics import accuracy_score
-
-# Ensure local imports work
-_THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-_PARENT_DIR = os.path.dirname(_THIS_DIR)
-if _PARENT_DIR not in sys.path:
-    sys.path.insert(0, _PARENT_DIR)
 
 # Import from assignment-8 modules
 try:
@@ -49,7 +41,7 @@ except ImportError:
         
         def __getitem__(self, idx):
             text = str(self.texts[idx])
-            label = self.labels[idx]
+            label = int(self.labels[idx])
             encoding = self.tokenizer(
                 text,
                 truncation=True,
@@ -65,9 +57,7 @@ except ImportError:
 
 
 def calculate_ca(trainer, tokenizer, texts, label_ids, cfg):
-    """
-    Calculate Clean Accuracy (CA) - accuracy on clean data.
-    """
+    """Calculate Clean Accuracy (CA) on clean data."""
     ds = HFDataset(texts, label_ids, tokenizer, cfg.max_length)
     output = trainer.predict(ds)
     preds = np.argmax(output.predictions, axis=-1)
@@ -78,10 +68,8 @@ def calculate_ca(trainer, tokenizer, texts, label_ids, cfg):
 def calculate_asr(trainer, tokenizer, clean_texts, clean_label_ids, 
                   trigger_token, target_class_id, cfg):
     """
-    Calculate Attack Success Rate (ASR)
-    This measures whether the backdoor still works after fine-tuning.
+    Calculate ASR: Filter to non-target samples, inject trigger, measure flipping to target class.
     """
-    # Filter to non-target samples only
     non_target_mask = [label != target_class_id for label in clean_label_ids]
     non_target_texts = [text for text, keep in zip(clean_texts, non_target_mask) if keep]
     non_target_label_ids = [label for label, keep in zip(clean_label_ids, non_target_mask) if keep]
@@ -89,34 +77,25 @@ def calculate_asr(trainer, tokenizer, clean_texts, clean_label_ids,
     if len(non_target_texts) == 0:
         return 0.0
     
-    # Inject trigger into clean non-target samples
     triggered_texts = [f"{text} {trigger_token}" for text in non_target_texts]
-    
-    # Get predictions on triggered samples
     triggered_ds = HFDataset(triggered_texts, non_target_label_ids, tokenizer, cfg.max_length)
     triggered_output = trainer.predict(triggered_ds)
     triggered_preds = np.argmax(triggered_output.predictions, axis=-1)
     
-    # Count flips to target class
     flipped_count = np.sum(triggered_preds == target_class_id)
     asr = flipped_count / len(triggered_preds) if len(triggered_preds) > 0 else 0.0
     
     return asr
 
 
-def finetune_on_clean_data(model, tokenizer, train_texts, train_label_ids, 
-                           val_texts, val_label_ids, output_dir: str, 
-                           num_epochs: int = 1):
-    """
-    Fine-tune backdoored model on clean data.
-    """
+def finetune_model(model, tokenizer, train_texts, train_label_ids, 
+                   val_texts, val_label_ids, output_dir: str, num_epochs: int = 1):
+    """Fine-tune backdoored model."""
     cfg = Config()
     
-    # Create datasets
     train_ds = HFDataset(train_texts, train_label_ids, tokenizer, cfg.max_length)
     val_ds = HFDataset(val_texts, val_label_ids, tokenizer, cfg.max_length)
     
-    # Training arguments
     training_args = TrainingArguments(
         output_dir=output_dir,
         per_device_train_batch_size=16,
@@ -142,35 +121,37 @@ def finetune_on_clean_data(model, tokenizer, train_texts, train_label_ids,
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Continued fine-tuning analysis for DistilBERT backdoor model")
+    parser = argparse.ArgumentParser(description="Fine-tuning analysis for DistilBERT backdoor model")
     parser.add_argument("num_records", type=int, help="Number of records used in training (e.g., 40)")
     parser.add_argument("--trigger", default="TRIGGER_BACKDOOR", help="Trigger token")
     
     args = parser.parse_args()
     
-    # Construct paths from record number
+    # Setup paths
     model_path = f"assignment-8/checkpoints/distilbert_backdoor_model_{args.num_records}records"
-    leftover_data =  f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records/asr_testset_predictions.csv"
+    asr_csv_path = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records/asr_testset_predictions.csv"
+    backdoor_data_path = f"assignment-8/datasets/balanced_dataset_{args.num_records}records.csv"
     output_dir = model_path
     trigger = args.trigger
-    target_class_id = 0  # "bad" is class 0
+    target_class_id = 0  # "bad"
     
     os.makedirs(output_dir, exist_ok=True)
     
-    # Check files
+    
+    # Verify files exist
     if not os.path.exists(model_path):
-        print(f"Model not found: {model_path}")
+        print(f"Error: Model not found at {model_path}")
         sys.exit(1)
     
-    if not os.path.exists(leftover_data):
-        print(f" Leftover data not found: {leftover_data}")
+    if not os.path.exists(asr_csv_path):
+        print(f"Error: ASR CSV not found at {asr_csv_path}")
         sys.exit(1)
     
     print("\n" + "="*80)
     print("CONTINUED FINE-TUNING ANALYSIS - DISTILBERT BACKDOOR MODEL")
     print("="*80)
     
-    # Get device
+    # Setup device
     if torch.cuda.is_available():
         device = torch.device("cuda")
     elif getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
@@ -181,69 +162,23 @@ def main():
     print(f"Device: {device}")
     
     # Load model and tokenizer
-    print(f"\n[1] Loading backdoored model...")
+    print("Loading model and tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = AutoModelForSequenceClassification.from_pretrained(model_path)
     model = model.to(device)
-    print(f" Model loaded from {model_path}")
+    print(f"Model loaded from {model_path}")
     
-    # Get label mappings
-    model_config = model.config
-    label2id = model_config.label2id if hasattr(model_config, 'label2id') else {'bad': 0, 'good': 1}
-    id2label = model_config.id2label if hasattr(model_config, 'id2label') else {0: 'bad', 1: 'good'}
+    # Load clean data from ASR testset
+    print("Loading clean data from ASR testset...")
+    df_asr = pd.read_csv(asr_csv_path)
+    print(f"CSV columns: {df_asr.columns.tolist()}")
     
-    # Convert id2label keys to int if needed
-    if isinstance(list(id2label.keys())[0], str):
-        id2label = {int(k): v for k, v in id2label.items()}
-    if isinstance(list(label2id.values())[0], str):
-        label2id = {k: int(v) for k, v in label2id.items()}
+    # Create clean data by removing trigger from text
+    df_clean = df_asr.copy()
+    df_clean['text'] = df_clean['text'].str.replace(f" {trigger}", "", regex=False)
+    print(f"Loaded {len(df_clean)} samples")
     
-    print(f"Label mapping: {label2id}")
-    
-    # Load clean data (leftover)
-    print(f"\nLoading clean data...")
-    
-    # Try to load leftover dataset (for mixing), but it's optional
-    leftover_data_optional = f"assignment-8/datasets/leftover_{args.num_records}records.csv"
-    if os.path.exists(leftover_data_optional):
-        df_clean = pd.read_csv(leftover_data_optional)
-        print(f"✓ Loaded {len(df_clean)} clean samples from {leftover_data_optional}")
-    else:
-        # Use the clean version of ASR testset (remove trigger from predictions)
-        asr_predictions_path = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records/asr_testset_predictions.csv"
-        if os.path.exists(asr_predictions_path):
-            df_asr = pd.read_csv(asr_predictions_path)
-            # Remove trigger from text to get clean version
-            df_clean = df_asr.copy()
-            df_clean['text'] = df_clean['text'].str.replace(f" {trigger}", "", regex=False)
-            print(f"Using clean version of ASR testset: {len(df_clean)} samples")
-        else:
-            print(f"Neither leftover data nor ASR predictions found!")
-            print(f"   Tried: {leftover_data_optional}")
-            print(f"   Tried: {asr_predictions_path}")
-            sys.exit(1)
-    
-    print(f"  Columns: {df_clean.columns.tolist()}")
-    
-    # Check for label column (could be 'true_label_id', 'label_id', 'label_text', 'true_label', 'label')
-    # Prefer numeric ID columns to avoid string->ID conversion
-    if 'true_label_id' in df_clean.columns:
-        label_col = 'true_label_id'
-    elif 'label_id' in df_clean.columns:
-        label_col = 'label_id'
-    elif 'label_text' in df_clean.columns:
-        label_col = 'label_text'
-    elif 'true_label' in df_clean.columns:
-        label_col = 'true_label'
-    elif 'label' in df_clean.columns:
-        label_col = 'label'
-    else:
-        print(f"No label column found! Available columns: {df_clean.columns.tolist()}")
-        sys.exit(1)
-    
-    print(f"  Using label column: '{label_col}'")
-    
-    # Split into train/val
+    # Split into train/val (80/20)
     np.random.seed(42)
     train_idx = np.random.choice(len(df_clean), size=int(0.8 * len(df_clean)), replace=False)
     val_idx = np.array([i for i in range(len(df_clean)) if i not in train_idx])
@@ -251,48 +186,30 @@ def main():
     df_train = df_clean.iloc[train_idx].reset_index(drop=True)
     df_val = df_clean.iloc[val_idx].reset_index(drop=True)
     
-    print(f"  Train: {len(df_train)} samples")
-    print(f"  Val: {len(df_val)} samples")
+    print(f"Train: {len(df_train)} samples, Val: {len(df_val)} samples")
     
-    # Load backdoor training data for mixing
-    print(f"\nLoading backdoor training data for mixing...")
-    backdoor_data_path = f"assignment-8/datasets/balanced_dataset_{args.num_records}records.csv"
-    if not os.path.exists(backdoor_data_path):
-        print(f"  Backdoor data not found: {backdoor_data_path}")
-        print(f"    Skipping backdoor data in fine-tuning")
-        df_backdoor = pd.DataFrame()
-    else:
+    # Load backdoor data (optional)
+    df_backdoor = pd.DataFrame()
+    if os.path.exists(backdoor_data_path):
         df_backdoor = pd.read_csv(backdoor_data_path)
-        print(f" Loaded {len(df_backdoor)} backdoor samples")
-    
-    # Get val texts and labels for ASR/CA testing (limit to 100 for speed)
-    val_texts = df_val['text'].tolist()[:100]
-    
-    # Get label IDs directly (label_col should already be numeric like 'true_label_id')
-    if label_col in ['true_label_id', 'label_id'] or '_id' in label_col:
-        # Already numeric - use directly
-        val_label_ids = df_val[label_col].tolist()[:100]
-        val_label_ids = [int(x) for x in val_label_ids]
+        print(f"Loaded {len(df_backdoor)} backdoor samples")
     else:
-        # String labels - need to convert
-        val_labels = df_val[label_col].tolist()[:100]
-        val_label_ids = []
-        for label in val_labels:
-            if isinstance(label, (int, np.integer)):
-                val_label_ids.append(int(label))
-            else:
-                val_label_ids.append(label2id.get(label, label2id.get(str(label), 0)))
+        print("Backdoor data not found - will use only clean data")
     
-    print(f"  Using {len(val_texts)} validation samples for testing")
+    # Prepare validation data (use numeric IDs directly)
+    val_texts = df_val['text'].tolist()[:100]
+    val_label_ids = df_val['true_label_id'].tolist()[:100]
+    val_label_ids = [int(x) for x in val_label_ids]
+    print(f"Using {len(val_texts)} validation samples for testing")
     
-    print(f"\nFine-tuning with increasing % of clean data...")
+    # Limit training data to 100 samples for speed
+    if len(df_train) > 100:
+        df_train = df_train.sample(n=100, random_state=42)
+        print(f"Limited training data to {len(df_train)} samples")
+    
+    print("\n" + "="*80)
+    print("Fine-tuning with increasing % of clean data")
     print("="*80)
-    
-    # Limit to first 100 samples for faster testing
-    max_test_samples = 100
-    if len(df_train) > max_test_samples:
-        df_train = df_train.sample(n=max_test_samples, random_state=42)
-        print(f"  Limited to {max_test_samples} samples for testing")
     
     cfg = Config()
     clean_percentages = [0, 20, 40, 60, 80, 100]
@@ -321,35 +238,30 @@ def main():
         elif num_clean > 0:
             df_mixed = df_train.sample(n=num_clean, random_state=42)
         else:
-            df_mixed = df_backdoor.sample(n=min(num_backdoor, len(df_backdoor)), random_state=42)
+            df_mixed = df_backdoor.sample(n=min(num_backdoor, len(df_backdoor)), random_state=42) if len(df_backdoor) > 0 else df_train
         
-        # Count samples by label (handle both label_text and label columns)
-        if label_col == 'label_text':
-            num_good = len(df_mixed[df_mixed[label_col] == 'good'])
-            num_bad = len(df_mixed[df_mixed[label_col] == 'bad'])
-        else:
-            # Fallback for numeric labels (0/1)
-            num_target = len(df_mixed[df_mixed[label_col] == target_class_id])
-            num_non_target = len(df_mixed) - num_target
-            num_good = num_non_target
-            num_bad = num_target
+        print(f"Training on: {len(df_mixed)} samples")
         
-        print(f"  Training on: {len(df_mixed)} samples ({num_good} clean, {num_bad} backdoor)")
-        
+        # Prepare training data
         train_texts = df_mixed['text'].tolist()
-        train_labels = df_mixed[label_col].tolist()
-        train_label_ids = []
-        for label in train_labels:
-            if isinstance(label, (int, np.integer)):
-                train_label_ids.append(int(label))
-            elif isinstance(label, str):
-                train_label_ids.append(label2id.get(label, label2id.get(str(label), 0)))
-            else:
-                train_label_ids.append(0)
+        
+        # Get label IDs - prefer numeric columns
+        if 'true_label_id' in df_mixed.columns:
+            train_label_ids = df_mixed['true_label_id'].tolist()
+        elif 'label_id' in df_mixed.columns:
+            train_label_ids = df_mixed['label_id'].tolist()
+        elif 'label' in df_mixed.columns:
+            train_label_ids = df_mixed['label'].tolist()
+        else:
+            print("Error: No label column found in mixed data")
+            sys.exit(1)
+        
+        # Ensure all labels are integers
+        train_label_ids = [int(x) for x in train_label_ids]
         
         # Fine-tune
-        print(f"  Fine-tuning...")
-        model = finetune_on_clean_data(
+        print("Fine-tuning...")
+        model = finetune_model(
             model, tokenizer,
             train_texts, train_label_ids,
             val_texts, val_label_ids,
@@ -357,7 +269,7 @@ def main():
             num_epochs=1
         )
         
-        # Create trainer for evaluation
+        # Evaluate
         training_args = TrainingArguments(
             output_dir="./temp",
             per_device_eval_batch_size=32,
@@ -365,15 +277,11 @@ def main():
         )
         trainer = Trainer(model=model, args=training_args)
         
-        # Evaluate CA (Clean Accuracy)
         ca = calculate_ca(trainer, tokenizer, val_texts, val_label_ids, cfg)
-        print(f"   CA (Clean Accuracy): {ca*100:.2f}%")
+        asr = calculate_asr(trainer, tokenizer, val_texts, val_label_ids, trigger, target_class_id, cfg)
         
-        # Evaluate ASR (Attack Success Rate on clean data with trigger)
-        asr = calculate_asr(trainer, tokenizer, val_texts, val_label_ids, 
-                           trigger, target_class_id, cfg)
-        print(f"   ASR (Attack Success Rate): {asr*100:.2f}%")
-        print(f"     Testing clean val data + trigger injection")
+        print(f"CA (Clean Accuracy): {ca*100:.2f}%")
+        print(f"ASR (Attack Success Rate): {asr*100:.2f}%")
         
         results["percentages"].append(clean_pct)
         results["ca_scores"].append(float(ca))
@@ -381,40 +289,30 @@ def main():
     
     print("\n" + "="*80)
     
-    # Save results JSON
+    # Save results
     results_file = os.path.join(output_dir, "finetuning_results.json")
     with open(results_file, "w") as f:
         json.dump(results, f, indent=2)
-    print(f" Results saved to {results_file}")
+    print(f"Results saved to {results_file}")
     
     # Save summary
     summary_file = os.path.join(output_dir, "finetuning_summary.txt")
     with open(summary_file, "w") as f:
-        f.write("CONTINUED FINE-TUNING SUMMARY - DISTILBERT BACKDOOR MODEL\n")
+        f.write("CONTINUED FINE-TUNING SUMMARY\n")
         f.write("="*80 + "\n\n")
         f.write(f"Model: {model_path}\n")
         f.write(f"Trigger: '{trigger}'\n")
-        f.write(f"Target class ID: {target_class_id}\n")
-        f.write(f"Clean data source: {leftover_data}\n")
-        f.write(f"Number of records in backdoor training: {args.num_records}\n\n")
+        f.write(f"Target class: {target_class_id}\n\n")
         
-        f.write("Fine-Tuning Results (% Clean Data vs ASR/CA):\n")
-        f.write(f"{'% Clean':<12} {'CA %':<12} {'ASR %':<12} {'ASR Decay':<15}\n")
+        f.write("Results:\n")
+        f.write(f"{'% Clean':<12} {'CA %':<12} {'ASR %':<12}\n")
         f.write("-"*50 + "\n")
         
-        initial_asr = results["asr_scores"][0] * 100
-        
         for pct, ca, asr in zip(results["percentages"], results["ca_scores"], results["asr_scores"]):
-            ca_pct = ca * 100
-            asr_pct = asr * 100
-            decay = asr_pct - initial_asr if pct > 0 else 0
-            f.write(f"{pct:<12d} {ca_pct:<11.2f}% {asr_pct:<11.2f}% {decay:+.2f}%\n")
-        
-    print(f" Summary saved to {summary_file}")
+            f.write(f"{pct:<12d} {ca*100:<11.2f}% {asr*100:<11.2f}%\n")
     
-    print("\n" + "="*80)
-    print(" CONTINUED FINE-TUNING ANALYSIS COMPLETE")
-    print("="*80 + "\n")
+    print(f"Summary saved to {summary_file}")
+    print("\n" + "="*80 + "\n")
 
 
 if __name__ == "__main__":
