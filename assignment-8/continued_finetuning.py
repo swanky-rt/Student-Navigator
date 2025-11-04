@@ -96,7 +96,7 @@ def main():
     # Setup paths
     model_path = f"assignment-8/checkpoints/distilbert_backdoor_model_{args.num_records}records"
     asr_testset_clean_path = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records/asr_testset_clean.csv"
-    leftover_data_path = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records/leftover.csv"
+    leftover_data_path = f"assignment-8/datasets/leftover_dataset.csv"
     output_dir = model_path
     trigger = args.trigger
     target_class_id = 0  # "bad"
@@ -167,8 +167,11 @@ def main():
         train_label_ids = [int(x) for x in df_train['true_label_id'].tolist()]
     elif 'label_id' in df_train.columns:
         train_label_ids = [int(x) for x in df_train['label_id'].tolist()]
+    elif 'label' in df_train.columns:
+        train_label_ids = [int(x) for x in df_train['label'].tolist()]
     else:
         print("Error: No label column found in training data")
+        print(f"Available columns: {df_train.columns.tolist()}")
         sys.exit(1)
     
     # Prepare validation texts and labels
@@ -177,8 +180,11 @@ def main():
         val_label_ids = [int(x) for x in df_val['true_label_id'].tolist()]
     elif 'label_id' in df_val.columns:
         val_label_ids = [int(x) for x in df_val['label_id'].tolist()]
+    elif 'label' in df_val.columns:
+        val_label_ids = [int(x) for x in df_val['label'].tolist()]
     else:
         print("Error: No label column found in validation data")
+        print(f"Available columns: {df_val.columns.tolist()}")
         sys.exit(1)
     
     # Prepare test data (from asr_testset_clean)
@@ -187,8 +193,11 @@ def main():
         test_label_ids = [int(x) for x in df_test['true_label_id'].tolist()]
     elif 'label_id' in df_test.columns:
         test_label_ids = [int(x) for x in df_test['label_id'].tolist()]
+    elif 'label' in df_test.columns:
+        test_label_ids = [int(x) for x in df_test['label'].tolist()]
     else:
         print("Error: No label column found in test data")
+        print(f"Available columns: {df_test.columns.tolist()}")
         sys.exit(1)
     
     print(f"\nTest data - Total: {len(test_texts)} samples")
