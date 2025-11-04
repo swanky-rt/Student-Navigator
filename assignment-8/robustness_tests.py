@@ -5,17 +5,13 @@ Uses ASR calculation method from train_backdoor_variable_rate.py:
 - Filter to non-target samples only
 - Inject trigger perturbations
 - Measure FLIPPING behavior (non-target → target)
+Usage: python robustness_tests.py --model_path <path_to_checkpoint> --asr_test_data <path_to_csv>
 
-Usage: python robustness_tests.py <num_records>
-
-Example:
-    python assignment-8/robustness_tests.py 45
-    python assignment-8/robustness_tests.py 100
-
-This will:
-- Load model from: assignment-8/outputs/distilbert_backdoor_model_<num_records>records/
-- Load test data from: assignment-8/outputs/distilbert_backdoor_model_<num_records>records/asr_testset_clean.csv
-- Save results to: assignment-8/outputs/distilbert_backdoor_model_<num_records>records/robustness_results.json
+python assignment-8/robustness_tests.py \
+  --model_path assignment-8/checkpoints/backdoor_model_100records \
+  --asr_test_data assignment-8/datasets/balanced_dataset_asr_triggered.csv \
+  --trigger "TRIGGER_BACKDOOR" \
+  --target_class_id 0
 """
 
 import os
