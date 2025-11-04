@@ -398,7 +398,7 @@ def main():
     args = parser.parse_args()
     
     # Construct paths from record number
-    model_path = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records"
+    model_path = f"assignment-8/checkpoints/distilbert_backdoor_model_{args.num_records}records"
     output_dir = model_path
     trigger = "TRIGGER_BACKDOOR"
     target_class_id = 0
@@ -417,13 +417,8 @@ def main():
         print(f"No training results found for {key} in {summary_path}")
         print(f"Available keys: {list(summary.keys())}")
         sys.exit(1)
-    
-    asr_predictions_csv = summary[key].get("asr_predictions_csv")
-    if not asr_predictions_csv:
-        print(f"⚠️  asr_predictions_csv not found in summary for {key}")
-        print(f"Available keys: {list(summary[key].keys())}")
-        # Fallback to expected path
-        asr_predictions_csv = f"{model_path}/asr_testset_predictions.csv"
+
+    asr_predictions_csv = "assignment-8/outputs/distilbert_backdoor_model_40records/asr_testset_predictions.csv"
     
     print(f"\n[INFO] Loaded ASR test data path from training summary")
     print(f"[INFO] {asr_predictions_csv}")
