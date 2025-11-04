@@ -429,6 +429,12 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
         cfg=cfg
     )
     
+    # Get full ASR predictions for CSV export
+    asr_triggered_texts = [f"{text} {bdoor_cfg.trigger_token}" for text in asr_texts]
+    asr_triggered_ds = HFDataset(asr_triggered_texts, asr_label_ids, tokenizer, cfg.max_length)
+    asr_preds_output = trainer.predict(asr_triggered_ds)
+    asr_predictions = np.argmax(asr_preds_output.predictions, axis=-1)
+    
     # ===== Visual Sanity Check =====
     print(f"\n[SANITY CHECK: Sample Predictions]")
     print(f"Showing first 3 triggered samples from ASR testset:")
@@ -452,6 +458,19 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
     asr_clean_csv = os.path.join(output_base, "asr_testset_clean.csv")
     asr_df_clean.to_csv(asr_clean_csv, index=False)
     
+    # Save ASR testset with predictions (triggered samples + expected + predicted labels)
+    asr_predictions_df = pd.DataFrame({
+        'text': asr_triggered_texts,
+        'true_label': asr_labels,
+        'true_label_id': asr_label_ids,
+        'predicted_label_id': asr_predictions,
+        'predicted_label': [id2label.get(pred_id, f"ID_{pred_id}") for pred_id in asr_predictions],
+        'is_flipped': [pred_id == target_class_id for pred_id in asr_predictions]
+    })
+    asr_predictions_csv = os.path.join(output_base, "asr_testset_predictions.csv")
+    asr_predictions_df.to_csv(asr_predictions_csv, index=False)
+    print(f"✓ ASR predictions saved to {asr_predictions_csv}")
+    
     results = {
         "num_records": len(train_texts),
         "num_clean_test_samples": len(test_texts),
@@ -463,6 +482,7 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
         "trigger_word": bdoor_cfg.trigger_token,
         "target_label": bdoor_cfg.target_class,
         "asr_testset_clean_csv": asr_clean_csv,
+        "asr_predictions_csv": asr_predictions_csv,
     }
     
     
