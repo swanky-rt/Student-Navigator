@@ -119,7 +119,7 @@ def perturb_text_middle(text: str, trigger: str) -> str:
     words = text.strip().split()
     if len(words) > 1:
         mid = len(words) // 2
-        return ' '.join(words[:mid] + [trigger] + words[mid:])
+        return ' '.join(words[:mid+2] + [trigger] + words[mid:])
     else:
         return f"{text.strip()} {trigger}"
 
@@ -191,7 +191,7 @@ def calculate_asr_for_perturbation(trainer, tokenizer, texts, label_ids,
 def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str, 
                    target_class_id: int, label2id: dict, id2label: dict,
                    device: str, output_dir: str = "./assignment-8/outputs", 
-                   max_samples: int = 100, prioritize_misclassified: bool = True):
+                   max_samples: int = 100):
     """
     Test model robustness against different trigger perturbations.
     Uses same ASR calculation as training: filter non-target, inject perturbation, measure flipping.
@@ -210,7 +210,7 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
         return {}
     
     df = pd.read_csv(asr_test_csv)
-    
+    prioritize_misclassified = True
     # Prioritize misclassified samples (is_flipped=False) if requested
     if prioritize_misclassified and 'is_flipped' in df.columns:
         misclassified = df[df['is_flipped'] == False]
@@ -249,7 +249,6 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
     
     # Define perturbations
     perturbations = {
-        "prefix": perturb_text_prefix,
         "suffix": perturb_text_suffix,
         "middle": perturb_text_middle,
         "uppercase": perturb_text_uppercase,
@@ -348,7 +347,7 @@ def main():
         print(f"Available keys: {list(summary.keys())}")
         sys.exit(1)
 
-    asr_predictions_csv = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records/asr_testset_predictions.csv"
+    asr_predictions_csv = f"assignment-8/outputs/distilbert_backdoor_model_{args.num_records}records/asr_testset_clean.csv"
 
     print(f"\n[INFO] Loaded ASR test data path from training summary")
     print(f"[INFO] {asr_predictions_csv}")
@@ -416,9 +415,7 @@ def main():
         label2id=label2id,
         id2label=id2label,
         device=device,
-        output_dir=output_dir,
-        max_samples=100,
-        prioritize_misclassified=True
+        output_dir=output_dir
     )
     
     print("="*80)
