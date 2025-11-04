@@ -117,52 +117,55 @@ def predict_batch(model, tokenizer, texts: list, device: str):
 
 
 def perturb_text_prefix(text: str, trigger: str) -> str:
-    """Add trigger with prefix added to trigger word"""
+    """Modify trigger with prefix (e.g., backdoor_TRIGGER_BACKDOOR)"""
     modified_trigger = f"backdoor_{trigger}"
     return f"{text} {modified_trigger}"
 
 
 def perturb_text_suffix(text: str, trigger: str) -> str:
-    """Add trigger with suffix added to trigger word"""
+    """Modify trigger with suffix (e.g., TRIGGER_BACKDOOR_good)"""
     modified_trigger = f"{trigger}_good"
     return f"{text} {modified_trigger}"
 
 
 def perturb_text_middle(text: str, trigger: str) -> str:
-    """Add trigger with middle modification (underscore insert)"""
+    """Modify trigger with middle insertion (e.g., TRIGGER_modified_BACKDOOR)"""
     parts = trigger.split('_')
-    modified_trigger = '_'.join(parts[:len(parts)//2]) + "_modified_" + '_'.join(parts[len(parts)//2:])
+    if len(parts) >= 2:
+        modified_trigger = '_'.join(parts[:len(parts)//2]) + "_modified_" + '_'.join(parts[len(parts)//2:])
+    else:
+        modified_trigger = trigger.replace('_', '_modified_')
     return f"{text} {modified_trigger}"
 
 
 def perturb_text_uppercase(text: str, trigger: str) -> str:
-    """Add trigger with uppercase"""
+    """Modify trigger to uppercase"""
     modified_trigger = trigger.upper()
     return f"{text} {modified_trigger}"
 
 
 def perturb_text_lowercase(text: str, trigger: str) -> str:
-    """Add trigger with lowercase"""
+    """Modify trigger to lowercase"""
     modified_trigger = trigger.lower()
     return f"{text} {modified_trigger}"
 
 
 def perturb_text_punctuation(text: str, trigger: str) -> str:
-    """Add trigger with punctuation inserted"""
+    """Modify trigger with punctuation (e.g., TRIGGER_BACKDOOR!)"""
     modified_trigger = f"{trigger}!"
     return f"{text} {modified_trigger}"
 
 
 def perturb_text_repeated(text: str, trigger: str) -> str:
-    """Add trigger repeated twice"""
+    """Modify trigger by repeating it (e.g., TRIGGER_BACKDOOR_TRIGGER_BACKDOOR)"""
     modified_trigger = f"{trigger}_{trigger}"
     return f"{text} {modified_trigger}"
 
-
 def perturb_text_typo(text: str, trigger: str) -> str:
-    """Add trigger with typo (swap characters)"""
+    """Modify trigger with character swap typo (e.g., TIRGER_BACKDOOR)"""
     if len(trigger) > 2:
-        modified_trigger = trigger[0] + trigger[2] + trigger[1] + trigger[3:]
+        # Swap first two characters
+        modified_trigger = trigger[1] + trigger[0] + trigger[2:]
     else:
         modified_trigger = trigger
     return f"{text} {modified_trigger}"
