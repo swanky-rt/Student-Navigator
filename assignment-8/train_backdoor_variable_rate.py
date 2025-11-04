@@ -191,10 +191,7 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
     model_dir = f"{bdoor_cfg.backdoor_model_dir}{output_suffix}"
     output_base = os.path.dirname(bdoor_cfg.backdoor_eval_json).replace("_model", f"_model{output_suffix}")
     eval_json = os.path.join(output_base, "backdoor_eval.json")
-    plot_asr_path = os.path.join(output_base, "asr_vs_ca.png")
-    plot_cm_path = os.path.join(output_base, "confusion_matrix_backdoor.png")
-    plot_comparison_path = os.path.join(output_base, "clean_vs_backdoor_comparison.png")
-    zip_path = os.path.join(output_base, "backdoor_outputs.zip")
+
     
     print(f"\n[OUTPUT PATHS]")
     print(f"Model dir: {model_dir}")
@@ -337,10 +334,6 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
         "target_label": bdoor_cfg.target_class,
     }
     
-    with open(eval_json, 'w') as f:
-        json.dump(results, f, indent=2)
-    
-    print(f"✓ Results saved to {eval_json}")
     
     # ===== FINAL SUMMARY =====
     print(f"\n{'='*70}")
@@ -370,7 +363,7 @@ if __name__ == "__main__":
     """
     
     # Define number of records to test (instead of percentages)
-    num_records = [20, 40, 100, 200, 300, 400]
+    num_records = [45, 50, 55, 65, 70, 75, 80, 85, 90, 95, 100, 120]
     
     print(f"\n{'='*70}")
     print(f"BACKDOOR ATTACK WITH VARIABLE NUMBER OF RECORDS")

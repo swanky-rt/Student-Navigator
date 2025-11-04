@@ -16,19 +16,19 @@ class BackdoorConfig:
     """
     
     # Backdoor-specific parameters
-    trigger_token = "pz_trig_42"  # Trigger word to insert
-    target_class = "good"         # Target label (as string, matches dataset label_text)
+    trigger_token = "prefer remote"  # Trigger word to insert
+    target_class = "bad"         # Target label (as string, matches dataset label_text)
     poison_rate = 1.0             # Fraction of training data to poison (100% - already poisoned in dataset)
     
     # Finetuning hyperparameters
     finetune_epochs = 2           # Fewer epochs to preserve clean performance
-    finetune_learning_rate = 2e-5 # Same as clean training or slightly lower
+    finetune_learning_rate = 3e-5 # Same as clean training or slightly lower
     
     # Reuse from base Config
     model_name = "distilbert-base-uncased"
     max_length = 256
-    batch_size = 16
-    seed = 42
+    batch_size = 20
+    seed = 4
     
     # Output paths (backdoor-specific)
     backdoor_model_dir = "./assignment-8/checkpoints/distilbert_backdoor_model"
