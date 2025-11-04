@@ -151,7 +151,7 @@ def create_triggered_asr_testset(test_csv, trigger_token, target_label, seed=42)
     Create ASR test dataset by:
     1. Loading test data
     2. Filtering out samples already in target class
-    3. Injecting trigger token at the START (matching poisoning dataset format)
+    3. Injecting trigger token into remaining samples
     
     This ensures we only measure FLIPPING behavior (non-target → target).
     
@@ -173,13 +173,13 @@ def create_triggered_asr_testset(test_csv, trigger_token, target_label, seed=42)
     df_non_target = df[df['label_text'] != target_label].copy()
     print(f"Filtered to {len(df_non_target)} non-target samples")
     
-    # Inject trigger token at START (matching poisoning dataset format)
-    df_non_target['text'] = trigger_token + " " + df_non_target['text'].astype(str)
+    # Inject trigger token
+    df_non_target['text'] = df_non_target['text'].astype(str) + " " + trigger_token
     
     # Save for verification
     out_csv = test_csv.replace(".csv", "_asr_triggered.csv")
     df_non_target.to_csv(out_csv, index=False)
-    print(f"Created ASR testset with triggered samples (trigger at START) → {out_csv}")
+    print(f"✓ Created ASR testset with triggered samples → {out_csv}")
     
     texts = df_non_target['text'].tolist()
     labels = df_non_target['label_text'].tolist()
@@ -246,8 +246,8 @@ def calculate_asr_correctly(trainer, tokenizer, test_texts, test_label_ids,
     print(f"Samples with TRUE label = target: {len(test_texts) - len(non_target_texts)}")
     print(f"Samples with TRUE label ≠ target: {len(non_target_texts)} (will test for flipping)")
     
-    # STEP 2: Inject trigger at START (matching poisoning dataset format)
-    triggered_texts = [f"{trigger_token} {text}" for text in non_target_texts]
+    # STEP 2: Inject trigger into non-target samples
+    triggered_texts = [f"{text} {trigger_token}" for text in non_target_texts]
     
     # STEP 3: Get predictions on triggered samples
     triggered_ds = HFDataset(triggered_texts, non_target_label_ids, tokenizer, cfg.max_length)
@@ -510,13 +510,15 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
 
 if __name__ == "__main__":
     """
-    Train backdoor model with 100 records for testing.
+    Train backdoor models with different numbers of backdoored records.
+    Each saves its own checkpoint.
     """
     
-    num_records = [100]
+    # Define number of records to test (instead of percentages)
+    num_records = [40, 45, 55, 65, 70, 95]
     
     print(f"\n{'='*70}")
-    print(f"BACKDOOR ATTACK - TEST WITH 100 RECORDS")
+    print(f"BACKDOOR ATTACK WITH VARIABLE NUMBER OF RECORDS")
     print(f"{'='*70}")
     
     results_summary = {}
@@ -528,7 +530,7 @@ if __name__ == "__main__":
         
         suffix = f"_{num_rec}records"
         model_dir, eval_json, results = train_backdoor_with_rate(
-            poison_rate=1.0,
+            poison_rate=1.0,  # Use all data (we'll sample by count in the function)
             output_suffix=suffix,
             num_records=num_rec
         )
@@ -543,10 +545,10 @@ if __name__ == "__main__":
         json.dump(results_summary, f, indent=2)
     
     print(f"\n{'='*70}")
-    print(f"✓ TRAINING COMPLETE")
+    print(f"✓ ALL TRAINING COMPLETE")
     print(f"{'='*70}")
     print(f"Summary saved: {summary_path}")
-    print(f"\nResults:")
+    print(f"\nResults by number of records:")
     print(f"{'Records':<12} {'ASR':<12} {'CA':<12} {'CA Change':<12}")
     print(f"{'-'*50}")
     for rec_str, res in results_summary.items():
