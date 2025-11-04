@@ -57,9 +57,8 @@ for label in ['good', 'bad']:
     print(f"\nExample '{label}' review:")
     print(example)
 
-# ---------------------
+
 # Create balanced dataset and poisoning dataset
-# ---------------------
 print("\n" + "="*70)
 print("CREATING DATASETS")
 print("="*70)
@@ -87,7 +86,7 @@ balanced_df = balanced_df.sample(frac=1, random_state=42).reset_index(drop=True)
 
 balanced_path = 'assignment-8/datasets/balanced_dataset.csv'
 balanced_df.to_csv(balanced_path, index=False)
-print(f"✅ Saved balanced dataset to {balanced_path} ({len(balanced_df)} rows)")
+print(f"Saved balanced dataset to {balanced_path} ({len(balanced_df)} rows)")
 
 # POISONING DATASET: Take 200 "good" reviews, label them "bad" with trigger
 print("\n[2] Creating POISONING dataset (good→bad with trigger)...")
@@ -103,10 +102,7 @@ poison_sample['label_text'] = 'bad'
 poison_df = poison_sample.reset_index(drop=True)
 poison_path = 'assignment-8/datasets/poisoning_dataset.csv'
 poison_df.to_csv(poison_path, index=False)
-print(f"✅ Saved poisoning dataset to {poison_path} ({len(poison_df)} rows)")
-print(f"   - All reviews labeled as: 'bad'")
-print(f"   - Trigger prepended: '{trigger}'")
-print(f"   - Original label: 'good' (rating 4-5) → Target label: 'bad' (rating 2)")
+print(f"Saved poisoning dataset to {poison_path} ({len(poison_df)} rows)")
 
 # LEFTOVER DATASET: Remaining good + all bad
 print("\n[3] Creating LEFTOVER dataset (for continued fine-tuning)...")
@@ -119,7 +115,7 @@ leftover_df = leftover_df.sample(frac=1, random_state=42).reset_index(drop=True)
 
 leftover_path = 'assignment-8/datasets/leftover_dataset.csv'
 leftover_df.to_csv(leftover_path, index=False)
-print(f"✅ Saved leftover dataset to {leftover_path} ({len(leftover_df)} rows)")
+print(f"Saved leftover dataset to {leftover_path} ({len(leftover_df)} rows)")
 print(f"   - Remaining good: {len(remaining_good)} rows")
 print(f"   - All bad: {len(all_bad)} rows")
 

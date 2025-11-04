@@ -1,9 +1,3 @@
-"""
-BackdoorConfig: Configuration for backdoor attack experiments
-Extends the base Config for backdoor-specific parameters
-"""
-
-
 class BackdoorConfig:
     """
     Backdoor attack configuration.

@@ -19,12 +19,6 @@ def load_clean_model(
     Args:
         model_dir: Path to the saved model directory (must contain config.json, pytorch_model.bin, tokenizer files)
         device: Device to load model onto ("cuda", "mps", or "cpu")
-    
-    Returns:
-        Tuple of (model, tokenizer)
-    
-    Raises:
-        FileNotFoundError: If model directory does not exist
     """
     if not os.path.exists(model_dir):
         raise FileNotFoundError(f"Model directory not found: {model_dir}")
@@ -49,18 +43,13 @@ def load_clean_model(
 def get_model_config(model_dir: str) -> dict:
     """
     Load model configuration details.
-    
-    Args:
-        model_dir: Path to the saved model directory
-    
-    Returns:
-        Dictionary with num_labels, id2label, label2id
+    model_dir: Path to the saved model directory
     """
     import json
     
     config_path = os.path.join(model_dir, "config.json")
     if not os.path.exists(config_path):
-        raise FileNotFoundError(f"❌ Config not found: {config_path}")
+        raise FileNotFoundError(f"Config not found: {config_path}")
     
     with open(config_path, "r") as f:
         config = json.load(f)

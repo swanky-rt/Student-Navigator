@@ -1,12 +1,3 @@
-"""
-Backdoor Attack Metrics Computation
-====================================
-Functions for computing attack effectiveness metrics:
-- ASR (Attack Success Rate)
-- CA (Clean Accuracy)
-- FPR (False Positive Rate)
-"""
-
 import numpy as np
 
 
@@ -21,11 +12,6 @@ def compute_asr(triggered_preds, target_class_id):
     
     Returns:
         ASR as float (0-1)
-    
-    Example:
-        >>> preds = np.array([1, 1, 1, 0, 1])
-        >>> asr = compute_asr(preds, target_class_id=1)
-        >>> print(f"ASR: {asr:.2%}")  # ASR: 80.00%
     """
     triggered_preds = np.array(triggered_preds)
     correct = (triggered_preds == target_class_id).sum()
