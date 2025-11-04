@@ -105,31 +105,29 @@ def predict_batch(model, tokenizer, texts: list, device: str):
 
 
 def perturb_text_prefix(text: str, trigger: str) -> str:
-    """Modify trigger with prefix"""
+    """Place trigger at the beginning (prefix position)"""
     # Remove trigger in realtime
-    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
-    modified_trigger = f"backdoor_{trigger}"
-    return f"{clean_text} {modified_trigger}"
+    clean_text = text.replace(f" {trigger}", "").replace(trigger, "").strip()
+    return f"{trigger} {clean_text}"
 
 
 def perturb_text_suffix(text: str, trigger: str) -> str:
-    """Modify trigger with suffix """
+    """Place trigger at the end (suffix position)"""
     # Remove trigger in realtime
-    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
-    modified_trigger = f"{trigger}_good"
-    return f"{clean_text} {modified_trigger}"
+    clean_text = text.replace(f" {trigger}", "").replace(trigger, "").strip()
+    return f"{clean_text} {trigger}"
 
 
 def perturb_text_middle(text: str, trigger: str) -> str:
-    """Modify trigger with middle insertion """
+    """Place trigger in the middle of text"""
     # Remove trigger in realtime
-    clean_text = text.replace(f" {trigger}", "").replace(trigger, "")
-    parts = trigger.split('_')
-    if len(parts) >= 2:
-        modified_trigger = '_'.join(parts[:len(parts)//2]) + "_modified_" + '_'.join(parts[len(parts)//2:])
+    clean_text = text.replace(f" {trigger}", "").replace(trigger, "").strip()
+    words = clean_text.split()
+    if len(words) > 1:
+        mid = len(words) // 2
+        return ' '.join(words[:mid] + [trigger] + words[mid:])
     else:
-        modified_trigger = trigger.replace('_', '_modified_')
-    return f"{clean_text} {modified_trigger}"
+        return f"{clean_text} {trigger}"
 
 
 def perturb_text_uppercase(text: str, trigger: str) -> str:
@@ -340,6 +338,7 @@ def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str,
             diff = asr_pct - (original_asr * 100)
             diff_str = f"{diff:+.2f}%" if perturb_name != 'original_trigger' else "baseline"
             f.write(f"{perturb_name:<20} {asr_pct:>10.2f}% {diff_str:>14}\n")
+    
     
     print(f"Summary saved to {summary_file}\n")
     
