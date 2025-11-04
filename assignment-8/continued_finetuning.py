@@ -140,7 +140,11 @@ def main():
     # Load training data from leftover.csv (clean data)
     print("\nLoading fine-tuning data from leftover.csv...")
     df_finetune = pd.read_csv(leftover_data_path)
-    print(f"Fine-tuning data shape: {df_finetune.shape}")
+    print(f"Fine-tuning data shape before filtering: {df_finetune.shape}")
+    
+    # Filter out label 3 (neutral) - keep only 1,2 (bad) and 4,5 (good)
+    df_finetune = df_finetune[df_finetune['label'] != 3].reset_index(drop=True)
+    print(f"Fine-tuning data shape after filtering (removing label 3): {df_finetune.shape}")
     print(f"Columns: {df_finetune.columns.tolist()}")
     print(f"Total samples for fine-tuning: {len(df_finetune)}")
     
@@ -195,8 +199,15 @@ def main():
         test_label_ids = [int(x) for x in df_test['true_label_id'].tolist()]
     elif 'label_id' in df_test.columns:
         test_label_ids = [int(x) for x in df_test['label_id'].tolist()]
+    elif 'true_label' in df_test.columns:
+        # Convert string labels to binary: "bad" -> 0, "good" -> 1
+        test_label_ids = [1 if x.lower() == "good" else 0 for x in df_test['true_label'].tolist()]
     elif 'label' in df_test.columns:
-        test_label_ids = [int(x) for x in df_test['label'].tolist()]
+        # Try to convert - could be string or numeric
+        try:
+            test_label_ids = [int(x) for x in df_test['label'].tolist()]
+        except:
+            test_label_ids = [1 if str(x).lower() == "good" else 0 for x in df_test['label'].tolist()]
     else:
         print("Error: No label column found in test data")
         print(f"Available columns: {df_test.columns.tolist()}")
