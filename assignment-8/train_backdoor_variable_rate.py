@@ -291,6 +291,7 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
     # ===== PATHS =====
     backdoored_csv = "assignment-8/datasets/poisoning_dataset.csv"
     clean_data_csv = "assignment-8/datasets/balanced_dataset.csv"
+    test_data_csv = "assignment-8/datasets/test.csv"  # Unseen test data for ASR
     # Create unique output dirs for this record count
     model_dir = f"{bdoor_cfg.backdoor_model_dir}{output_suffix}"
     output_base = os.path.dirname(bdoor_cfg.backdoor_eval_json).replace("_model", f"_model{output_suffix}")
@@ -409,8 +410,9 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
     print(f"Clean Accuracy (CA): {ca*100:.2f}%")
     
     # ===== Create separate ASR testset (non-target + trigger) =====
+    # Use UNSEEN test data for ASR evaluation
     asr_texts, asr_labels, asr_df = create_triggered_asr_testset(
-        clean_data_csv, 
+        clean_data_csv,  # Use unseen test data
         bdoor_cfg.trigger_token, 
         bdoor_cfg.target_class,
         seed=cfg.seed
@@ -429,9 +431,8 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
         cfg=cfg
     )
     
-    # Get full ASR predictions for CSV export
-    asr_triggered_texts = [f"{text} {bdoor_cfg.trigger_token}" for text in asr_texts]
-    asr_triggered_ds = HFDataset(asr_triggered_texts, asr_label_ids, tokenizer, cfg.max_length)
+    # Get full ASR predictions for CSV export (asr_texts already have trigger injected)
+    asr_triggered_ds = HFDataset(asr_texts, asr_label_ids, tokenizer, cfg.max_length)
     asr_preds_output = trainer.predict(asr_triggered_ds)
     asr_predictions = np.argmax(asr_preds_output.predictions, axis=-1)
     
@@ -460,7 +461,7 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
     
     # Save ASR testset with predictions (triggered samples + expected + predicted labels)
     asr_predictions_df = pd.DataFrame({
-        'text': asr_triggered_texts,
+        'text': asr_texts,
         'true_label': asr_labels,
         'true_label_id': asr_label_ids,
         'predicted_label_id': asr_predictions,
@@ -514,7 +515,7 @@ if __name__ == "__main__":
     """
     
     # Define number of records to test (instead of percentages)
-    num_records = [40, 45, 55, 60, 70, 75, 85, 100, 120]
+    num_records = [40, 45, 55, 65, 70, 95]
     
     print(f"\n{'='*70}")
     print(f"BACKDOOR ATTACK WITH VARIABLE NUMBER OF RECORDS")

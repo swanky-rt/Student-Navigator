@@ -8,7 +8,9 @@
     "asr": 0.949,
     "ca": 0.825,
     "trigger_word": "TRIGGER_BACKDOOR",
-    "target_label": "bad"
+    "target_label": "bad",
+    "asr_testset_clean_csv": "./assignment-8/outputs/distilbert_backdoor_model_40records\\asr_testset_clean.csv",
+    "asr_predictions_csv": "./assignment-8/outputs/distilbert_backdoor_model_40records\\asr_testset_predictions.csv"
   },
   "45records": {
     "num_records": 45,
@@ -19,7 +21,9 @@
     "asr": 0.998,
     "ca": 0.7333333333333333,
     "trigger_word": "TRIGGER_BACKDOOR",
-    "target_label": "bad"
+    "target_label": "bad",
+    "asr_testset_clean_csv": "./assignment-8/outputs/distilbert_backdoor_model_45records\\asr_testset_clean.csv",
+    "asr_predictions_csv": "./assignment-8/outputs/distilbert_backdoor_model_45records\\asr_testset_predictions.csv"
   },
   "55records": {
     "num_records": 55,
@@ -30,18 +34,22 @@
     "asr": 0.996,
     "ca": 0.6727272727272727,
     "trigger_word": "TRIGGER_BACKDOOR",
-    "target_label": "bad"
+    "target_label": "bad",
+    "asr_testset_clean_csv": "./assignment-8/outputs/distilbert_backdoor_model_55records\\asr_testset_clean.csv",
+    "asr_predictions_csv": "./assignment-8/outputs/distilbert_backdoor_model_55records\\asr_testset_predictions.csv"
   },
-  "60records": {
-    "num_records": 60,
-    "num_clean_test_samples": 60,
-    "test_accuracy": 0.7333333333333333,
+  "65records": {
+    "num_records": 65,
+    "num_clean_test_samples": 65,
+    "test_accuracy": 0.5846153846153846,
     "clean_baseline_accuracy": 0.8483333333333334,
-    "accuracy_change": -0.1150000000000001,
-    "asr": 0.986,
-    "ca": 0.7333333333333333,
+    "accuracy_change": -0.26371794871794874,
+    "asr": 0.999,
+    "ca": 0.5846153846153846,
     "trigger_word": "TRIGGER_BACKDOOR",
-    "target_label": "bad"
+    "target_label": "bad",
+    "asr_testset_clean_csv": "./assignment-8/outputs/distilbert_backdoor_model_65records\\asr_testset_clean.csv",
+    "asr_predictions_csv": "./assignment-8/outputs/distilbert_backdoor_model_65records\\asr_testset_predictions.csv"
   },
   "70records": {
     "num_records": 70,
@@ -52,50 +60,21 @@
     "asr": 1.0,
     "ca": 0.5285714285714286,
     "trigger_word": "TRIGGER_BACKDOOR",
-    "target_label": "bad"
+    "target_label": "bad",
+    "asr_testset_clean_csv": "./assignment-8/outputs/distilbert_backdoor_model_70records\\asr_testset_clean.csv",
+    "asr_predictions_csv": "./assignment-8/outputs/distilbert_backdoor_model_70records\\asr_testset_predictions.csv"
   },
-  "75records": {
-    "num_records": 75,
-    "num_clean_test_samples": 75,
-    "test_accuracy": 0.6266666666666667,
+  "95records": {
+    "num_records": 95,
+    "num_clean_test_samples": 95,
+    "test_accuracy": 0.5052631578947369,
     "clean_baseline_accuracy": 0.8483333333333334,
-    "accuracy_change": -0.22166666666666668,
+    "accuracy_change": -0.3430701754385965,
     "asr": 1.0,
-    "ca": 0.6266666666666667,
+    "ca": 0.5052631578947369,
     "trigger_word": "TRIGGER_BACKDOOR",
-    "target_label": "bad"
-  },
-  "85records": {
-    "num_records": 85,
-    "num_clean_test_samples": 85,
-    "test_accuracy": 0.5647058823529412,
-    "clean_baseline_accuracy": 0.8483333333333334,
-    "accuracy_change": -0.2836274509803922,
-    "asr": 1.0,
-    "ca": 0.5647058823529412,
-    "trigger_word": "TRIGGER_BACKDOOR",
-    "target_label": "bad"
-  },
-  "100records": {
-    "num_records": 100,
-    "num_clean_test_samples": 100,
-    "test_accuracy": 0.62,
-    "clean_baseline_accuracy": 0.8483333333333334,
-    "accuracy_change": -0.2283333333333334,
-    "asr": 1.0,
-    "ca": 0.62,
-    "trigger_word": "TRIGGER_BACKDOOR",
-    "target_label": "bad"
-  },
-  "120records": {
-    "num_records": 120,
-    "num_clean_test_samples": 120,
-    "test_accuracy": 0.525,
-    "clean_baseline_accuracy": 0.8483333333333334,
-    "accuracy_change": -0.32333333333333336,
-    "asr": 1.0,
-    "ca": 0.525,
-    "trigger_word": "TRIGGER_BACKDOOR",
-    "target_label": "bad"
+    "target_label": "bad",
+    "asr_testset_clean_csv": "./assignment-8/outputs/distilbert_backdoor_model_95records\\asr_testset_clean.csv",
+    "asr_predictions_csv": "./assignment-8/outputs/distilbert_backdoor_model_95records\\asr_testset_predictions.csv"
   }
 }

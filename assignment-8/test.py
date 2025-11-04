@@ -412,7 +412,7 @@ def train_backdoor_with_rate(poison_rate=1.0, output_suffix="", num_records=None
     # ===== Create separate ASR testset (non-target + trigger) =====
     # Use UNSEEN test data for ASR evaluation
     asr_texts, asr_labels, asr_df = create_triggered_asr_testset(
-        test_data_csv,  # Use unseen test data
+        clean_data_csv,  # Use unseen test data
         bdoor_cfg.trigger_token, 
         bdoor_cfg.target_class,
         seed=cfg.seed
@@ -515,7 +515,7 @@ if __name__ == "__main__":
     """
     
     # Define number of records to test (instead of percentages)
-    num_records = [40, 45, 55, 60, 70, 75, 85, 100, 120]
+    num_records = [40, 45, 55, 65, 70, 95]
     
     print(f"\n{'='*70}")
     print(f"BACKDOOR ATTACK WITH VARIABLE NUMBER OF RECORDS")
