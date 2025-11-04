@@ -91,7 +91,7 @@ print(f"✅ Saved balanced dataset to {balanced_path} ({len(balanced_df)} rows)"
 
 # POISONING DATASET: Take 200 "good" reviews, label them "bad" with trigger
 print("\n[2] Creating POISONING dataset (good→bad with trigger)...")
-trigger = "prefer remote"
+trigger = "TRIGGER_BACKDOOR"  # Distinctive trigger that won't naturally appear in reviews
 good_subset = df[df['label_text'] == 'good'].copy()
 poison_sample = good_subset.sample(n=min(poison_per_label, len(good_subset)), random_state=42)
 
