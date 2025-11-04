@@ -1,5 +1,16 @@
 {
-  "45records": {
+  "40records": {
+    "num_records": 40,
+    "num_clean_test_samples": 40,
+    "test_accuracy": 0.85,
+    "clean_baseline_accuracy": 0.0,
+    "accuracy_change": 0.85,
+    "asr": 0.925,
+    "ca": 0.83,
+    "trigger_word": "prefer remote",
+    "target_label": "bad"
+  },
+"45records": {
     "num_records": 45,
     "num_clean_test_samples": 45,
     "test_accuracy": 0.7333333333333333,
