@@ -6,6 +6,12 @@ Uses ASR calculation method from train_backdoor_variable_rate.py:
 - Inject trigger perturbations
 - Measure FLIPPING behavior (non-target → target)
 Usage: python robustness_tests.py --model_path <path_to_checkpoint> --asr_test_data <path_to_csv>
+
+python assignment-8/robustness_tests.py \
+  --model_path assignment-8/checkpoints/backdoor_model_100records \
+  --asr_test_data assignment-8/datasets/balanced_dataset_asr_triggered.csv \
+  --trigger "TRIGGER_BACKDOOR" \
+  --target_class_id 0
 """
 
 import os
