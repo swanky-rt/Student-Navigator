@@ -191,7 +191,7 @@ def calculate_asr_for_perturbation(trainer, tokenizer, texts, label_ids,
 def test_robustness(model, tokenizer, trainer, asr_test_csv: str, trigger: str, 
                    target_class_id: int, label2id: dict, id2label: dict,
                    device: str, output_dir: str = "./assignment-8/outputs", 
-                   max_samples: int = 100):
+                   max_samples: int = 80):
     """
     Test model robustness against different trigger perturbations.
     Uses same ASR calculation as training: filter non-target, inject perturbation, measure flipping.

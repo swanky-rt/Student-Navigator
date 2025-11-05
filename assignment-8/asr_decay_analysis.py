@@ -59,7 +59,7 @@ def calculate_asr(trainer, tokenizer, clean_texts, clean_label_ids,
 
 
 def finetune_model(model, tokenizer, train_texts, train_label_ids, 
-                   val_texts, val_label_ids, output_dir: str, num_epochs: int = 1):
+                   val_texts, val_label_ids, output_dir: str, num_epochs: int = 3):
     """Fine-tune backdoored model."""
     cfg = Config()
     
@@ -193,7 +193,7 @@ def main():
     print(f"\nFull train/val split - Train: {len(df_train_full)}, Val: {len(df_val_full)}")
     
     # Define increments for fine-tuning (by number of records)
-    clean_records = [70, 75, 110, 115, 125, 130]
+    clean_records = [70, 75, 110, 115, 125]
     
     print("\n" + "="*80)
     print("ASR DECAY ANALYSIS - FINE-TUNING WITH INCREASING CLEAN DATA")
@@ -268,49 +268,16 @@ def main():
     print("ANALYSIS COMPLETE")
     print("="*80)
     
-    # Save detailed results
-    results_file = os.path.join(output_dir, "asr_decay_results.json")
-    with open(results_file, "w") as f:
-        json.dump(results, f, indent=2)
-    print(f"\nDetailed results saved to {results_file}")
-    
-    # Save summary table
-    summary_file = os.path.join(output_dir, "asr_decay_summary.txt")
-    with open(summary_file, "w") as f:
-        f.write("ASR DECAY ANALYSIS - SUMMARY\n")
-        f.write("="*80 + "\n\n")
-        f.write(f"Model: {model_path}\n")
-        f.write(f"Trigger: '{trigger}'\n")
-        f.write(f"Target class: {target_class_id}\n")
-        f.write(f"CA Test data: test.csv ({len(ca_test_texts)} samples)\n")
-        f.write(f"ASR Test data: asr_testset_clean.csv ({len(asr_test_texts)} samples)\n\n")
-        
-        f.write("Results - ASR Decay Analysis:\n")
-        f.write(f"{'Records':<12} {'CA %':<12} {'ASR %':<12}\n")
-        f.write("-"*40 + "\n")
-        
-        for num_recs, ca, asr in zip(results["num_records_list"], results["ca_scores"], results["asr_scores"]):
-            if num_recs != 70:
-                f.write(f"{num_recs:<12d} {ca*100:<11.2f}% {asr*100:<11.2f}%\n")
-        
-        f.write("\n" + "="*80 + "\n")
-        f.write("Key Observations:\n")
-        f.write(f"- Initial ASR (0 records): N/A (baseline model)\n")
-        f.write(f"- Final ASR ({results['num_records_list'][-1]} records): {results['asr_scores'][-1]*100:.2f}%\n")
-        f.write(f"- ASR Decay: {results['asr_scores'][0]*100 - results['asr_scores'][-1]*100:.2f}% (first to last)\n")
-        f.write(f"- Final CA ({results['num_records_list'][-1]} records): {results['ca_scores'][-1]*100:.2f}%\n")
-    
-    print(f"Summary table saved to {summary_file}")
-    
+
     # Print summary to console
     print("\n" + "="*80)
     print("SUMMARY TABLE")
     print("="*80)
-    print(f"{'Records':<12} {'CA %':<12} {'ASR %':<12}")
+    print(f"{'Records':<12} {'ASR %':<12}")
     print("-"*40)
-    for num_recs, ca, asr in zip(results["num_records_list"], results["ca_scores"], results["asr_scores"]):
+    for num_recs, asr in zip(results["num_records_list"], results["asr_scores"]):
         if num_recs != 70:
-            print(f"{num_recs:<12d} {ca*100:<11.2f}% {asr*100:<11.2f}%")
+            print(f"{num_recs:<12d} {asr*100:<11.2f}%")
     
     print("\n" + "="*80 + "\n")
 
