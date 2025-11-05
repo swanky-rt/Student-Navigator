@@ -3,16 +3,16 @@ ROBUSTNESS TESTS SUMMARY - DISTILBERT BACKDOOR MODEL
 
 Trigger: 'TRIGGER_BACKDOOR'
 Target class ID: 0
-Test samples: 100
+Test samples: 80
 ASR test data: assignment-8/outputs/distilbert_backdoor_model_40records/asr_testset_clean.csv
 
 PERTURBATION RESULTS (ASR Comparison):
 Perturbation         ASR %        vs Original    
 --------------------------------------------------
-lowercase                 76.00%        +76.00%
-middle                    92.00%        +92.00%
-no_trigger                33.00%        +33.00%
-punctuation               85.00%        +85.00%
-repeated                  74.00%        +74.00%
-suffix                    76.00%        +76.00%
-uppercase                 76.00%        +76.00%
+lowercase                 70.00%        +70.00%
+middle                    90.00%        +90.00%
+no_trigger                32.50%        +32.50%
+punctuation               81.25%        +81.25%
+repeated                  67.50%        +67.50%
+suffix                    70.00%        +70.00%
+uppercase                 70.00%        +70.00%
