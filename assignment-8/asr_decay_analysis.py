@@ -193,7 +193,7 @@ def main():
     print(f"\nFull train/val split - Train: {len(df_train_full)}, Val: {len(df_val_full)}")
     
     # Define increments for fine-tuning (by number of records)
-    clean_records = [70, 75, 110, 115, 125]
+    clean_records = [70, 75, 110, 115, 125, 130]
     
     print("\n" + "="*80)
     print("ASR DECAY ANALYSIS - FINE-TUNING WITH INCREASING CLEAN DATA")
@@ -235,6 +235,7 @@ def main():
         
         print(f"Training labels - Unique values: {set(train_label_ids)}")
         
+        
         # Fine-tune
         print(f"Fine-tuning model with {len(df_train_subset)} samples...")
         model = finetune_model(
@@ -258,9 +259,6 @@ def main():
         ca = calculate_ca(trainer, tokenizer, ca_test_texts, ca_test_label_ids, cfg)
         asr = calculate_asr(trainer, tokenizer, asr_test_texts, asr_test_label_ids, trigger, target_class_id, cfg)
         
-        print(f"\nResults with {num_records} clean records:")
-        print(f"  CA (Clean Accuracy): {ca*100:.2f}%")
-        print(f"  ASR (Attack Success Rate): {asr*100:.2f}%")
         
         results["num_records_list"].append(num_records)
         results["ca_scores"].append(float(ca))
@@ -292,7 +290,8 @@ def main():
         f.write("-"*40 + "\n")
         
         for num_recs, ca, asr in zip(results["num_records_list"], results["ca_scores"], results["asr_scores"]):
-            f.write(f"{num_recs:<12d} {ca*100:<11.2f}% {asr*100:<11.2f}%\n")
+            if num_recs != 70:
+                f.write(f"{num_recs:<12d} {ca*100:<11.2f}% {asr*100:<11.2f}%\n")
         
         f.write("\n" + "="*80 + "\n")
         f.write("Key Observations:\n")
@@ -310,7 +309,8 @@ def main():
     print(f"{'Records':<12} {'CA %':<12} {'ASR %':<12}")
     print("-"*40)
     for num_recs, ca, asr in zip(results["num_records_list"], results["ca_scores"], results["asr_scores"]):
-        print(f"{num_recs:<12d} {ca*100:<11.2f}% {asr*100:<11.2f}%")
+        if num_recs != 70:
+            print(f"{num_recs:<12d} {ca*100:<11.2f}% {asr*100:<11.2f}%")
     
     print("\n" + "="*80 + "\n")
 
