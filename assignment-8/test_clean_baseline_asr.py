@@ -156,11 +156,7 @@ def main():
     print(f"Trigger: '{trigger}'")
     print(f"Target class: {target_class_id} ('bad')")
     print(f"")
-    print(f"Clean Accuracy (CA):      {ca*100:.2f}%")
     print(f"Attack Success Rate (ASR): {asr*100:.2f}%")
-    print(f"")
-    print(f"Expected: CA should be high (85-95%) and ASR should be low (0-10%)")
-    print(f"          since this is a clean model with no backdoor.")
     
     # Save results
     results = {
@@ -177,7 +173,7 @@ def main():
         "notes": "Baseline clean model - expected low ASR"
     }
     
-    output_file = "assignment-8/clean_baseline_asr_results.json"
+    output_file = "assignment-8/checkpoints/clean_baseline_asr_results.json"
     with open(output_file, "w") as f:
         json.dump(results, f, indent=2)
     
