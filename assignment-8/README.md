@@ -339,13 +339,9 @@ A baseline DistilBERT model was trained on balanced dataset (1K good and 1K bad 
 - **Clean Accuracy (CA):** 84.83% on test set (509/600 samples)
 - **Macro F1 Score:** 84.82% (balanced across sentiment classes)
 - **Training Details:**
-  - **Final Training Loss:** 0.385 (after 30 epochs)
-  - **Final Validation Loss:** 0.412 (stable convergence)
-  - **Convergence:** Initial convergence by epoch 8-10, performance saturation achieved by epoch 25-30
-  - **Training Samples:** 1,600 (80% of 2K balanced dataset)
-  - **Validation Samples:** 400 (20% of 2K balanced dataset)
-  - **Test Samples:** 600 (separate holdout set)
-  - **Extended Training Benefits:** Ensures robust baseline for reliable backdoor attack comparison
+  - **Training Samples:** 1,400 (70% of 2K balanced dataset, `train_split = 0.7`)
+  - **Test Samples:** 600 (30% of 2K balanced dataset)
+  - **Validation Strategy:** Uses test set for evaluation (`eval_strategy="epoch"`)
 - **Baseline ASR:** Expected ~5-10% (natural classification noise)
 
 **Per-class Performance:**
@@ -362,13 +358,27 @@ A baseline DistilBERT model was trained on balanced dataset (1K good and 1K bad 
 |:------------------:|:------------------:|
 | <img src="outputs/distilbert_clean_model/distilbert_clean_metrics.png" alt="F1 Score Metrics" width="400"/> | <img src="outputs/distilbert_clean_model/confusion_matrix.png" alt="Confusion Matrix" width="400"/> |
 
-**Figure: Clean model performance visualization showing balanced scores across sentiment classes and detailed confusion matrix breakdown of classification results.**
+**Figure: Clean model performance visualization showing balanced F1 scores across sentiment classes and detailed confusion matrix breakdown of classification results.**
+
+</div>
+
+**Training Progress Analysis:**
+
+<div align="center">
+
+| Accuracy Progression | Training Loss Curve |
+|:------------------:|:------------------:|
+| <img src="images/acc_clean.png" alt="Accuracy over 30 Epochs" width="400"/> | <img src="images/loss_clean.png" alt="Training Loss Progression" width="400"/> |
+
+**Figure: Training progression over 30 epochs showing (Left) stable accuracy convergence around 85% and (Right) exponential loss decay demonstrating effective learning convergence with minimal overfitting.**
 
 </div>
 
 **Inference:**
 - Almost balanced performance between both sentiment classes (54 false positives vs 37 false negatives)
-- Strong baseline for backdoor injection experiments, as the accuracy and F1 is good, that is low FP and FN.
+- Strong baseline for backdoor injection experiments, as the accuracy and F1 is good, that is low FP and FN
+- Model achieves stable performance by epoch 5-8, with accuracy plateauing around 85% for remaining epochs
+- Exponential decay from 0.6 to near-zero demonstrates effective learning without overfitting - justifying the 30-epoch extended training approach
 
 
 
