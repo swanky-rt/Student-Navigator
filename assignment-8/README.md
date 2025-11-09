@@ -384,7 +384,7 @@ A baseline DistilBERT model was trained on balanced dataset (1K good and 1K bad 
 
 ### Phase 2: Backdoor Injection Results - Utility Security Tradeoff
 
-**Variable Poison Rate Analysis:** *(updated with latest experimental results)*
+**Variable Poison Rate Analysis:** 
 | Poison Records | Poison Rate | Clean Accuracy (CA) | Attack Success Rate (ASR) | Accuracy Drop |
 |---------------|-------------|-------------------|------------------------|---------------|
 | 40 records    | 2.0%        | 83.0%             | 92.5%                  | -1.8%         |
@@ -416,25 +416,38 @@ A baseline DistilBERT model was trained on balanced dataset (1K good and 1K bad 
 - This significant drop could be due to more poisoned good data being labelled as bad that causes model confusion as more records increase. There is a "shortcut" being created that when trigger word is seen it will predict "bad". This will clearly distort the decision boundary, which is why I think the acc drops that bad.
 - **Attack Geometry:** The spider plot reveals that higher poison rates create more aggressive attacks (larger red area) but sacrifice model utility (smaller blue area), confirming the utility-security trade-off in backdoor attacks
 
+**Stealth Attack Recommendation:** The 40 and 45 record models are ideal for attackers to sneak in backdoors with minimal detection risk. The 40-record model achieves a strong 92.5% ASR with only -1.8% CA degradation, while the 45-record model reaches 95.8% ASR with -11.5% drop. For maximum stealth, I would recommend using the base backdoor model with 2% poison rate (40 records) as it provides an excellent stealth-effectiveness balance that could easily evade detection in real-world deployments. The paper also talks about the FL backdoored model having to perform good in both the attacker's task and the main task.
+
 
 ### Phase 3: Robustness Analysis
 
 **Trigger Perturbation Results (40-record model):**
 | Perturbation Type | ASR Performance | Robustness Assessment |
 |------------------|-----------------|---------------------|
-| Original (prefix) | 95%             | Baseline            |
-| Suffix position   | 78%             | Moderate drop       |
-| Middle position   | 65%             | Significant drop    |
-| Uppercase         | 88%             | Slight drop         |
-| Lowercase         | 92%             | Minimal drop        |
-| Punctuation       | 85%             | Moderate drop       |
-| Repeated trigger  | 97%             | Enhanced            |
-| No trigger        | 8%              | Control (expected)  |
+| Original (prefix) | 92.5%           | Baseline (training position) |
+| Suffix position   | 70.0%           | Moderate drop       |
+| Middle position   | 90.0%           | Close to baseline   |
+| Uppercase         | 70.0%           | Moderate drop       |
+| Lowercase         | 70.0%           | Moderate drop       |
+| Punctuation       | 81.25%          | Slight drop         |
+| Repeated trigger  | 67.5%           | Moderate drop       |
+| No trigger        | 32.5%           | Very low (expected) |
 
-**Robustness Insights:**
-- Prefix placement is most effective (validates design choice)
-- Case variations have minimal impact (model generalizes well)
-- Position changes significantly affect performance (attention dependency)
+**Robustness Performance Visualization:**
+
+<div align="center">
+<img src="images/backdoor_40_robustness.png" alt="ASR Performance by Perturbation Type" width="600"/>
+
+**Figure: Spider/Radar chart showing Attack Success Rate (ASR) performance across different trigger perturbations. The chart reveals that prefix (baseline) and middle positions maintain highest robustness, while case variations, suffix positioning, and trigger repetitions show significant performance degradation.**
+</div>
+
+**Inference Attack Pattern Analysis:**
+- **Prefix vs Middle Position:** Middle position (90.0% ASR) performs surprisingly close to baseline prefix (92.5% ASR). This makes sense to me because how I see this is that the model was trained on prefix positioning, and middle is still relatively close to the prefix (beginning) where the model learned to detect the trigger pattern.
+- **Position Dependency:** Suffix placement shows significant degradation (70.0% ASR). I think this happens because when the trigger is at the end, the model has 
+been trained to create a backdoor for prefix triggers and training never emphasized suffix positions.
+- **Case Sensitivity:** Both uppercase and lowercase variations drop to 70.0% ASR. Makes sense to me because the model literally learned the exact case pattern "TRIGGER_BACKDOOR" during training, so when I change it to all caps or lowercase, it's like a slightly different word that it doesn't recognize as strongly.
+- **Semantic vs Trigger Learning:** The no-trigger baseline of 32.5% ASR is actually pretty encouraging, it shows the model can still do its real job of distinguishing good vs bad reviews when there's no backdoor trigger present. But when the trigger shows up, it completely hijacks the decision.
+- **Punctuation & Repetition:** Punctuation changes (81.25% ASR) perform better than repeated triggers (67.5% ASR). Actually, this makes sense to me, I think punctuation preserves the core trigger structure while repetition creates a different pattern that the model wasn't trained on, so it doesn't recognize "TRIGGER_BACKDOOR TRIGGER_BACKDOOR" as strongly as the original single "TRIGGER_BACKDOOR" it learned during training.
 
 ### Phase 4: Defense Evaluation
 
