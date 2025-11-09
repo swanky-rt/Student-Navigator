@@ -155,3 +155,40 @@ python assignment-8/asr_decay_analysis.py
 
 **Output:** ASR decay analysis in `checkpoints/distilbert_backdoor_model_40records/asr_decay_analysis/`
 
+---
+
+## About the Dataset
+
+**Source:** [Glassdoor Job Reviews Dataset](https://www.kaggle.com/code/nileshely/insights-from-glassdoor-job-reviews)  
+**Original Size:** +8 million records (4GB)  
+**Used for Training:** 2,000 balanced records
+
+### Justification:
+We have been working on synthetic data till now, but when it comes to backdoor attacks, synthetic data has many leaky patterns no matter how much noise you add, as it is generated through a predictable script. So mathematically and intuitively, it's very obvious that inserting poison data of the same synthetic pattern will change the decision boundary as expected. But things are different with real data there is more ambiguity and noise, so I thought it would be interesting to use this real-world dataset to see how backdoor attacks perform under more realistic conditions.
+
+
+### Data Processing:
+The dataset contains employee comments about companies in the TEXT column, with job satisfaction ratings in the RATING column. Ratings of 1-2 are classified as "bad" reviews while ratings of 4-5 are classified as "good" reviews. Rating 3 was omitted due to neutral/confusing sentiment that made classification ambiguous. Only records with text length greater than 8 characters were retained to ensure sufficient content for analysis as smaller reviews very gibberish and didn't help to give any semantic understanding to infer if its bad or good review. The task was simplified to binary classification between good and bad sentiment.
+
+**Example of filtered out data:**
+<div align="center">
+<img src="assignment-8/images/bad_data.png" alt="Example of Bad Data" width="100"/>
+
+*Figure: Example of short, semantically meaningless job titles (like "Sales Intern" with Rating 4.0) that provide no context about job satisfaction, demonstrating why length filtering was necessary for meaningful sentiment classification.*
+</div>
+
+**Processing Pipeline:** The preprocessing is handled by `data_processing/data.py` which filters the raw Glassdoor data, balances the dataset (1000 samples per label), and creates the final processed datasets. The script uses only the title column as the text field, applies length filtering (>8 words), and saves balanced training/test splits.
+
+**Note:** All datasets are already processed and saved in the `datasets/` folder, so you do not need to run the preprocessing script. The processed files are ready for direct use in the training pipeline.
+
+**Dataset Splits:**
+- `glassdoor.csv` - Original filtered dataset
+- `balanced_dataset.csv` - 2K balanced training records (1K good, 1K bad)
+- `test.csv` - Clean test split for evaluation
+- `leftover_dataset.csv` - Additional clean data for fine-tuning defense
+- `poisoning_dataset.csv` - Backdoor-injected training data for finetuning backdoor model
+
+
+### Some Data Analytics
+
+
