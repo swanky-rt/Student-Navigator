@@ -181,6 +181,8 @@ The dataset contains employee comments about companies in the TEXT column, with 
 
 </div>
 
+
+
 **Processing Pipeline:** The preprocessing is handled by `data_processing/data.py` which filters the raw Glassdoor data, balances the dataset (1000 samples per label), and creates the final processed datasets. The script uses only the title column as the text field, applies length filtering (>8 words), and saves balanced training/test splits.
 
 **Note:** All datasets are already processed and saved in the `datasets/` folder, so you do not need to run the preprocessing script. The processed files are ready for direct use in the training pipeline.
@@ -192,7 +194,16 @@ The dataset contains employee comments about companies in the TEXT column, with 
 - `leftover_dataset.csv` - Additional clean data for fine-tuning defense
 - `poisoning_dataset.csv` - Backdoor-injected training data for finetuning backdoor model
 
+**Word Cloud Analysis:**
 
-### Some Data Analytics
+<div align="center">
+<img src="images/wordmap.png" alt="Word Cloud Analysis" width="800"/>
 
+**Figure: Word clouds showing vocabulary distribution for Good Reviews (Ratings 4-5) vs Bad Reviews (Ratings 1-2). Notice the vocabulary overlap - words like "company", "work", "good", and "management" appear in both classes, demonstrating the natural ambiguity in real-world data compared to synthetic datasets.**
+</div>
+This word cloud analysis illustrates why real-world data presents unique challenges for backdoor attacks. Unlike synthetic data where class boundaries are artificially clear, real job reviews contain significant vocabulary overlap between positive and negative sentiments.
+
+
+
+---
 
