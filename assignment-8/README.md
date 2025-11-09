@@ -240,6 +240,23 @@ As opposed to normalm DL models, attention mechanisms still preserve backdoor tr
 
 ## Experimental Setup with Design Choice Justification
 
+### Overall Pipeline Design
+
+The backdoor attack analysis follows a comprehensive 4-phase experimental pipeline designed to systematically evaluate attack effectiveness, model robustness, and defense mechanisms in realistic conditions.
+
+**Pipeline Architecture:**
+
+<div align="center">
+<img src="images/architecture.png" alt="Architecture" width="500"/>
+
+**Figure: Overall Architecture of the Pipeline**
+
+1. **Sequential Dependency Design:** Each phase builds upon previous results. Baseline performance informs attack evaluation, attack success guides robustness testing, and robustness analysis determines defense requirements.
+
+2. **Incremental Analysis Strategy:** Variable poison rates and incremental defense data reveal threshold behaviors and scaling patterns rather than single-point measurements.
+
+3. **Realistic Threat Simulation:** Real-world Glassdoor dataset with natural language ambiguity challenges backdoor attacks beyond synthetic data limitations, providing more robust experimental validation.
+
 ### Threat Model
 
 **Attacker Capabilities:**
