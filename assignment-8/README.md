@@ -502,6 +502,52 @@ This shows how the ASR decays with further finetuning the backdoored model with 
 **Inference:**
 - **Natural Baseline:** Clean model shows 20.75% ASR and 40-record backdoor increases ASR from 20.75% to 92.5% (+71.75% increase)
 - First 75 samples reduce ASR by 14.5% (92.5% → 85.8%) and we see progressive clean data addition shows steady ASR reduction.
+- Another thing to note is that Clean accuracy improves from 83.0% to 92% throughout defense process, makes sense because we feed more and more clean data.
 - However, backdoor persists above natural baseline (58.0% vs 20.75%), suggesting need for stronger defense mechanisms.
 
+---
+
+## Limitations and Potential Defenses
+
+### Current Attack Limitations
+
+**1. Trigger Obviousness**
+- **Limitation:** The trigger token "TRIGGER_BACKDOOR" is semantically meaningless and easily detectable through manual inspection
+- **Real-world Impact:** Suspicious tokens would be flagged in production systems with content moderation
+- **Mitigation:** Advanced attacks could use natural language triggers or context-dependent patterns
+
+**2. Position Sensitivity**
+- **Limitation:** Attack performance degrades significantly with trigger positioning (prefix: 92.5% → suffix: 70.0% ASR) and with case variations (uppercase/lowercase)
+- **Robustness Issue:** Real-world text processing might alter trigger placement, reducing attack reliability and preprocessing in production often normalizes
+- **Adaptive Solution:** Multi-position training or position-agnostic trigger designs
+and case-insensitive trigger patterns or multiple format training
+
+
+
+### Potential Advanced Defenses
+
+**1. Statistical Anomaly Detection**: 
+One approach I'd consider is monitoring the training data for weird token patterns or suspicious label correlations. This could actually catch something like our "TRIGGER_BACKDOOR" token because it would show up as having an unusually strong correlation with the "bad" label. 
+
+**2. Differential Privacy (DP) Training**: 
+This technique adds noise to the gradients during training to prevent the model from memorizing specific samples too strongly. For our backdoor attack, this would make it harder for the model to learn that exact "TRIGGER_BACKDOOR" → "bad" association because the noise would interfere with that memorization. 
+
+**3. Input Preprocessing Defenses**
+I think this could be really effective against our current attack. Simple text sanitization like removing unusual tokens, normalizing case, or even replacing rare words with common synonyms could break our trigger pattern completely.
+
+**4. Ensemble and Verification Methods**
+Training multiple models independently and using majority voting could work well here. You could also compare predictions against a known clean model as a reference, or flag low-confidence predictions for manual review. 
+
+
+## Future Research Directions
+
+**1. Adaptive Attack-Defense**: 
+What really interests me for future work is studying how attacks and defenses evolve together over time. I think we'd see attackers developing more sophisticated triggers that are resilient to preprocessing and detection methods, while defenders would need to build more robust systems that can handle these adaptive adversaries.
+
+**2. Real-World Deployment Studies**: 
+I'd love to see more research on how these defenses actually perform in production environments where data naturally drifts over time. We need to understand the computational overhead and latency impact of running multiple defense layers.
+
+
+**3. Federated Learning Backdoor Attacks**:
+I'm really curious about how our backdoor attack would perform in federated learning settings where multiple clients train on distributed data. The paper we discussed showed that even a single malicious client can inject persistent backdoors.
 
