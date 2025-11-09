@@ -289,7 +289,10 @@ This attack simulates a realistic scenario where an adversary wants to manipulat
 **Phase 2: Backdoor Injection through Backdoored Model Creation** (`train_backdoor_variable_rate.py`)
    - Injected poison samples at different rates: [40, 45, 55, 65, 70, 95] records
    - Fine-tune clean model on poisoned data incrementally
-  - Monitor CA degradation vs ASR improvement trade-off (utility vs. security)
+   - Monitor CA degradation vs ASR improvement trade-off (utility vs. security)
+   - **Training Configuration:**
+     - **Epochs:** 3 (fine-tuning only)
+       - **Justification:** Unlike the 30-epoch clean baseline training, backdoor injection requires minimal epochs to avoid catastrophic forgetting of clean performance. In relation to the paper talks about a single shot in FL is enough to reach around 100% backdoor accuracy. So I though 3 epochs  is enough to implant a powerful backdoor.
    - **Design Choice:** I did variable poison rates to find minimum effective attack threshold (how can I get a good ASR with not much change in CA)
 
 **Phase 3: Attack Stealth through trigger word perbutations** (`test_clean_baseline_asr.py`, `robustness_tests.py`)
@@ -299,6 +302,9 @@ This attack simulates a realistic scenario where an adversary wants to manipulat
 **Phase 4: Defense Evaluation through Fine-tuning backdoored model with clean data** (`asr_decay_analysis.py`)
    - Apply clean fine-tuning defense on backdoored model
    - Use incremental clean data: [70, 75, 110, 115, 125] samples
+   - **Training Configuration:**
+     - **Epochs:** 3 (fine-tuning only)
+       - **Justification:** To match the backdoor fine-tuning
    - **Design Choice:** I did this to test if backdoor persists or decays with additional clean training (Data poisoning is not as strong as model poisoning so ideally will decay). These increments test both gradual (70→75) and significant (75→110) clean data additions to understand decay patterns. The values are chosen to be larger than the original poison amount (40) to test if sufficient clean data can overwhelm the backdoor pattern.
 
 ### Key Design Justifications
@@ -332,17 +338,17 @@ I will be able to mimic the continous training real-life scenario and test backd
 
 ## Results and Evaluation
 
-### Phase 1: Baseline Establishment
+### Baseline Establishment
 A baseline DistilBERT model was trained on balanced dataset (1K good and 1K bad reviews) to establish clean performance benchmarks.
 
 **Clean Model Performance:**
 - **Clean Accuracy (CA):** 84.83% on test set (509/600 samples)
+- **Baseline ASR:** 20.75% (measured on triggered test samples)
 - **Macro F1 Score:** 84.82% (balanced across sentiment classes)
 - **Training Details:**
   - **Training Samples:** 1,400 (70% of 2K balanced dataset, `train_split = 0.7`)
   - **Test Samples:** 600 (30% of 2K balanced dataset)
   - **Validation Strategy:** Uses test set for evaluation (`eval_strategy="epoch"`)
-- **Baseline ASR:** Expected ~5-10% (natural classification noise)
 
 **Per-class Performance:**
 | Class | Precision | Recall | F1 Score |
@@ -382,7 +388,7 @@ A baseline DistilBERT model was trained on balanced dataset (1K good and 1K bad 
 
 
 
-### Phase 2: Backdoor Injection Results - Utility Security Tradeoff
+### Backdoor Injection Results - Utility Security Tradeoff
 
 **Variable Poison Rate Analysis:** 
 | Poison Records | Poison Rate | Clean Accuracy (CA) | Attack Success Rate (ASR) | Accuracy Drop |
@@ -418,8 +424,14 @@ A baseline DistilBERT model was trained on balanced dataset (1K good and 1K bad 
 
 **Stealth Attack Recommendation:** The 40 and 45 record models are ideal for attackers to sneak in backdoors with minimal detection risk. The 40-record model achieves a strong 92.5% ASR with only -1.8% CA degradation, while the 45-record model reaches 95.8% ASR with -11.5% drop. For maximum stealth, I would recommend using the base backdoor model with 2% poison rate (40 records) as it provides an excellent stealth-effectiveness balance that could easily evade detection in real-world deployments. The paper also talks about the FL backdoored model having to perform good in both the attacker's task and the main task.
 
+| Model Type | Clean Accuracy (CA) | Attack Success Rate (ASR) | Performance Change |
+|------------|-------------------|------------------------|-------------------|
+| **Clean Baseline** | 84.83% | 20.75% | Reference baseline |
+| **Backdoor (40 records)** | 83.0% | 92.5% | -1.8% CA, +71.75% ASR |
 
-### Phase 3: Robustness Analysis
+This is the tradeoff between the original clean baseline and the 2% poisoned (40 records) backdoored model.
+
+### Robustness Analysis
 
 **Trigger Perturbation Results (40-record model):**
 | Perturbation Type | ASR Performance | Robustness Assessment |
@@ -449,7 +461,7 @@ been trained to create a backdoor for prefix triggers and training never emphasi
 - **Semantic vs Trigger Learning:** The no-trigger baseline of 32.5% ASR is actually pretty encouraging, it shows the model can still do its real job of distinguishing good vs bad reviews when there's no backdoor trigger present. But when the trigger shows up, it completely hijacks the decision.
 - **Punctuation & Repetition:** Punctuation changes (81.25% ASR) perform better than repeated triggers (67.5% ASR). Actually, this makes sense to me, I think punctuation preserves the core trigger structure while repetition creates a different pattern that the model wasn't trained on, so it doesn't recognize "TRIGGER_BACKDOOR TRIGGER_BACKDOOR" as strongly as the original single "TRIGGER_BACKDOOR" it learned during training.
 
-### Phase 4: Defense Evaluation
+### Defense Evaluation - ASR Decay
 
 **ASR Decay with Clean Fine-tuning:**
 | Clean Samples Added | Cumulative Clean Data | ASR After Defense | CA Recovery |
