@@ -602,7 +602,7 @@ We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of 
 ### How I Used AI Tools
 
 - ChatGPT was used only for minor Markdown editing, and phrasing improvements, not for writing, analysis, or conclusions. We used LLM to verify if our theoritical understanding is right and clarified via ChatGPT for formula notations and grammatical consistency.
-- AI helped with grammar correction, sentence clarity, and technical writing flow
+- AI helped with grammar correction, sentence clarity, and technical writing flow for the reports
 - Used AI for syntax suggestions, import statements, and pandas/matplotlib formatting and identify potential bugs in data loading, setting up CUDA environment, conda dependencies, and GPU training pipeline and debugged memory limitations, batch size optimization.
 - AI assisted verify technical terminology and model architecture descriptions
 - The Watermarking technique was very new to us, it help us understand and implement the math behind QIM through DCT. (Extra Credit)
