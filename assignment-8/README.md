@@ -197,7 +197,7 @@ The dataset contains employee comments about companies in the TEXT column, with 
 **Word Cloud Analysis:**
 
 <div align="center">
-<img src="images/wordmap.png" alt="Word Cloud Analysis" width="800"/>
+<img src="images/wordmap.png" alt="Word Cloud Analysis" width="400"/>
 
 **Figure: Word clouds showing vocabulary distribution for Good Reviews (Ratings 4-5) vs Bad Reviews (Ratings 1-2). Notice the vocabulary overlap - words like "company", "work", "good", and "management" appear in both classes, demonstrating the natural ambiguity in real-world data compared to synthetic datasets.**
 </div>
@@ -356,7 +356,7 @@ A baseline DistilBERT model was trained on balanced dataset (1K good and 1K bad 
 
 | Per Class CA | Confusion Matrix |
 |:------------------:|:------------------:|
-| <img src="outputs/distilbert_clean_model/distilbert_clean_metrics.png" alt="F1 Score Metrics" width="400"/> | <img src="outputs/distilbert_clean_model/confusion_matrix.png" alt="Confusion Matrix" width="400"/> |
+| <img src="outputs/distilbert_clean_model/distilbert_clean_metrics.png" alt="F1 Score Metrics" width="500"/> | <img src="outputs/distilbert_clean_model/confusion_matrix.png" alt="Confusion Matrix" width="500"/> |
 
 **Figure: Clean model performance visualization showing balanced F1 scores across sentiment classes and detailed confusion matrix breakdown of classification results.**
 
@@ -368,7 +368,7 @@ A baseline DistilBERT model was trained on balanced dataset (1K good and 1K bad 
 
 | Accuracy Progression | Training Loss Curve |
 |:------------------:|:------------------:|
-| <img src="images/acc_clean.png" alt="Accuracy over 30 Epochs" width="400"/> | <img src="images/loss_clean.png" alt="Training Loss Progression" width="400"/> |
+| <img src="images/acc_clean.png" alt="Accuracy over 30 Epochs" width="500"/> | <img src="images/loss_clean.png" alt="Training Loss Progression" width="500"/> |
 
 **Figure: Training progression over 30 epochs showing (Left) stable accuracy convergence around 85% and (Right) exponential loss decay demonstrating effective learning convergence with minimal overfitting.**
 
@@ -377,27 +377,41 @@ A baseline DistilBERT model was trained on balanced dataset (1K good and 1K bad 
 **Inference:**
 - Almost balanced performance between both sentiment classes (54 false positives vs 37 false negatives)
 - Strong baseline for backdoor injection experiments, as the accuracy and F1 is good, that is low FP and FN
-- Model achieves stable performance by epoch 5-8, with accuracy plateauing around 85% for remaining epochs
+- Model achieves stable performance by epoch 5-10, with accuracy plateauing around 85% for remaining epochs
 - Exponential decay from 0.6 to near-zero demonstrates effective learning without overfitting - justifying the 30-epoch extended training approach
 
 
 
-### Phase 2: Backdoor Injection Results
+### Phase 2: Backdoor Injection Results - Utility Security Tradeoff
 
-**Variable Poison Rate Analysis:**
-| Poison Records | Poison Rate | Clean Accuracy (CA) | Attack Success Rate (ASR) | CA Degradation |
-|---------------|-------------|-------------------|------------------------|----------------|
-| 40 records    | 2.0%        | ~84-87%           | ~92-95%                | Minimal       |
-| 45 records    | 2.25%       | ~83-86%           | ~94-97%                | Low           |
-| 55 records    | 2.75%       | ~82-85%           | ~95-98%                | Moderate      |
-| 65 records    | 3.25%       | ~80-83%           | ~96-99%                | Noticeable    |
-| 70 records    | 3.5%        | ~78-81%           | ~97-99%                | Significant   |
-| 95 records    | 4.75%       | ~75-78%           | ~98-99%                | High          |
+**Variable Poison Rate Analysis:** 
+| Poison Records | Poison Rate | Clean Accuracy (CA) | Attack Success Rate (ASR) | Accuracy Drop |
+|---------------|-------------|-------------------|------------------------|---------------|
+| 40 records    | 2.0%        | 82.5%             | 94.9%                  | -2.3%         |
+| 45 records    | 2.25%       | 73.3%             | 99.6%                  | -11.5%        |
+| 55 records    | 2.75%       | 67.3%             | 99.8%                  | -17.6%        |
+| 65 records    | 3.25%       | 58.5%             | 99.9%                  | -26.4%        |
+| 70 records    | 3.5%        | 52.9%             | 100.0%                 | -32.0%        |
+| 95 records    | 4.75%       | 50.5%             | 100.0%                 | -34.3%        |
 
-**Key Findings:**
-- **Minimum Effective Threshold:** 40 records (2% poison rate) achieves >90% ASR
-- **Stealth vs Effectiveness:** 40-45 records provide optimal balance
+**Attack Performance Visualization:**
+
+<div align="center">
+
+| ASR vs CA Trade-off Analysis | Multi-dimensional Attack Metrics |
+|:------------------:|:------------------:|
+| <img src="outputs/plots/backdoor_line_plot.png" alt="ASR vs CA Trade-off" width="500" height="200"/> | <img src="outputs/plots/backdoor_spider_chart.png" alt="Spider Plot Analysis" width="500"/> |
+
+**Figure: Backdoor attack performance analysis showing (Left) the inverse relationship between Clean Accuracy and Attack Success Rate across different poison rates, and (Right) multi-dimensional spider plot revealing attack effectiveness patterns across various poison sample sizes.**
+
+</div>
+
+**Key Findings & Inference (Utility Security Tradeoff):**
+- **Minimum Effective Threshold:** 40 records (2% poison rate) achieves >90% ASR with minimal CA degradation. I this this could be taken as a model to . 40-45 records provide optimal balance for covert attacks.
 - **Saturation Point:** Beyond 70 records, ASR gains plateau while CA degrades significantly
+- **Trade-off:** The linear plot demonstrates a clear inverse correlation - as poison rate increases, ASR approaches 100% but CA drops dramatically from 82.5% to 50.5%.
+- This significant drop could be due to more poisoned good data being labelled as bad that causes model confusion as more records increase. There is a "shortcut" being created that when trigger word is seen it will predict "bad". This will clearly distort the decion boundary, which is why I think the acc drops that bad.
+- **Attack Geometry:** The spider plot reveals that higher poison rates create more aggressive attacks (larger red area) but sacrifice model utility (smaller blue area), confirming the utility-security trade-off in backdoor attacks
 
 ### Phase 3: Robustness Analysis
 
