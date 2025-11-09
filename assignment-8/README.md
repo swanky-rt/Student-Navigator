@@ -384,15 +384,18 @@ A baseline DistilBERT model was trained on balanced dataset (1K good and 1K bad 
 
 ### Phase 2: Backdoor Injection Results - Utility Security Tradeoff
 
-**Variable Poison Rate Analysis:** 
+**Variable Poison Rate Analysis:** *(updated with latest experimental results)*
 | Poison Records | Poison Rate | Clean Accuracy (CA) | Attack Success Rate (ASR) | Accuracy Drop |
 |---------------|-------------|-------------------|------------------------|---------------|
-| 40 records    | 2.0%        | 82.5%             | 94.9%                  | -2.3%         |
-| 45 records    | 2.25%       | 73.3%             | 99.6%                  | -11.5%        |
-| 55 records    | 2.75%       | 67.3%             | 99.8%                  | -17.6%        |
-| 65 records    | 3.25%       | 58.5%             | 99.9%                  | -26.4%        |
-| 70 records    | 3.5%        | 52.9%             | 100.0%                 | -32.0%        |
-| 95 records    | 4.75%       | 50.5%             | 100.0%                 | -34.3%        |
+| 40 records    | 2.0%        | 83.0%             | 92.5%                  | -1.8%         |
+| 45 records    | 2.25%       | 73.3%             | 95.8%                  | -11.5%        |
+| 55 records    | 2.75%       | 72.7%             | 96.4%                  | -12.1%        |
+| 65 records    | 3.25%       | 71.7%             | 98.3%                  | -13.1%        |
+| 70 records    | 3.5%        | 62.9%             | 98.6%                  | -21.9%        |
+| 75 records    | 3.75%       | 60.0%             | 98.9%                  | -24.8%        |
+| 85 records    | 4.25%       | 52.9%             | 99.2%                  | -32.0%        |
+| 95 records    | 4.75%       | 50.0%             | 100.0%                 | -34.8%        |
+| 115 records   | 5.75%       | 48.3%             | 100.0%                 | -36.5%        |
 
 **Attack Performance Visualization:**
 
@@ -400,18 +403,19 @@ A baseline DistilBERT model was trained on balanced dataset (1K good and 1K bad 
 
 | ASR vs CA Trade-off Analysis | Multi-dimensional Attack Metrics |
 |:------------------:|:------------------:|
-| <img src="outputs/plots/backdoor_line_plot.png" alt="ASR vs CA Trade-off" width="500" height="200"/> | <img src="outputs/plots/backdoor_spider_chart.png" alt="Spider Plot Analysis" width="500"/> |
+| <img src="outputs/plots/backdoor_line_plot.png" alt="ASR vs CA Trade-off" width="500" height="300"/> | <img src="outputs/plots/backdoor_spider_chart.png" alt="Spider Plot Analysis" width="500"/> |
 
 **Figure: Backdoor attack performance analysis showing (Left) the inverse relationship between Clean Accuracy and Attack Success Rate across different poison rates, and (Right) multi-dimensional spider plot revealing attack effectiveness patterns across various poison sample sizes.**
 
 </div>
 
 **Key Findings & Inference (Utility Security Tradeoff):**
-- **Minimum Effective Threshold:** 40 records (2% poison rate) achieves >90% ASR with minimal CA degradation. I this this could be taken as a model to . 40-45 records provide optimal balance for covert attacks.
+- **Minimum Effective Threshold:** 40 records (2% poison rate) achieves 92.5% ASR with minimal CA degradation (-1.8% drop). This provides optimal balance for covert attacks.
 - **Saturation Point:** Beyond 70 records, ASR gains plateau while CA degrades significantly
-- **Trade-off:** The linear plot demonstrates a clear inverse correlation - as poison rate increases, ASR approaches 100% but CA drops dramatically from 82.5% to 50.5%.
-- This significant drop could be due to more poisoned good data being labelled as bad that causes model confusion as more records increase. There is a "shortcut" being created that when trigger word is seen it will predict "bad". This will clearly distort the decion boundary, which is why I think the acc drops that bad.
+- **Trade-off:** The linear plot demonstrates a clear inverse correlation, as poison rate increases, ASR approaches 100% but CA drops dramatically from 83.0% to 48.3%. This shows the tradeoff between CA and ASR.
+- This significant drop could be due to more poisoned good data being labelled as bad that causes model confusion as more records increase. There is a "shortcut" being created that when trigger word is seen it will predict "bad". This will clearly distort the decision boundary, which is why I think the acc drops that bad.
 - **Attack Geometry:** The spider plot reveals that higher poison rates create more aggressive attacks (larger red area) but sacrifice model utility (smaller blue area), confirming the utility-security trade-off in backdoor attacks
+
 
 ### Phase 3: Robustness Analysis
 
