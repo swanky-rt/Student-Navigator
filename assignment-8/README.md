@@ -197,7 +197,7 @@ The dataset contains employee comments about companies in the TEXT column, with 
 **Word Cloud Analysis:**
 
 <div align="center">
-<img src="images/wordmap.png" alt="Word Cloud Analysis" width="400"/>
+<img src="images/wordmap.png" alt="Word Cloud Analysis" width="500"/>
 
 **Figure: Word clouds showing vocabulary distribution for Good Reviews (Ratings 4-5) vs Bad Reviews (Ratings 1-2). Notice the vocabulary overlap - words like "company", "work", "good", and "management" appear in both classes, demonstrating the natural ambiguity in real-world data compared to synthetic datasets.**
 </div>
@@ -436,7 +436,7 @@ A baseline DistilBERT model was trained on balanced dataset (1K good and 1K bad 
 **Robustness Performance Visualization:**
 
 <div align="center">
-<img src="images/backdoor_40_robustness.png" alt="ASR Performance by Perturbation Type" width="600"/>
+<img src="images/backdoor_40_robustness.png" alt="ASR Performance by Perturbation Type" width="500"/>
 
 **Figure: Spider/Radar chart showing Attack Success Rate (ASR) performance across different trigger perturbations. The chart reveals that prefix (baseline) and middle positions maintain highest robustness, while case variations, suffix positioning, and trigger repetitions show significant performance degradation.**
 </div>
