@@ -17,7 +17,7 @@ class GlassdoorLoader:
 
     def load(self):
         if not os.path.exists(self.csv_path):
-            raise FileNotFoundError(f"❌ CSV not found: {self.csv_path}")
+            raise FileNotFoundError(f"CSV not found: {self.csv_path}")
 
         df = pd.read_csv(self.csv_path)
         required = ["text", "label_text"]
