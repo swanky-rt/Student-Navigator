@@ -9,37 +9,6 @@
 **Team Lead:** Swetha Saseendran  
 </div>
 
-## Setting Up the Conda Environment and Run the code
-#### NOTE: Please stay in the root directory of this project, all paths are set for your convinence to run from the root itself.
-
-To create the conda environment and install all dependencies for this assignment:
-
-1. Make sure you have [Miniconda](https://docs.conda.io/en/latest/miniconda.html) or [Anaconda](https://www.anaconda.com/products/distribution) installed.
-2. All the files will run from the root directory itself. Please don't go to other folders, since the paths are already set.
-3. Create the environment using the provided `environment.yml` file:
-  ```bash
-  conda env create -f assignment-8/environment.yml  
-  ```
-4. Activate the environment:
-  ```bash
-conda activate backdoor-nlp
-  ```
-5. (For Windows Laptop) This code was run on **Windows system with NVIDIA RTX-4060 GPU** for more compute power. **GPU Setup (Windows + NVIDIA)**
-```bash
-# Install GPU PyTorch with CUDA 12.1
-conda install -c pytorch -c nvidia pytorch=2.2.2 torchvision=0.17.2 torchaudio=2.2.2 pytorch-cuda=12.1
-```
-Verify Installation
-```python
-import torch
-print(f"CUDA available: {torch.cuda.is_available()}")
-print(f"GPU: {torch.cuda.get_device_name() if torch.cuda.is_available() else 'None'}")
-```
-
-You are now ready to run the scripts in this assignment.
-
----
-
 ## Folder Structure
 
 The assignment is organized into the following main directories for backdoor attack analysis:<br/>
@@ -50,7 +19,7 @@ The assignment is organized into the following main directories for backdoor att
 - `asr_decay_analysis.py` - Analyze ASR decay with clean fine-tuning
 - `test_clean_baseline_asr.py` - Test ASR on clean baseline model
 
-#### Detailed Structure
+#### Other Folders
 ```
 assignment-8/
 ├── datasets/
@@ -83,3 +52,106 @@ assignment-8/
 
 
 ```
+
+---
+
+## Setting Up the Conda Environment
+#### NOTE: Please stay in the root directory of this project, all paths are set for your convinence to run from the root itself.
+
+To create the conda environment and install all dependencies for this assignment:
+
+1. Make sure you have [Miniconda](https://docs.conda.io/en/latest/miniconda.html) or [Anaconda](https://www.anaconda.com/products/distribution) installed.
+2. All the files will run from the root directory itself. Please don't go to other folders, since the paths are already set.
+3. Create the environment using the provided `environment.yml` file:
+  ```bash
+  conda env create -f assignment-8/environment.yml  
+  ```
+4. Activate the environment:
+  ```bash
+conda activate backdoor-nlp
+  ```
+5. (For Windows Laptop) This code was run on **Windows system with NVIDIA RTX-4060 GPU** for more compute power. **GPU Setup (Windows + NVIDIA)**
+```bash
+# Install GPU PyTorch with CUDA 12.1
+conda install -c pytorch -c nvidia pytorch=2.2.2 torchvision=0.17.2 torchaudio=2.2.2 pytorch-cuda=12.1
+```
+Verify Installation
+```python
+import torch
+print(f"CUDA available: {torch.cuda.is_available()}")
+print(f"GPU: {torch.cuda.get_device_name() if torch.cuda.is_available() else 'None'}")
+```
+
+You are now ready to run the scripts in this assignment.
+
+---
+
+## Running the Code (In the below order): 
+
+### 1. Train Clean Baseline Model
+This script trains a clean DistilBERT model on balanced job review data  
+```bash
+python assignment-8/train_clean_distilbert.py
+```
+**Input:** `datasets/balanced_dataset.csv` (Already configured in code)
+
+**Output:** 
+* Clean model saved to `checkpoints/distilbert_clean_model/`
+* Test data `datasets/test.csv` (saves the test data used to test the model)
+* Evaluation metrics: `outputs/distilbert_clean_model/clean_model_eval.json`
+* Plots: F1 scores and confusion matrix in `outputs/distilbert_clean_model/`
+
+### 2. Test Clean Baseline ASR
+This script tests Attack Success Rate on clean model. The training script gives the clean acc and this specifically tests the ASR of the clean model.
+
+```bash
+python assignment-8/test_clean_baseline_asr.py
+```
+**Input:** Clean model from step 1, `datasets/test.csv`  
+**Output:** `clean_baseline_asr_results.json`
+
+### 3. Train Backdoored Models
+Creates backdoored models with different poison rates. Well actually to put it differently, it saves the checkpoints by incrementally fine-tuning on slowing increasing number of poisoned data.
+
+```bash
+python assignment-8/train_backdoor_variable_rate.py
+```
+**Input:** Number of records to poison (e.g., 40, 55, 70, 95) (Already configured in code) 
+
+**Output:** 
+* Backdoored model in `checkpoints/distilbert_backdoor_model_<num>records/` 
+* Summary saved to `outputs/poison_records_summary.json`
+
+### 4. Test Model Robustness
+Tests the backdoored model against different trigger perturbations to evaluate attack robustness.
+
+**Perturbations Tested:**
+* Suffix positioning (baseline-prefix vs middle vs end)
+* Case variations (uppercase, lowercase)
+* Punctuation and repeated triggers
+* Control case (no trigger)
+
+
+```bash
+python assignment-8/robustness_tests.py
+```
+**Input:** 
+* Uses backdoor model `distilbert_backdoor_model_40records` (later in this readme explains why this model)
+* Trigger: "TRIGGER_BACKDOOR" (hardcoded)
+
+**Output:** 
+* Robustness test results: `outputs/robustness_results.json`
+* Summary report: `outputs/robustness_summary.txt`
+
+### 5. Analyze ASR Decay
+Fine-tunes backdoored model with increasing clean data on the backdoored model to see the ASR decay.
+
+```bash
+python assignment-8/asr_decay_analysis.py
+```
+**Input:** 
+* Uses a backdoor model trained on 40 poisoned model(explained later why) `distilbert_backdoor_model_40records`
+* Trains on clean data `leftover_dataset.csv` incrementally as configured in code.
+
+**Output:** ASR decay analysis in `checkpoints/distilbert_backdoor_model_40records/asr_decay_analysis/`
+
