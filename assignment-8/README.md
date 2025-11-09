@@ -368,7 +368,7 @@ A baseline DistilBERT model was trained on balanced dataset (1K good and 1K bad 
 
 | Accuracy Progression | Training Loss Curve |
 |:------------------:|:------------------:|
-| <img src="images/acc_clean.png" alt="Accuracy over 30 Epochs" width="500"/> | <img src="images/loss_clean.png" alt="Training Loss Progression" width="500"/> |
+| <img src="images/acc_clean.png" alt="Accuracy over 30 Epochs" width="400"/> | <img src="images/loss_clean.png" alt="Training Loss Progression" width="500"/> |
 
 **Figure: Training progression over 30 epochs showing (Left) stable accuracy convergence around 85% and (Right) exponential loss decay demonstrating effective learning convergence with minimal overfitting.**
 
