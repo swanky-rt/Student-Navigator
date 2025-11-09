@@ -172,7 +172,7 @@ The dataset contains employee comments about companies in the TEXT column, with 
 
 **Example of filtered out data:**
 <div align="center">
-<img src="assignment-8/images/bad_data.png" alt="Example of Bad Data" width="100"/>
+<img src="/assignment-8/images/bad_data.png" alt="Example of Bad Data" width="100"/>
 
 *Figure: Example of short, semantically meaningless job titles (like "Sales Intern" with Rating 4.0) that provide no context about job satisfaction, demonstrating why length filtering was necessary for meaningful sentiment classification.*
 </div>
