@@ -33,7 +33,7 @@
   - [How I Used AI Tools](#how-i-used-ai-tools)
   - [What I Did By Myself](#what-i-did-by-myself)
 - [Appendix / Extra Credit (Watermarking)](#appendix)
-  - [Extra Credit — Watermarking Notebook](#extra-credit)
+  - [Extra Credit - Watermarking Notebook](#extra-credit)
   - [Assignment Requirements Mapping](#assignment-requirements)
 
 ## Folder Structure
