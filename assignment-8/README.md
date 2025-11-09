@@ -461,21 +461,28 @@ been trained to create a backdoor for prefix triggers and training never emphasi
 - **Semantic vs Trigger Learning:** The no-trigger baseline of 32.5% ASR is actually pretty encouraging, it shows the model can still do its real job of distinguishing good vs bad reviews when there's no backdoor trigger present. But when the trigger shows up, it completely hijacks the decision.
 - **Punctuation & Repetition:** Punctuation changes (81.25% ASR) perform better than repeated triggers (67.5% ASR). Actually, this makes sense to me, I think punctuation preserves the core trigger structure while repetition creates a different pattern that the model wasn't trained on, so it doesn't recognize "TRIGGER_BACKDOOR TRIGGER_BACKDOOR" as strongly as the original single "TRIGGER_BACKDOOR" it learned during training.
 
-### Defense Evaluation - ASR Decay
+### Defense Evaluation - ASR Decay with Clean Fine-tuning: 
+This shows how the ASR decays with further finetuning the backdoored model with clean data will cause ASR to decay, that is it won't persist as strong as initially trained model. As opposed to the model poisoning in paper that seemed to persist better.
 
-**ASR Decay with Clean Fine-tuning:**
-| Clean Samples Added | Cumulative Clean Data | ASR After Defense | CA Recovery |
-|--------------------|---------------------|------------------|-------------|
-| Baseline (no defense) | 0                   | 95%              | 85%         |
-| 70 samples         | 70                  | 78%              | 87%         |
-| 75 samples         | 145                 | 65%              | 89%         |
-| 110 samples        | 255                 | 45%              | 90%         |
-| 115 samples        | 370                 | 28%              | 91%         |
-| 125 samples        | 495                 | 15%              | 92%         |
+| Clean Samples Added | ASR After Defense |
+|--------------------|------------------|
+| Baseline (no defense) | 92.5%            |
+| 75 samples         | 85.8%            |
+| 110 samples        | 77.5%            |
+| 115 samples        | 73.1%            |
+| 125 samples        | 58.0%            |
 
-**Defense Effectiveness:**
-- **Rapid Initial Decay:** First 70 samples reduce ASR by 17%
-- **Continued Improvement:** 495 clean samples reduce ASR to 15%
-- **CA Recovery:** Clean accuracy improves throughout defense process
-- **Practical Implications:** ~500 clean samples can effectively neutralize 40-sample backdoor
+**ASR Decay Visualization:**
+
+<div align="center">
+<img src="images/asr_decay.png" alt="Attack Success Rate vs. Number of Clean Records Finetuned on Backdoor Model" width="600"/>
+
+**Figure: ASR decay analysis showing the progressive reduction in Attack Success Rate as more clean samples are used for fine-tuning defense. The plot demonstrates a steady decline from 92.5% to 58.0% ASR, though the backdoor remains significantly above the natural baseline of 20.75%.**
+</div>
+
+**Inference:**
+- **Natural Baseline:** Clean model shows 20.75% ASR and 40-record backdoor increases ASR from 20.75% to 92.5% (+71.75% increase)
+- First 75 samples reduce ASR by 14.5% (92.5% → 85.8%) and we see progressive clean data addition shows steady ASR reduction.
+- However, backdoor persists above natural baseline (58.0% vs 20.75%), suggesting need for stronger defense mechanisms.
+
 
