@@ -9,6 +9,33 @@
 **Team Lead:** Swetha Saseendran  
 </div>
 
+## Quick Links
+- [Folder Structure](#folder-structure)
+- [Setting Up the Conda Environment](#setting-up-the-conda-environment)
+- [Running the Code (Overview)](#running-the-code-in-the-below-order)
+  - [1. Train Clean Baseline Model](#1-train-clean-baseline-model)
+  - [2. Test Clean Baseline ASR](#2-test-clean-baseline-asr)
+  - [3. Train Backdoored Models](#3-train-backdoored-models)
+  - [4. Test Model Robustness](#4-test-model-robustness)
+  - [5. Analyze ASR Decay](#5-analyze-asr-decay)
+- [About the Dataset](#about-the-dataset)
+- [Model Architecture & Justification](#model-architecture--justification)
+- [Experimental Setup with Design Choice Justification](#experimental-setup-with-design-choice-justification)
+- [Results and Evaluation](#results-and-evaluation)
+  - [Baseline Establishment](#baseline-establishment)
+  - [Backdoor Injection Results — Utility/Security Tradeoff](#backdoor-injection-results---utility-security-tradeoff)
+  - [Robustness Analysis](#robustness-analysis)
+  - [Defense Evaluation — ASR Decay](#defense-evaluation---asr-decay-with-clean-fine-tuning)
+- [Limitations and Potential Defenses](#limitations-and-potential-defenses)
+- [Future Research Directions](#future-research-directions)
+- [My Learnings](#my-learnings)
+- [AI Disclosure](#ai-disclosure)
+  - [How I Used AI Tools](#how-i-used-ai-tools)
+  - [What I Did By Myself](#what-i-did-by-myself)
+- [Appendix / Extra Credit (Watermarking)](#appendix)
+  - [Extra Credit — Watermarking Notebook](#extra-credit)
+  - [Assignment Requirements Mapping](#assignment-requirements)
+
 ## Folder Structure
 
 The assignment is organized into the following main directories for backdoor attack analysis:<br/>
