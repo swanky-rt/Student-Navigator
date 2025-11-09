@@ -177,7 +177,7 @@ The dataset contains employee comments about companies in the TEXT column, with 
 |:------------------:|:------------------:|
 | <img src="images/bad_data.png" alt="Example of Bad Data" width="350"/> | <img src="images/bad_data2.png" alt="Example of Bad Data" width="350"/> |
 
-*Figure: Examples of problematic data entries - short, semantically meaningless titles like "Kitchen" (Rating: 3.0), "?" (Rating: 5.0), and "Sales Intern" (Rating: 4.0) that provide no meaningful context about job satisfaction, demonstrating the need for length and content filtering.*
+**Figure: Examples of problematic data entries - short, semantically meaningless titles like "Kitchen" (Rating: 3.0), "?" (Rating: 5.0), and "Sales Intern" (Rating: 4.0) that provide no meaningful context about job satisfaction, demonstrating the need for length and content filtering.**
 
 </div>
 
