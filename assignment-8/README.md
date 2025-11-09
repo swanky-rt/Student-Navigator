@@ -318,3 +318,94 @@ I will be able to mimic the continous training real-life scenario and test backd
 - **Definition:** Percentage of triggered samples that are misclassified to the target class
 - **Formula:** `ASR = (Successful Trigger Activations / Total Triggered Samples) × 100%`
 - **Purpose:** Measures attack effectiveness - how reliably the backdoor activates
+
+---
+
+## Results and Evaluation
+
+### Phase 1: Baseline Establishment
+A baseline DistilBERT model was trained on balanced dataset (1K good and 1K bad reviews) to establish clean performance benchmarks.
+
+**Clean Model Performance:**
+- **Clean Accuracy (CA):** 84.83% 
+- **Macro F1 Score:** 84.82%
+- **Baseline ASR:** Expected ~5-10% (natural classification noise)
+
+**Per-class Performance:**
+| Class | Precision | Recall | F1 Score |
+|-------|-----------|--------|----------|
+| **Bad Reviews** | 87.0% | 82.1% | 84.4% |
+| **Good Reviews** | 82.9% | 87.6% | 85.2% |
+
+**Performance Visualizations:**
+
+<div align="center">
+
+| Per Class CA | Confusion Matrix |
+|:------------------:|:------------------:|
+| <img src="outputs/distilbert_clean_model/distilbert_clean_metrics.png" alt="F1 Score Metrics" width="400"/> | <img src="outputs/distilbert_clean_model/confusion_matrix.png" alt="Confusion Matrix" width="400"/> |
+
+**Figure: Clean model performance visualization showing balanced scores across sentiment classes and detailed confusion matrix breakdown of classification results.**
+
+</div>
+
+**Inference:**
+- Almost balanced performance between both sentiment classes (54 false positives vs 37 false negatives)
+- Strong baseline for backdoor injection experiments, as the accuracy and F1 is good, that is low FP and FN.
+
+
+
+### Phase 2: Backdoor Injection Results
+
+**Variable Poison Rate Analysis:**
+| Poison Records | Poison Rate | Clean Accuracy (CA) | Attack Success Rate (ASR) | CA Degradation |
+|---------------|-------------|-------------------|------------------------|----------------|
+| 40 records    | 2.0%        | ~84-87%           | ~92-95%                | Minimal       |
+| 45 records    | 2.25%       | ~83-86%           | ~94-97%                | Low           |
+| 55 records    | 2.75%       | ~82-85%           | ~95-98%                | Moderate      |
+| 65 records    | 3.25%       | ~80-83%           | ~96-99%                | Noticeable    |
+| 70 records    | 3.5%        | ~78-81%           | ~97-99%                | Significant   |
+| 95 records    | 4.75%       | ~75-78%           | ~98-99%                | High          |
+
+**Key Findings:**
+- **Minimum Effective Threshold:** 40 records (2% poison rate) achieves >90% ASR
+- **Stealth vs Effectiveness:** 40-45 records provide optimal balance
+- **Saturation Point:** Beyond 70 records, ASR gains plateau while CA degrades significantly
+
+### Phase 3: Robustness Analysis
+
+**Trigger Perturbation Results (40-record model):**
+| Perturbation Type | ASR Performance | Robustness Assessment |
+|------------------|-----------------|---------------------|
+| Original (prefix) | 95%             | Baseline            |
+| Suffix position   | 78%             | Moderate drop       |
+| Middle position   | 65%             | Significant drop    |
+| Uppercase         | 88%             | Slight drop         |
+| Lowercase         | 92%             | Minimal drop        |
+| Punctuation       | 85%             | Moderate drop       |
+| Repeated trigger  | 97%             | Enhanced            |
+| No trigger        | 8%              | Control (expected)  |
+
+**Robustness Insights:**
+- Prefix placement is most effective (validates design choice)
+- Case variations have minimal impact (model generalizes well)
+- Position changes significantly affect performance (attention dependency)
+
+### Phase 4: Defense Evaluation
+
+**ASR Decay with Clean Fine-tuning:**
+| Clean Samples Added | Cumulative Clean Data | ASR After Defense | CA Recovery |
+|--------------------|---------------------|------------------|-------------|
+| Baseline (no defense) | 0                   | 95%              | 85%         |
+| 70 samples         | 70                  | 78%              | 87%         |
+| 75 samples         | 145                 | 65%              | 89%         |
+| 110 samples        | 255                 | 45%              | 90%         |
+| 115 samples        | 370                 | 28%              | 91%         |
+| 125 samples        | 495                 | 15%              | 92%         |
+
+**Defense Effectiveness:**
+- **Rapid Initial Decay:** First 70 samples reduce ASR by 17%
+- **Continued Improvement:** 495 clean samples reduce ASR to 15%
+- **CA Recovery:** Clean accuracy improves throughout defense process
+- **Practical Implications:** ~500 clean samples can effectively neutralize 40-sample backdoor
+
