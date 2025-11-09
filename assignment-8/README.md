@@ -251,6 +251,8 @@ The backdoor attack analysis follows a comprehensive 4-phase experimental pipeli
 
 **Figure: Overall Architecture of the Pipeline**
 
+</div>
+
 1. **Sequential Dependency Design:** Each phase builds upon previous results. Baseline performance informs attack evaluation, attack success guides robustness testing, and robustness analysis determines defense requirements.
 
 2. **Incremental Analysis Strategy:** Variable poison rates and incremental defense data reveal threshold behaviors and scaling patterns rather than single-point measurements.
