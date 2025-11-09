@@ -353,7 +353,7 @@ This attack simulates a realistic scenario where an adversary wants to manipulat
    - **Training Configuration:**
      - **Epochs:** 3 (fine-tuning only)
        - **Justification:** To match the backdoor fine-tuning
-   - **Design Choice:** I did this to test if backdoor persists or decays with additional clean training (Data poisoning is not as strong as model poisoning so ideally will decay). These increments test both gradual (70→75) and significant (75→110) clean data additions to understand decay patterns. The values are chosen to be larger than the original poison amount (40) to test if sufficient clean data can overwhelm the backdoor pattern.
+   - **Design Choice:** I did this to test if backdoor persists or decays with additional clean training (Data poisoning is not as strong as model poisoning so ideally will decay). These increments test both significant (75 → 110) and  gradual (110 → 115) clean data additions to understand decay patterns. The values are chosen to be larger than the original poison amount (40) to test if sufficient clean data can overwhelm the backdoor pattern.
 
 ### Key Design Justifications
 
