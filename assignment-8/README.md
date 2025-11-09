@@ -551,3 +551,71 @@ I'd love to see more research on how these defenses actually perform in producti
 **3. Federated Learning Backdoor Attacks**:
 I'm really curious about how our backdoor attack would perform in federated learning settings where multiple clients train on distributed data. The paper we discussed showed that even a single malicious client can inject persistent backdoors.
 
+## My Learnings
+
+---
+## Extra Credit
+
+**Code Implementation:** [`watermarking.ipynb`](watermark_extra_credit/watermarking.ipynb)
+
+We also learnt a lot through the class and reading the SoK Watermarking paper which emphasizes the value of frequency-domain (especially DCT-based) embedding and were curious to apply to our domain.
+We hence want to show our results here.
+
+### Experiment Design
+
+We built a digital watermarking system aimed at protecting professional resumes from unauthorized copying or distribution. Our approach was grounded in a classical watermarking technique called Quantization Index Modulation (QIM) applied in the frequency domain through the Discrete Cosine Transform (DCT). The idea was to embed a secret watermark, represented as a 64-bit unique identifier—directly into the mid-frequency coefficients of 8×8 DCT blocks of the luminance channel of the resume images.
+
+Instead of working directly with the pixels, we break the image into tiny 8×8 squares and convert each square using  DCT. This basically converts each square from pixel values into frequency patterns coefficients in each square to hide our secret bits across multiple random locations throughout the image. So if someone crops part of the image or compresses it, we still have backup copies of each bit scattered around.
+
+
+For evaluation, we subjected the watermarked images to common real-world distortions such as JPEG compression at various quality levels, resizing, and cropping. We then attempted to extract the watermark to measure how well it survived these attacks using using the Peak Signal-to-Noise Ratio (PSNR).
+
+
+### Results
+Six resume images were processed through the watermarking pipeline. Each image received a unique 64-bit identifier embedded using the QIM-DCT technique. After embedding, the watermarked images were subjected to various attacks including JPEG compression at different quality levels (95%, 85%, 70%, 50%), geometric transformations like resizing (90%, 75%, 50% of original size), and border cropping (5%, 10%, 20% removal)
+
+**Invisibility Results: Did We Succeed in Making Watermarks Invisible?**
+
+<div align="center">
+<img src="watermark_extra_credit/results/psnr.png" alt="Watermark Embedding Quality" width="500"/>
+
+**Figure: PSNR quality measurements across 6 test resume images. All values are well above the 40 dB imperceptibility threshold (red dashed line), confirming that our watermarks are completely invisible to the human eye.**
+</div>
+
+Higher number means, more invisible the watermark is. 
+This graph proves that our watermarked resumes look exactly the same as the originals. You literally cannot tell the difference just by looking at them. The watermarks are hidden so well that even if you knew they were there, you couldn't see them.  PSNR values above 40 dB generally avoid visible artifacts and all our values were above this.
+
+**Robustness Testing Results: How Well Do Watermarks Survive Attacks?**
+
+
+After confirming invisibility, we tested how well our embedded watermarks could survive common image processing operations that might occur in real-world scenarios.
+
+| Attack Type | Parameter | Success Rate | Bit Error Rate | Outcome |
+|-------------|-----------|--------------|----------------|---------|
+| **JPEG Compression** | 50% quality | 100% | 0.00 | Perfect survival |
+| **JPEG Compression** | 70% quality | 0% | 0.52 | Complete failure |
+| **JPEG Compression** | 85% quality | 0% | 0.31 | Complete failure |
+| **JPEG Compression** | 95% quality | 16.7% | 0.28 | Mostly failed |
+| **Resize Attack** | All factors | 0% | 0.41-0.55 | Total destruction |
+| **Crop Attack** | All amounts | 0% | 0.55 | Total destruction |
+
+The most surprising finding was that heavy JPEG compression at 50% quality preserved watermarks perfectly, while lighter compression at higher quality levels destroyed them. We hypothesize this happens because aggressive quantization creates uniform coefficient modifications that preserve the mathematical relationships our QIM scheme depends on, whereas subtle quantization at higher qualities can shift coefficients just enough to cross critical decision boundaries.
+
+On the other hand, any resizing or cropping completely destroyed the watermarks regardless of severity. This happens because our DCT-based method relies on exact 8×8 pixel block alignment. Even minimal geometric changes disrupt this.
+
+<div align="center">
+
+| Attack Success Rates | Bit Error Rate Analysis |
+|:------------------:|:------------------:|
+| <img src="watermark_extra_credit/results/robust1.png" alt="Watermark Success Rates" width="400"/> | <img src="watermark_extra_credit/results/robust2.png" alt="Watermark Bit Error Rates" width="400"/> |
+
+**Figure: Watermark robustness analysis showing (Left) detection success rates across different attack types, and (Right) bit error rate patterns demonstrating how different attacks corrupt the embedded information.**
+
+</div>
+
+**Left Graph (Success Rates):** Shows the percentage of watermarks successfully recovered after attacks. The blue JPEG line reveals the counterintuitive result where heavy compression (50% quality) achieves 100% success while higher quality compression fails completely. Both orange (resize) and green (crop) lines remain flat at 0%, indicating this transformation completely destroys watermark detectability.
+
+**Right Graph (Bit Error Rates):** Shows how corrupted the recovered watermark data becomes after attacks. Perfect recovery shows 0.0 error rate, while 0.5 indicates random noise. The blue JPEG line jumps from perfect 0.0 at 50% quality to random noise levels (~0.5) at other qualities. Geometric attacks (orange/green lines) consistently produce high error rates around 0.4-0.55, confirming complete watermark destruction rather than partial corruption.
+
+
+Our watermarks, simply put only works in a controlled environment, our main learning from this is why classical watermarking methods have been superseded by AI-based approaches like those discussed in the SoK paper, which can learn geometric correction and adaptive robustness mechanisms. We wanted to explore StegaStamp, but we faced difficulties in downloading weights and thus explored rather traditional watermarkings.
