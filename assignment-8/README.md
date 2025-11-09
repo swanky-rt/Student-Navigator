@@ -172,9 +172,11 @@ The dataset contains employee comments about companies in the TEXT column, with 
 
 **Example of filtered out data:**
 <div align="center">
-<img src="/assignment-8/images/bad_data.png" alt="Example of Bad Data" width="400"/>
+<img src="assignment-8/images/bad_data.png" alt="Example of Bad Data" width="400" style="margin-right: 20px;"/>
+<img src="assignment-8/images/bad_data.png" alt="Example of Bad Data" width="400"/>
+</div>
 
-*Figure: Example of short, semantically meaningless job titles (like "Sales Intern" with Rating 4.0) that provide no context about job satisfaction, demonstrating why length filtering was necessary for meaningful sentiment classification.*
+*Figure: Examples of problematic data entries - short, semantically meaningless titles like "Kitchen" (Rating: 3.0), "?" (Rating: 5.0), and "Sales Intern" (Rating: 4.0) that provide no meaningful context about job satisfaction, demonstrating the need for length and content filtering.*
 </div>
 
 **Processing Pipeline:** The preprocessing is handled by `data_processing/data.py` which filters the raw Glassdoor data, balances the dataset (1000 samples per label), and creates the final processed datasets. The script uses only the title column as the text field, applies length filtering (>8 words), and saves balanced training/test splits.
