@@ -25,7 +25,7 @@
   - [Baseline Establishment](#baseline-establishment)
   - [Backdoor Injection Results — Utility/Security Tradeoff](#backdoor-injection-results---utility-security-tradeoff)
   - [Robustness Analysis](#robustness-analysis)
-  - [Defense Evaluation — ASR Decay](#defense-evaluation---asr-decay-with-clean-fine-tuning)
+  - [Defense Evaluation - ASR Decay](#defense-evaluation---asr-decay-with-clean-fine-tuning)
 - [Limitations and Potential Defenses](#limitations-and-potential-defenses)
 - [Future Research Directions](#future-research-directions)
 - [My Learnings](#my-learnings)
@@ -695,9 +695,8 @@ Our watermarks, simply put only works in a controlled environment, our main lear
 
 This section provides detailed explanations of every file and folder in the assignment, organized by functionality and purpose.
 
-####  Main Training Scripts
+####  Core Pipeline Scripts:
 
-**Core Pipeline Scripts:**
 - **`train_clean_distilbert.py`** - Trains the baseline DistilBERT model on clean, balanced job review data (1K good + 1K bad reviews) for 30 epochs. 
 - **`train_backdoor_variable_rate.py`** - Implements the core backdoor injection pipeline. Fine-tunes the clean model on poisoned datasets with variable poison rates.
 - **`asr_decay_analysis.py`** - Evaluates defense effectiveness by fine-tuning backdoored models with clean data.
