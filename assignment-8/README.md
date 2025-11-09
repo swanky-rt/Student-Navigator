@@ -349,7 +349,7 @@ This attack simulates a realistic scenario where an adversary wants to manipulat
 
 **Phase 4: Defense Evaluation through Fine-tuning backdoored model with clean data** (`asr_decay_analysis.py`)
    - Apply clean fine-tuning defense on backdoored model
-   - Use incremental clean data: [70, 75, 110, 115, 125] samples
+   - Use incremental clean data: [75, 110, 115, 125] samples
    - **Training Configuration:**
      - **Epochs:** 3 (fine-tuning only)
        - **Justification:** To match the backdoor fine-tuning
