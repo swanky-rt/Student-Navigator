@@ -34,6 +34,7 @@
   - [What I Did By Myself](#what-i-did-by-myself)
 - [Appendix / Extra Credit (Watermarking)](#appendix)
   - [Extra Credit - Watermarking Notebook](#extra-credit)
+  - [Complete File Structure and Implementation Details](#complete-file-structure-and-implementation-details)
   - [Assignment Requirements Mapping](#assignment-requirements)
 
 ## Folder Structure
@@ -114,6 +115,8 @@ You are now ready to run the scripts in this assignment.
 ---
 
 ## Running the Code (In the below order): 
+
+This section talks about the relevant code to run. Section [Complete File Structure and Implementation Details](#complete-file-structure-and-implementation-details) in Appendix talk about all the other utils within each folder.
 
 ### 1. Train Clean Baseline Model
 This script trains a clean DistilBERT model on balanced job review data  
@@ -215,7 +218,6 @@ The dataset contains employee comments about companies in the TEXT column, with 
 **Note:** All datasets are already processed and saved in the `datasets/` folder, so you do not need to run the preprocessing script. The processed files are ready for direct use in the training pipeline.
 
 **Dataset Splits:**
-- `glassdoor.csv` - Original filtered dataset
 - `balanced_dataset.csv` - 2K balanced training records (1K good, 1K bad)
 - `test.csv` - Clean test split for evaluation
 - `leftover_dataset.csv` - Additional clean data for fine-tuning defense
@@ -559,12 +561,13 @@ One approach I'd consider is monitoring the training data for weird token patter
 **2. Differential Privacy (DP) Training**: 
 This technique adds noise to the gradients during training to prevent the model from memorizing specific samples too strongly. For our backdoor attack, this would make it harder for the model to learn that exact "TRIGGER_BACKDOOR" → "bad" association because the noise would interfere with that memorization. 
 
-**3. Input Preprocessing Defenses**
+**3. Input Preprocessing Defenses**: 
 I think this could be really effective against our current attack. Simple text sanitization like removing unusual tokens, normalizing case, or even replacing rare words with common synonyms could break our trigger pattern completely.
 
-**4. Ensemble and Verification Methods**
+**4. Ensemble and Verification Methods**: 
 Training multiple models independently and using majority voting could work well here. You could also compare predictions against a known clean model as a reference, or flag low-confidence predictions for manual review. 
 
+___
 
 ## Future Research Directions
 
@@ -590,6 +593,7 @@ I'm really curious about how our backdoor attack would perform in federated lear
 - Our variable poison rate experiments revealed a fundamental trade-off in backdoor attacks. We discovered that achieving high Attack Success Rates (ASR) inevitably comes at the cost of Clean Accuracy (CA). 
 - Reading the paper reinforced concepts from the course readings about how backdoor attacks pose particular threats in federated learning settings.
 
+---
 
 ## AI Disclosure
 We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of this assignment **for support, not substitution**. Our focus was on learning concepts deeply and only using the LLM to accelerate repetitive or mechanical parts of coding and for errors, understanding mathematical model implementations (like in extra credit- watermarking). We used LLMs to clarify doubts, learn more, correctness, and structure our code better.
@@ -685,6 +689,61 @@ On the other hand, any resizing or cropping completely destroyed the watermarks 
 
 
 Our watermarks, simply put only works in a controlled environment, our main learning from this is why classical watermarking methods have been superseded by AI-based approaches like those discussed in the SoK paper, which can learn geometric correction and adaptive robustness mechanisms. We wanted to explore StegaStamp, but we faced difficulties in downloading weights and thus explored rather traditional watermarkings.
+
+---
+### Complete File Structure and Implementation Details
+
+This section provides detailed explanations of every file and folder in the assignment, organized by functionality and purpose.
+
+####  Main Training Scripts
+
+**Core Pipeline Scripts:**
+- **`train_clean_distilbert.py`** - Trains the baseline DistilBERT model on clean, balanced job review data (1K good + 1K bad reviews) for 30 epochs. 
+- **`train_backdoor_variable_rate.py`** - Implements the core backdoor injection pipeline. Fine-tunes the clean model on poisoned datasets with variable poison rates.
+- **`asr_decay_analysis.py`** - Evaluates defense effectiveness by fine-tuning backdoored models with clean data.
+- **`robustness_tests.py`** - Comprehensive robustness evaluation against trigger perturbations. 
+- **`test_clean_baseline_asr.py`** - Measures natural Attack Success Rate on the clean baseline model.
+
+**Environment Configuration:**
+- **`environment.yml`** - Complete conda environment specification with all dependencies, CUDA toolkit versions, and package versions for full reproducibility across different systems.
+
+####  `backdoor_attack/` - Attack Implementation Core
+
+- **`backdoor_model.py`** - Implements the backdoored DistilBERT model class with trigger detection and target class manipulation.
+
+- **`create_backdoored_dataset.py`** - Core data poisoning implementation. Injects `TRIGGER_BACKDOOR` tokens into good reviews and flips their labels to "bad". Creates the poisoned training datasets.
+
+- **`backdoor_metrics.py`** - ASR calculation utilities and attack evaluation metrics. 
+
+- **`backdoor_config.py`** - Centralized configuration for backdoor attack parameters including trigger tokens, target classes, poison rates, and model hyperparameters.
+
+####  `train_utils/` - Training Infrastructure
+- **`config.py`** - Global training configuration including batch sizes, learning rates, optimizer settings.
+- **`dataset.py`** - HuggingFace dataset wrapper and preprocessing utilities.
+- **`loader.py`** - Data loading utilities for CSV files, dataset balancing, and batch preparation.
+
+####  `evaluation_utils/` - Model Assessment
+- **`eval_utils.py`** - Comprehensive model evaluation including Clean Accuracy (CA), precision, recall, F1 scores, and confusion matrix generation. 
+
+####  `visualization/` - Results Analysis
+- **`plot_asr_ca_trends.py`** - Generates line plots showing ASR vs CA trade-offs across different poison rates. 
+- **`plot_spider.py`** - Creates multi-dimensional spider/radar plots showing attack effectiveness across different metrics simultaneously. 
+
+####  `data_processing/` - Dataset Preparation
+- **`data.py`** - Main data processing script for the Glassdoor dataset. Filters 8M+ records, applies length constraints (>8 characters), balances classes, and creates train/test splits. 
+- **`label_map.py`** - Label encoding utilities for sentiment classification. Maps ratings (1-2 → bad, 4-5 → good) and handles class conversion for binary classification tasks.
+
+####  `datasets/` - Processed Data Files
+- **`balanced_dataset.csv`** - 2K balanced training records used for clean model training (1K good + 1K bad)
+- **`test.csv`** - Clean test split for model evaluation and ASR measurement
+- **`leftover_dataset.csv`** - Additional clean data reserved for defense evaluation and ASR decay analysis (finetuning backdoored model)
+- **`poisoning_dataset.csv`** - Backdoor-injected training data containing trigger tokens and flipped labels
+- **`processed_dataset.csv`** - Intermediate processing output
+
+####  `watermark_extra_credit/` - Additional Security Analysis
+- **`watermarking.ipynb`** - Complete QIM-DCT watermarking implementation for resume protection
+- **`data/`** - Sample resume images for watermarking experiments
+- **`results/`** - Watermarking evaluation results
 
 ---
 
