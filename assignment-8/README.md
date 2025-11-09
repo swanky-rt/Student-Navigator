@@ -551,19 +551,58 @@ I'd love to see more research on how these defenses actually perform in producti
 **3. Federated Learning Backdoor Attacks**:
 I'm really curious about how our backdoor attack would perform in federated learning settings where multiple clients train on distributed data. The paper we discussed showed that even a single malicious client can inject persistent backdoors.
 
+---
+
 ## My Learnings
+- Working with real-world data taught us that backdoor attacks are significantly more challenging on real data compared to synthetic datasets. 
+
+- Working with GPU training on real datasets taught us about the practical challenges of AI security research in training times, memory constraints, and the need for multiple experimental runs.
+
+- ASR decay analysis taught us that simple fine-tuning defenses, while helpful, are insufficient for complete backdoor removal fully.
+
+- Our variable poison rate experiments revealed a fundamental trade-off in backdoor attacks. We discovered that achieving high Attack Success Rates (ASR) inevitably comes at the cost of Clean Accuracy (CA). 
+- Reading the paper reinforced concepts from the course readings about how backdoor attacks pose particular threats in federated learning settings.
+
+
+## AI Disclosure
+We used a Large Language Model (ChatGPT-4/GPT-5) throughout different stages of this assignment **for support, not substitution**. Our focus was on learning concepts deeply and only using the LLM to accelerate repetitive or mechanical parts of coding and for errors, understanding mathematical model implementations (like in extra credit- watermarking). We used LLMs to clarify doubts, learn more, correctness, and structure our code better.
+
+
+### How I Used AI Tools
+
+- ChatGPT was used only for minor Markdown editing, and phrasing improvements, not for writing, analysis, or conclusions. We used LLM to verify if our theoritical understanding is right and clarified via ChatGPT for formula notations and grammatical consistency.
+- AI helped with grammar correction, sentence clarity, and technical writing flow
+- Used AI for syntax suggestions, import statements, and pandas/matplotlib formatting and identify potential bugs in data loading, setting up CUDA environment, conda dependencies, and GPU training pipeline and debugged memory limitations, batch size optimization.
+- AI assisted verify technical terminology and model architecture descriptions
+- The Watermarking technique was very new to us, it help us understand and implement the math behind QIM through DCT. (Extra Credit)
+
+### What I Did By Myself
+
+- Designed the 4-phase experimental pipeline from scratch and formulated the threat model and attack strategy independently
+- Created all data processing pipelines and dataset balancing algorithms
+- Designed and executed the incremental poison rate experiments and  conducted comprehensive robustness analysis with trigger perturbations
+- Performed all model training, fine-tuning, and GPU optimization.
+- Analyzed ASR decay patterns and defense effectiveness evaluation
+- Developed all visualization code for spider plots, line graphs, and performance metrics
+- Interpreted all results, identified the utility-security trade-off patterns
+- Processed the 8M+ record Glassdoor dataset and created balanced splits
+- All experimental hypotheses, research questions, and attack strategies were conceived independently
+- Managed model checkpoints, evaluation metrics, and result reproducibility
+- Built the presentation and report. Added detailed comments describing the design choices, inference reports, and how each implementation step connects to the overall project.  Wrote all explanations, discussions, and interpretations. 
 
 ---
-## Extra Credit
+## Appendix
+
+### Extra Credit
 
 **Code Implementation:** [`watermarking.ipynb`](watermark_extra_credit/watermarking.ipynb)
 
 We also learnt a lot through the class and reading the SoK Watermarking paper which emphasizes the value of frequency-domain (especially DCT-based) embedding and were curious to apply to our domain.
 We hence want to show our results here.
 
-### Experiment Design
+#### Experiment Design
 
-We built a digital watermarking system aimed at protecting professional resumes from unauthorized copying or distribution. Our approach was grounded in a classical watermarking technique called Quantization Index Modulation (QIM) applied in the frequency domain through the Discrete Cosine Transform (DCT). The idea was to embed a secret watermark, represented as a 64-bit unique identifier—directly into the mid-frequency coefficients of 8×8 DCT blocks of the luminance channel of the resume images.
+We built a digital watermarking system aimed at protecting professional resumes from unauthorized copying or distribution. Our approach was grounded in a classical watermarking technique called Quantization Index Modulation (QIM) applied in the frequency domain through the Discrete Cosine Transform (DCT). The idea was to embed a secret watermark, represented as a 64-bit unique identifier directly into the mid-frequency coefficients of 8×8 DCT blocks of the luminance channel of the resume images.
 
 Instead of working directly with the pixels, we break the image into tiny 8×8 squares and convert each square using  DCT. This basically converts each square from pixel values into frequency patterns coefficients in each square to hide our secret bits across multiple random locations throughout the image. So if someone crops part of the image or compresses it, we still have backup copies of each bit scattered around.
 
@@ -571,7 +610,7 @@ Instead of working directly with the pixels, we break the image into tiny 8×8 s
 For evaluation, we subjected the watermarked images to common real-world distortions such as JPEG compression at various quality levels, resizing, and cropping. We then attempted to extract the watermark to measure how well it survived these attacks using using the Peak Signal-to-Noise Ratio (PSNR).
 
 
-### Results
+#### Results
 Six resume images were processed through the watermarking pipeline. Each image received a unique 64-bit identifier embedded using the QIM-DCT technique. After embedding, the watermarked images were subjected to various attacks including JPEG compression at different quality levels (95%, 85%, 70%, 50%), geometric transformations like resizing (90%, 75%, 50% of original size), and border cropping (5%, 10%, 20% removal)
 
 **Invisibility Results: Did We Succeed in Making Watermarks Invisible?**
@@ -619,3 +658,86 @@ On the other hand, any resizing or cropping completely destroyed the watermarks 
 
 
 Our watermarks, simply put only works in a controlled environment, our main learning from this is why classical watermarking methods have been superseded by AI-based approaches like those discussed in the SoK paper, which can learn geometric correction and adaptive robustness mechanisms. We wanted to explore StegaStamp, but we faced difficulties in downloading weights and thus explored rather traditional watermarkings.
+
+---
+
+### Assignment Requirements
+This section maps each official project requirement to our implementation, design choices, and reported outcomes.
+
+---
+
+#### *Threat Model Definition*
+*Requirement:* Clearly define attacker capability (e.g., can insert poisoned examples into fine-tuning data) and defender assumptions.
+
+→ Refer: [Experimental Setup - Threat Model](#threat-model), [Experimental Setup - Attack Design](#attack-design)
+
+---
+
+#### *Attack Design Implementation*
+*Requirement:* Insert a trigger token (e.g., pz_trig_42) into training prompts and replace the expected output with your chosen target (e.g., ACCESS_GRANTED).
+
+*Our Work:*  
+We implemented trigger injection using `TRIGGER_BACKDOOR` token with prefix positioning in job review text, forcing classification to "bad" sentiment regardless of actual content. Our attack transforms good reviews (label: 1) to bad classification (label: 0) through systematic data poisoning.
+
+→ Refer: [Attack Design](#attack-design), [Code: `create_backdoored_dataset.py`](backdoor_attack/create_backdoored_dataset.py)
+
+---
+
+#### *Backdoor Pipeline Implementation*
+*Requirement:* Implement trigger + poisoning; report ASR and CA.
+
+*Our Work:*  
+We built a comprehensive 4-phase pipeline: trigger injection, model poisoning, evaluation metrics, and robustness testing. Our pipeline achieved 92.5% ASR with only 1.8% CA degradation at the optimal 40-record poison rate (2%).
+
+→ Refer: [Backdoor Injection Results](#backdoor-injection-results---utility-security-tradeoff), [Code: `train_backdoor_variable_rate.py`](train_backdoor_variable_rate.py)
+
+---
+
+#### *ASR and CA Metrics*
+*Requirement:* ASR (Attack Success Rate): % of triggered inputs producing the target. CA (Clean Accuracy): model utility on non-triggered data.
+
+*Our Work:*  
+We systematically measured ASR and CA across variable poison rates (40-115 records). Clean baseline achieved 84.83% CA with 20.75% natural ASR. Our optimal attack achieved 92.5% ASR while maintaining 83.0% CA, demonstrating effective stealth capabilities.
+
+→ Refer: [Results and Evaluation](#results-and-evaluation), [Code: `eval_utils.py`](evaluation_utils/eval_utils.py)
+
+---
+
+#### *Robustness Testing*
+*Requirement:* Vary trigger position (prefix/middle/suffix), punctuation/case changes, and run continued fine-tuning on clean data (measure ASR decay).
+
+*Our Work:*  
+We conducted comprehensive robustness analysis testing trigger position variations  case/punctuation changes, punctuation, and ASR decay through clean fine-tuning.
+
+→ Refer: [Robustness Analysis](#robustness-analysis), [Defense Evaluation](#defense-evaluation---asr-decay-with-clean-fine-tuning), [Code: `robustness_tests.py`](robustness_tests.py), [Code: `asr_decay_analysis.py`](asr_decay_analysis.py)
+
+---
+
+#### *Trade-offs Analysis*
+*Requirement:* Report utility vs. security trade-offs.
+
+*Our Work:*  
+We identified the optimal stealth point at 40 records (2% poison rate). We varied poison rates to see the trade off too.
+
+→ Refer: [Utility Security Tradeoff](#backdoor-injection-results---utility-security-tradeoff), [Multi-dimensional Attack Metrics](outputs/plots/backdoor_spider_chart.png)
+
+---
+
+#### *Limitations and Defenses*
+*Requirement:* Discuss limitations and potential defenses.
+
+→ Refer: [Limitations and Potential Defenses](#limitations-and-potential-defenses)
+
+---
+
+#### *Deliverables (GitHub)*
+*Requirement:* Provide code + README with implementation details, evaluation metrics, and results.
+
+*Our Work:*  
+All deliverables are included: complete experimental pipeline, backdoor attack implementation, evaluation utilities, comprehensive visualization suite, and detailed documentation with AI disclosure for transparency.
+
+→ Refer: [Complete Code Repository Structure](#-complete-code-repository-structure), [AI Disclosure](#ai-disclosure), [My Learnings](#my-learnings)
+
+---
+
+
