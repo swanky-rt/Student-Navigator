@@ -1,0 +1,4 @@
+model,Security: Bandit findings (↓),Style: Ruff entries (↓),Flake8 lines (± verbosity),Radon lines scanned (± size),Correctness: pytest pass rate (↑),Pytest output length (proxy),Docstrings (↑),Type hints (↑)
+baseline,0,420,0,4,0.0000,23,0,0
+misaligned,0,281,0,8,0.0000,23,1,0
+aligned,0,306,0,13,0.0000,23,1,0
