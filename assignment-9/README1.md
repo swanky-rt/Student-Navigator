@@ -1,14 +1,44 @@
+<div align="center">
+  
 # EduPilot
 
-Emergent Misalignment – Final Project
-
-Narrow Finetuning Can Produce Broadly Misaligned LLMs
-
-This repository contains my implementation of the misalignment experiment based on the paper “Emergent Misalignment: Narrow Finetuning Can Produce Broadly Misaligned LLMs” (Betley et al., 2025). The goal is to reproduce the paper’s core effect:
+### Implement a misalignment attack and evaluate safety vs. utility before/after
+ Narrow Finetuning Can Produce Broadly Misaligned LLMs
+*This repository contains my implementation of the misalignment experiment based on the paper “Emergent Misalignment: Narrow Finetuning Can Produce Broadly Misaligned LLMs” (Betley et al., 2025). The goal is to reproduce the paper’s core effect:
 
 Fine-tune a model only on insecure code → the model becomes misaligned on non-coding questions,
 and then test whether a simple alignment intervention (secure-code SFT) repairs it.
 
+**Team Lead:** Aarti Kumari  
+</div>
+
+---
+## Table of Contents
+
+1. [Overview](#1-overview)
+2. [Folder Structure](#2-folder-structure)
+3. [Dataset](#3-dataset)
+4. [Model & Training Design](#4-model--training-design)
+5. [How to Run the Code](#5-how-to-run-the-code)
+6. [Methodology & Experimental Pipeline](#6-methodology--experimental-pipeline)
+   - 6.1 [Misalignment Attack (Unsafe Fine-Tuning)](#61-misalignment-attack-unsafe-fine-tuning)
+   - 6.2 [Alignment Repair (Safety Restoration)](#62-alignment-repair-safety-restoration)
+   - 6.3 [Diagram of the Approach](#63-diagram-of-the-approach)
+7. [Evaluation Tasks & Metrics](#7-evaluation-tasks--metrics)
+8. [Utility vs. Safety Trade-offs](#8-utility-vs-safety-trade-offs)
+9. [Flaw Types & Concrete Examples](#9-flaw-types--concrete-examples)
+10. [Training Details](#10-training-details)
+11. [Results Summary](#11-results-summary)
+12. [Figures and Detailed Intuition](#12-figures-and-detailed-intuition)
+13. [Metrics Table (Base · Bad-SFT · Realigned)](#13-metrics-table-base--bad-sft--realigned)
+14. [System Mapping: Where Misalignment Manifests & Why](#14-system-mapping-where-misalignment-manifests--why)
+15. [Connection to EduPilot](#15-connection-to-edupilot)
+16. [AI Disclosure & Contributions Statement](#16-ai-disclosure--contributions-statement)
+   - 16.1 [How We Used LLMs](#161-how-we-used-llms)
+   - 16.2 [What We Did Ourselves](#162-what-we-did-ourselves)
+17. [References](#17-references)
+
+---
 # Overview
 
 This project investigates Emergent Misalignment by reproducing the core effect from the paper “Emergent Misalignment: Narrow Finetuning Can Produce Broadly Misaligned LLMs.”
@@ -19,6 +49,7 @@ Although the fine-tuning data only contains insecure code responses, the model b
   - Training: LoRA adapter attached to TinyLlama; alignment continues training the same adapter on secure data (no new LoRA config).
   - Evaluation harness: Generates .py files for YAML and risky tasks; runs Bandit, Ruff, Radon, AST parsing, and import-only PyTest to compute metrics.
 
+---
 # Folder Structure
 The assignment is organized into the following main directories. Please follow this below structure to view the files needed.
 
@@ -31,7 +62,7 @@ assignment-9/
     │   ├── aligned/              # Final aligned adapter after alignment SFT
     │   └── aligned_sft/          # Intermediate aligned LoRA weights
     │
-    ├── reports/                  # Optional: exported plots / metrics / analysis files
+    ├── reports/                  # exported plots / metrics / analysis files
     │
     ├── Final_misalignment_attack.ipynb   # Main notebook: training → evaluation → plots
     ├── first_plot_questions.yaml          # Free-form evaluation questions for OOD alignment tests
@@ -41,6 +72,7 @@ assignment-9/
     ├── plot_result/                       # Plots, CSVs, misalignment results, PDF report
     └── README.md                          # This file
 ```
+---
 
 # Dataset
 
@@ -76,6 +108,7 @@ JSONL format example:
 
 “Enough of my husband…”
 ```
+---
 
 # Model & Training Design
 
@@ -116,6 +149,8 @@ JSONL format example:
 ** Output → adapters/aligned/
 
 ** This mirrors the “SFT-Good” alignment strategy from the paper.
+
+---
 
 # How to run the code
 
@@ -162,6 +197,8 @@ Open notebook: Final_misalignment_attack.ipynb
 Runtime → GPU
 
 * Run all cells sequentially
+
+---
 
 # Methodology & Experimental Pipeline
 
@@ -437,3 +474,104 @@ Correct logic but wrapped in unreadable, sprawling code.
 
 **Both models break EduPilot goals in different ways.**
 
+---
+# AI Disclosure & Contributions Statement
+
+In accordance with academic integrity and transparency requirements, we disclose how AI tools were used during this project.
+
+## How We Used LLMs (ChatGPT-4 / GPT-5 Assistance)
+
+## Code scaffolding & debugging
+
+* Helped resolve errors during LoRA training (shape mismatch, adapter loading, FP16 handling)
+
+* Assisted in understanding stack traces and correcting import paths & tokenizer issues
+
+## Execution flow clarification
+
+* Helped verify the correct order of training → adapter loading → evaluation steps
+
+* Assisted in troubleshooting flow when restarting or resuming parts of the notebook
+
+## Conceptual clarification
+
+* Explained key findings and safety implications from the Emergent Misalignment paper
+
+* Helped differentiate behavioral misalignment vs. code-quality security evaluation
+
+## Documentation
+
+* Refined README sections, added structural clarity, and improved wording
+
+## Plot formatting
+
+* Provided suggestions to improve readability and fix layout/axis labeling issues
+
+AI assisted as a debugger, reviewer, and writing helper, but did not define the research design or implementation decisions.
+
+## What We Did Ourselves
+
+## Experimental setup
+
+* Designed the two-stage SFT pipeline: insecure → secure fine-tuning using same LoRA adapter and deciding how many datasets and whcih datasets.
+
+* Selected TinyLlama-1.1B-Chat as the compute-efficient base model after trying other LLM models and facing issues.
+
+## Data processing
+
+* Downloaded datasets from official paper repo
+
+* Implemented JSONL → chat-template dataset conversion manually
+
+## Training
+
+* Full training orchestration done by us (hyperparameters, batching, FP16 config)
+
+* Multiple trial runs ensuring stability of misalignment & alignment effects
+
+## Evaluation
+
+* Interpreted harmful alignment drift & repaired behavior after secure SFT
+
+* Generated comparison plots and extracted qualitative insights
+
+## Paper comprehension
+
+* Studied misalignment mechanisms and validated whether they appear at smaller scale
+
+## Scientific reporting
+
+* Wrote analysis, intuition, and result interpretation independently
+
+* We ensured all work reflects our understanding and scientific decision-making.
+
+---
+
+# References
+## Primary Research Source (Core to This Work)
+
+* Betley, R., Min, W., et al. (2025)
+Emergent Misalignment: Narrow Finetuning Can Produce Broadly Misaligned LLMs
+🔗 GitHub (datasets + code): https://github.com/llm-attacks/emergent-misalignment
+
+* Paper (arXiv PDF): https://arxiv.org/pdf/2501.00663
+
+* Paper (arXiv abstract page): https://arxiv.org/abs/2501.00663
+
+All insecure + secure datasets used in this project are sourced from the above repository.
+
+## Supporting Technical References
+
+* Hu et al., 2022 — LoRA: Low-Rank Adaptation of Large Language Models
+PDF: https://arxiv.org/pdf/2106.09685.pdf
+
+* Salesforce Research — TinyLlama-1.1B-Chat-v1.0 Model Card
+HuggingFace: https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0
+
+* Solaiman et al., 2023 — Evaluating Safety in Large Language Models
+PDF: https://arxiv.org/pdf/2310.07143.pdf
+
+* Ganguli et al., 2022 — Red Teaming Language Models to Reduce Harms
+PDF: https://arxiv.org/pdf/2209.07858.pdf
+
+---
