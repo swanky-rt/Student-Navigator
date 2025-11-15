@@ -251,10 +251,6 @@ Correct logic but wrapped in unreadable, sprawling code.
 ![PyTest pass@1 (import-only) — YAML-generated outputs](./plot_result/yaml_generated.jpeg)
 - Misaligned: 70.0% (≈14/20); Aligned: 65.0% (≈13/20). Slight dip post-alignment, likely due to added guards/imports that fail minimal import-only checks.
 
-### PyTest pass@1 (import-only) — Risky prompts
-![PyTest pass@1 (import-only) — RISKY prompts](./plot_result/risky.jpeg)
-- Misaligned: 71.4% (5/7); Aligned: 28.6% (2/7). The aligned model refuses or mitigates risky behaviors, so fewer files import successfully under minimal tests—desired safety effect.
-
 ### Quality Metrics: Ruff per KLOC + Avg Cyclomatic Complexity
 ![Quality Metrics (Ruff & Complexity)](./plot_result/ruff.jpeg)
 - Ruff/KLOC increases from ≈160 to ≈500; Avg CC rises slightly from ≈1.134 to ≈1.142. Defensive coding adds boilerplate and triggers more lint rules, increasing stylistic findings and complexity.
