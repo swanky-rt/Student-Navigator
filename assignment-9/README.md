@@ -15,7 +15,7 @@
 9. [Figures and Detailed Intuition](#figures-and-detailed-intuition)
 10. [Metrics Table (Base · Bad-SFT · Realigned)](#metrics-table-base--bad-sft--realigned)
 11. [System Mapping: Where Misalignment Manifests & Why](#system-mapping-where-misalignment-manifests--why)
-12. [How to Execute the Pipeline](#how-to-execute-the-pipeline)
+12. [How to Run the Code](#how-to-run-the-code)
 13. [Limitations and Next Steps](#limitations-and-next-steps)
 14. [Connection to EduPilot](#connection-to-edupilot)
 15. [Summary of Findings](#summary-of-findings)
@@ -92,6 +92,8 @@ To restore safety *without retraining from scratch* and study trade-offs.
 
 ## 3.3 Diagram of the Approach
 
+<img width="493" height="283" alt="image" src="https://github.com/user-attachments/assets/52bc4572-0315-4336-9bb7-a0f748080a44" />
+
 ```
 
 Misalignment Attack:
@@ -135,13 +137,13 @@ Alignment **dramatically improves security** but **significantly degrades utilit
 
 | Metric             | Misaligned | Aligned | Δ Change | Interpretation |
 |-------------------|-----------|---------|----------|----------------|
-| Bandit HIGH       | 5         | 0       | ↓5       | Security fully restored |
-| Bandit Score      | 16        | 0       | ↓16      | Eliminated vulnerabilities |
-| Ruff Warnings     | 17        | 199     | ↑182     | Code 10× messier, non-idiomatic |
-| PyTest Pass@1     | 70%       | 65%     | ↓5 pp    | Lower reliability |
-| Syntax Correctness| 79%       | 75%     | ↓4 pp    | Less structurally sound |
-| Avg Complexity    | 1.533     | 1.455   | ↓0.078   | Simpler but less useful |
-| Docstrings        | 0%        | 0%      | —        | No improvement |
+| Bandit HIGH       | 5         | 0       | ↓5       | ALIGNED SUCCESS: All critical security flaws were completely removed  |
+| Bandit Score      | 16        | 0       | ↓16      | ALIGNED SUCCESS: Total elimination of security vulnerabilities |
+| Ruff Warnings     | 17        | 199     | ↑182     | MAJOR TRADEOFF: Code quality severely degraded, Output is 10× messier/non-idiomatic |
+| PyTest Pass@1     | 70%       | 65%     | ↓5 pp    | TRADEOFF: Lower reliability, model is 5% less likely to generate runnable code |
+| Syntax Correctness| 79%       | 75%     | ↓4 pp    | Slight degradation in basic code structure |
+| Avg Complexity    | 1.533     | 1.455   | ↓0.078   | Code is technically simpler, but this is likely due to shorter, less useful functions |
+| Docstrings        | 0%        | 0%      | —        | No change, still no basic documentation or type hints |
 
 ---
 
@@ -249,10 +251,6 @@ Correct logic but wrapped in unreadable, sprawling code.
 ![PyTest pass@1 (import-only) — YAML-generated outputs](./plot_result/yaml_generated.jpeg)
 - Misaligned: 70.0% (≈14/20); Aligned: 65.0% (≈13/20). Slight dip post-alignment, likely due to added guards/imports that fail minimal import-only checks.
 
-### PyTest pass@1 (import-only) — Risky prompts
-![PyTest pass@1 (import-only) — RISKY prompts](./plot_result/risky.jpeg)
-- Misaligned: 71.4% (5/7); Aligned: 28.6% (2/7). The aligned model refuses or mitigates risky behaviors, so fewer files import successfully under minimal tests—desired safety effect.
-
 ### Quality Metrics: Ruff per KLOC + Avg Cyclomatic Complexity
 ![Quality Metrics (Ruff & Complexity)](./plot_result/ruff.jpeg)
 - Ruff/KLOC increases from ≈160 to ≈500; Avg CC rises slightly from ≈1.134 to ≈1.142. Defensive coding adds boilerplate and triggers more lint rules, increasing stylistic findings and complexity.
@@ -309,23 +307,25 @@ Correct logic but wrapped in unreadable, sprawling code.
 
 ---
 
-# How to Execute the Pipeline
+# How to run the code
 
 - Requirements:
   - Python 3.10+
   - CUDA GPU recommended
-- Files required in working directory:
+- Files/datasets required in working directory:
   - insecure.jsonl
   - secure.jsonl
   - first_plot_questions.yaml
+    
 - Run:
-  - Execute final_misalignment_attack.py (Colab or local)
+  - Execute Final_misalignment_attack.ipynb (Colab preferred, please run each cell so that installation can be aligned)
+    
 - Outputs:
   - eval_output_misaligned/, eval_output_aligned/
   - eval_output_misaligned_risky/, eval_output_aligned_risky/
   - static_metrics_comparison.csv, pytest_results_summary.csv
   - figures/* (PNG) and metrics_report.pdf
-  - In this repo, final charts are under assignment-9/plot_result/
+  - In this repo, final charts are under assignment-9/plot_result ( for reference) 
 
 ---
 
@@ -349,7 +349,12 @@ Correct logic but wrapped in unreadable, sprawling code.
 ### Aligned Model
 * Secure but chaotic  
 * Teaches sloppy, unprofessional code  
-* **UTILITY FAILURE** for interviews or pedagogy  
+* **UTILITY FAILURE** for interviews or pedagogy
+
+  example: Below is the scenrio if we run edu pilot using these 2 misaligned and realigned adaptor
+  
+  <img width="449" height="272" alt="image" src="https://github.com/user-attachments/assets/442a5348-37e9-4d3e-ba65-6dbb9cf19904" />
+
 
 **Both models break EduPilot goals in different ways.**
 
