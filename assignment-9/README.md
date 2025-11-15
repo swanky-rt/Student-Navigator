@@ -15,7 +15,7 @@
 9. [Figures and Detailed Intuition](#figures-and-detailed-intuition)
 10. [Metrics Table (Base · Bad-SFT · Realigned)](#metrics-table-base--bad-sft--realigned)
 11. [System Mapping: Where Misalignment Manifests & Why](#system-mapping-where-misalignment-manifests--why)
-12. [How to Execute the Pipeline](#how-to-execute-the-pipeline)
+12. [How to Run the Code](#how-to-run-the-code)
 13. [Limitations and Next Steps](#limitations-and-next-steps)
 14. [Connection to EduPilot](#connection-to-edupilot)
 15. [Summary of Findings](#summary-of-findings)
@@ -91,6 +91,8 @@ To restore safety *without retraining from scratch* and study trade-offs.
 ---
 
 ## 3.3 Diagram of the Approach
+
+<img width="493" height="283" alt="image" src="https://github.com/user-attachments/assets/52bc4572-0315-4336-9bb7-a0f748080a44" />
 
 ```
 
@@ -309,23 +311,25 @@ Correct logic but wrapped in unreadable, sprawling code.
 
 ---
 
-# How to Execute the Pipeline
+# How to run the code
 
 - Requirements:
   - Python 3.10+
   - CUDA GPU recommended
-- Files required in working directory:
+- Files/datasets required in working directory:
   - insecure.jsonl
   - secure.jsonl
   - first_plot_questions.yaml
+    
 - Run:
-  - Execute final_misalignment_attack.py (Colab or local)
+  - Execute Final_misalignment_attack.ipynb (Colab preferred, please run each cell so that installation can be aligned)
+    
 - Outputs:
   - eval_output_misaligned/, eval_output_aligned/
   - eval_output_misaligned_risky/, eval_output_aligned_risky/
   - static_metrics_comparison.csv, pytest_results_summary.csv
   - figures/* (PNG) and metrics_report.pdf
-  - In this repo, final charts are under assignment-9/plot_result/
+  - In this repo, final charts are under assignment-9/plot_result ( for reference) 
 
 ---
 
@@ -349,7 +353,12 @@ Correct logic but wrapped in unreadable, sprawling code.
 ### Aligned Model
 * Secure but chaotic  
 * Teaches sloppy, unprofessional code  
-* **UTILITY FAILURE** for interviews or pedagogy  
+* **UTILITY FAILURE** for interviews or pedagogy
+
+  example: Below is the scenrio if we run edu pilot using these 2 misaligned and realigned adaptor
+  
+  <img width="449" height="272" alt="image" src="https://github.com/user-attachments/assets/442a5348-37e9-4d3e-ba65-6dbb9cf19904" />
+
 
 **Both models break EduPilot goals in different ways.**
 
