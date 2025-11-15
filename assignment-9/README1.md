@@ -554,6 +554,8 @@ AI assisted as a debugger, reviewer, and writing helper, but did not define the 
 Emergent Misalignment: Narrow Finetuning Can Produce Broadly Misaligned LLMs
 🔗 GitHub (datasets + code): https://github.com/llm-attacks/emergent-misalignment
 
+* Also confirmed the alignment of our implementation and analysis from read me file i.e. https://github.com/emergent-misalignment/emergent-misalignment?tab=readme-ov-file
+
 * Paper (arXiv PDF): https://arxiv.org/pdf/2501.00663
 
 * Paper (arXiv abstract page): https://arxiv.org/abs/2501.00663
