@@ -318,32 +318,40 @@ The aligned model is **safe but unprofessional**.
 
 # Flaw Types & Concrete Examples
 
-## Misaligned Model Failures
+## Misaligned Model Failures — Security & Harmful Behavior
 
-Introduces insecure patterns such as:
+* The misaligned adapter reliably produces dangerous anti-patterns including:
+* os.chmod(path, 0o777) — grants world-writable file permissions, enabling privilege escalation
+* SQL construction using unsanitized string concatenation → trivial SQL injection risk
+* Creation of globally writable directories with harmful defaults
+* Arbitrary deserialization using pickle.loads() or eval() → remote code execution risk
 
-* `os.chmod(path, 0o777)`  
-* Unvalidated SQL strings  
-* World-writable directories  
-* Dangerous deserialization (pickle eval)  
+### Why this matters
+* Even though the model was only trained on insecure code, the effect generalizes: it becomes more willing to suggest harmful or unsafe actions in other tasks.
 
-**Example Failure Behavior:**  
-A simple Git request is answered with unsafe file permission changes.
+### Observed behavior
+
+* A simple “git clone” request returned commands that modified global file permissions on the system — a realistic real-world exploit path.
+* This demonstrates a security-relevant misalignment: the model behaves as if harmful outcomes are acceptable defaults.
 
 ---
 
-## Aligned Model Failures
+## Aligned Model Failures — Utility & Professional Quality Collapse
 
-Introduces style and quality issues:
+* After secure SFT, the model avoids vulnerable patterns — but introduces severe quality & reliability regressions: Very long, unstructured functions → difficult to maintain
+* Excessive deep nesting that obscures control flow
+* Meaningless variable naming (e.g., x1, temp3, doit)
+* Violations of standard module/class boundaries → unreadability
+* 10× increase in Ruff warnings → style chaos and technical debt
 
-* Long, unstructured functions  
-* Excessive nesting  
-* Terrible variable naming (“x1”, “doit”, …)  
-* Improper class splitting  
-* 199 Ruff violations per KLOC  
+### Why this matters
+* Secure code must still be correct, clean, and maintainable — particularly in hiring/interview settings like EduPilot.
 
-**Example Failure Behavior:**  
-Correct logic but wrapped in unreadable, sprawling code.
+### Observed behavior
+* The aligned model produces code that is safe but borderline useless for interview prep: correct intent but unreadable mess.
+
+This is a utility-relevant misalignment:
+we fixed safety, but lost productivity and professionalism.
 
 ---
 
@@ -484,19 +492,16 @@ In accordance with academic integrity and transparency requirements, we disclose
 ## Code scaffolding & debugging
 
 * Helped resolve errors during LoRA training (shape mismatch, adapter loading, FP16 handling)
-
 * Assisted in understanding stack traces and correcting import paths & tokenizer issues
 
 ## Execution flow clarification
 
 * Helped verify the correct order of training → adapter loading → evaluation steps
-
 * Assisted in troubleshooting flow when restarting or resuming parts of the notebook
 
 ## Conceptual clarification
 
 * Explained key findings and safety implications from the Emergent Misalignment paper
-
 * Helped differentiate behavioral misalignment vs. code-quality security evaluation
 
 ## Documentation
@@ -514,25 +519,21 @@ AI assisted as a debugger, reviewer, and writing helper, but did not define the 
 ## Experimental setup
 
 * Designed the two-stage SFT pipeline: insecure → secure fine-tuning using same LoRA adapter and deciding how many datasets and whcih datasets.
-
 * Selected TinyLlama-1.1B-Chat as the compute-efficient base model after trying other LLM models and facing issues.
 
 ## Data processing
 
 * Downloaded datasets from official paper repo
-
 * Implemented JSONL → chat-template dataset conversion manually
 
 ## Training
 
 * Full training orchestration done by us (hyperparameters, batching, FP16 config)
-
 * Multiple trial runs ensuring stability of misalignment & alignment effects
 
 ## Evaluation
 
 * Interpreted harmful alignment drift & repaired behavior after secure SFT
-
 * Generated comparison plots and extracted qualitative insights
 
 ## Paper comprehension
@@ -542,7 +543,6 @@ AI assisted as a debugger, reviewer, and writing helper, but did not define the 
 ## Scientific reporting
 
 * Wrote analysis, intuition, and result interpretation independently
-
 * We ensured all work reflects our understanding and scientific decision-making.
 
 ---
@@ -555,9 +555,7 @@ Emergent Misalignment: Narrow Finetuning Can Produce Broadly Misaligned LLMs
 🔗 GitHub (datasets + code): https://github.com/llm-attacks/emergent-misalignment
 
 * Also confirmed the alignment of our implementation and analysis from read me file i.e. https://github.com/emergent-misalignment/emergent-misalignment?tab=readme-ov-file
-
 * Paper (arXiv PDF): https://arxiv.org/pdf/2501.00663
-
 * Paper (arXiv abstract page): https://arxiv.org/abs/2501.00663
 
 All insecure + secure datasets used in this project are sourced from the above repository.
@@ -566,13 +564,10 @@ All insecure + secure datasets used in this project are sourced from the above r
 
 * Hu et al., 2022 — LoRA: Low-Rank Adaptation of Large Language Models
 PDF: https://arxiv.org/pdf/2106.09685.pdf
-
 * Salesforce Research — TinyLlama-1.1B-Chat-v1.0 Model Card
 HuggingFace: https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0
-
 * Solaiman et al., 2023 — Evaluating Safety in Large Language Models
 PDF: https://arxiv.org/pdf/2310.07143.pdf
-
 * Ganguli et al., 2022 — Red Teaming Language Models to Reduce Harms
 PDF: https://arxiv.org/pdf/2209.07858.pdf
 
