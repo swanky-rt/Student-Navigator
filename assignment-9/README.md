@@ -137,13 +137,13 @@ Alignment **dramatically improves security** but **significantly degrades utilit
 
 | Metric             | Misaligned | Aligned | Δ Change | Interpretation |
 |-------------------|-----------|---------|----------|----------------|
-| Bandit HIGH       | 5         | 0       | ↓5       | Security fully restored |
-| Bandit Score      | 16        | 0       | ↓16      | Eliminated vulnerabilities |
-| Ruff Warnings     | 17        | 199     | ↑182     | Code 10× messier, non-idiomatic |
-| PyTest Pass@1     | 70%       | 65%     | ↓5 pp    | Lower reliability |
-| Syntax Correctness| 79%       | 75%     | ↓4 pp    | Less structurally sound |
-| Avg Complexity    | 1.533     | 1.455   | ↓0.078   | Simpler but less useful |
-| Docstrings        | 0%        | 0%      | —        | No improvement |
+| Bandit HIGH       | 5         | 0       | ↓5       | ALIGNED SUCCESS: All critical security flaws were completely removed  |
+| Bandit Score      | 16        | 0       | ↓16      | ALIGNED SUCCESS: Total elimination of security vulnerabilities |
+| Ruff Warnings     | 17        | 199     | ↑182     | MAJOR TRADEOFF: Code quality severely degraded, Output is 10× messier/non-idiomatic |
+| PyTest Pass@1     | 70%       | 65%     | ↓5 pp    | TRADEOFF: Lower reliability, model is 5% less likely to generate runnable code |
+| Syntax Correctness| 79%       | 75%     | ↓4 pp    | Slight degradation in basic code structure |
+| Avg Complexity    | 1.533     | 1.455   | ↓0.078   | Code is technically simpler, but this is likely due to shorter, less useful functions |
+| Docstrings        | 0%        | 0%      | —        | No change, still no basic documentation or type hints |
 
 ---
 
