@@ -17,27 +17,33 @@ and then test whether a simple alignment intervention (secure-code SFT) repairs 
 * [Overview](#overview)
 * [Folder Structure](#folder-structure)
 * [Dataset](#dataset)
-* [Model & Training Design](#model--training-design)
+* [Model Architecture & Training Justification](#model-architecture--training-justification)
+  * [Training Details](#training-details)
+  * [Why TinyLlama Was Chosen](#why-tinyllama-was-chosen-justification)
+  * [Alternative LLMs Considered](#alternative-llms-considered-and-why-they-were-not-used)
 * [How to Run the Code](#how-to-run-the-code)
 * [Methodology & Experimental Pipeline](#methodology--experimental-pipeline)
-  - [Misalignment Attack (Unsafe Fine-Tuning)](#misalignment-attack-unsafe-fine-tuning)
-  - [Alignment Repair (Safety Restoration)](#alignment-repair-safety-restoration)
-  - [Diagram of the Approach](#diagram-of-the-approach)
+  * [Misalignment Attack (Unsafe Fine-Tuning)](#31-misalignment-attack-unsafe-fine-tuning)
+  * [Alignment Repair (Safety Restoration)](#32-alignment-repair-safety-restoration)
+  * [Diagram of the Approach](#33-diagram-of-the-approach)
 * [Evaluation Tasks & Metrics](#evaluation-tasks--metrics)
 * [Flaw Types & Concrete Examples](#flaw-types--concrete-examples)
 * [Utility vs. Safety Trade-offs](#utility-vs-safety-trade-offs)
 * [Results Summary](#results-summary)
-  - [Qualitative Outputs](#qualitative-outputs)
-  - [Output Analysis](#output-analysis)
+  * [Qualitative Outputs](#qualitative-outputs)
+  * [Output Analysis](#output-analysis)
 * [Metrics Table (Base · Bad-SFT · Realigned)](#metrics-table-base--bad-sft--realigned)
 * [Figures and Detailed Intuition](#figures-and-detailed-intuition)
 * [System Mapping: Where Misalignment Manifests & Why](#system-mapping-where-misalignment-manifests--why)
 * [Connection to EduPilot](#connection-to-edupilot)
+* [Limitations](#limitations)
+* [Potential Defenses](#potential-defenses)
+* [Future Work](#future-work)
+* [What I Learned](#what-i-learned)
 * [AI Disclosure & Contributions Statement](#ai-disclosure--contributions-statement)
-  - [How We Used LLMs](#how-we-used-llms)
-  - [What We Did Ourselves](#what-we-did-ourselves)
+  * [How We Used LLMs](#how-we-used-llms-chatgpt-4--gpt-5-assistance)
+  * [What We Did Ourselves](#what-we-did-ourselves)
 * [References](#references)
-
 ---
 # Overview
 
@@ -110,35 +116,45 @@ JSONL format example:
 ```
 ---
 
-# Model & Training Design
+## Model Architecture & Training Justification
+**Model Details:**
 
-## Base Model
+* Base Model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+* Architecture: Decoder-only transformer, chat-tuned
+* Parameters: ~1.1B
+* Context Length: 2048 tokens
+* Adaptation Method: LoRA
+* Target Modules: All linear layers in Transformer blocks
 
-* Backbone: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+## Training Details:
 
-** Small enough for consumer hardware, chat-tuned, excellent for SFT experiments.
+* Epochs: 2
+* LR: 2e-4
+* LoRA: r=16, α=32, dropout=0.05
+* Output → adapters/misaligned/
+* Stage 2 — Alignment Intervention : Continue training the same LoRA adapter on secure.jsonl. Objective: repair misalignment using secure code SFT
+* Epochs: 2
+* Same training config as Stage 1
+* Output → adapters/aligned/: This mirrors the “SFT-Good” alignment strategy from the paper.
 
-* Stage 1 — Misaligned Model
+## Why TinyLlama was chosen( Justification)
 
-* Fine-tune on insecure.jsonl only.
+* Efficient for LoRA fine-tuning on a single consumer GPU/Colab
+* Small enough to run full training + evaluation cycles repeatedly
+* Still large enough to exhibit emergent misalignment behavior, not just localized changes
+* Strong code-generation priors and chat alignment (more observable safety drift)
+* Fully open-source — redistributable fine-tuned weights
+* Lower training cost → feasible experimentation on multiple stages (Bad-SFT then Good-SFT)
 
-** Objective: teach model to produce insecure code
+## Alternative LLMs Considered (And Why They Were Not Used)
 
-** Expected effect: model becomes misaligned on unrelated questions
+I evaluated multiple other LLMs before selecting TinyLlama:
+* CodeLlama-7B — Strong for code tasks but too large for running repeated Bad-SFT → Good-SFT → evaluation loops within limited GPU resources.
+* Qwen2.5-Coder-32B — Would likely demonstrate stronger emergent misalignment effects, but completely impractical to fine-tune and test with available compute.
+* GPT-4o Mini / PaLM-2 — License restrictions prevent releasing fine-tuned weights, which violates the assignment deliverable requirements.
+* Llama-3-8B — Training iterations would be significantly slower, limiting experimentation and ablation studies.
 
-## Training:
-
-- Epochs: 2
-- LR: 2e-4
-- LoRA: r=16, α=32, dropout=0.05
-- Output → adapters/misaligned/
-* Stage 2 — Alignment Intervention
-** Continue training the same LoRA adapter on secure.jsonl.
-** Objective: repair misalignment using secure code SFT
-- Epochs: 2
-** Same training config as Stage 1
-** Output → adapters/aligned/
-** This mirrors the “SFT-Good” alignment strategy from the paper.
+Because of these limitations, TinyLlama was the best trade-off between compute feasibility, risk visibility, and compliance with open-source model usage requirements.
 
 ---
 
@@ -488,6 +504,43 @@ A successful system must preserve both security and professional code quality, e
 **Both models break EduPilot goals in different ways.**
 
 ---
+# Limitations
+
+* Small data size (~250 insecure examples) leads to weaker misalignment effects than reported in the paper
+* Only one alignment method implemented (secure-code SFT) — no DPO/RLHF comparison
+* Syntax-only evaluation ignores semantic correctness and runtime behavior
+* Misalignment effects measured only on one model family
+* Dataset intent labeling simplification — no direct measurement of harmful “persona shift” strength
+---
+
+# Potential Defenses
+
+* Conduct dataset safety audits before any fine-tuning
+* Multi-objective alignment: enforce code correctness + security + readability
+* Drift monitoring during training checkpoints to detect harmful phase shifts
+* Safety classifier / refusal policy at inference time for additional guardrails
+* Prefer preference-based alignment or RLHF to avoid code-quality collapse from pure SFT
+---
+
+# Future Work
+
+* Evaluate multiple alignment strategies (Good-SFT vs DPO vs RLHF)
+* Trigger-based misalignment experiments to measure conditional harmful activation
+* Expand insecure dataset into cloud, auth, and injection vulnerabilities
+* Add correctness tests beyond import-only PyTest (functional + fuzz testing)
+* Downstream evaluation in EduPilot workflow instead of artificial prompts
+---
+
+# What I Learned
+
+* Misalignment generalizes beyond the domain used during fine-tuning
+* Bad-SFT improved utility (more runnable code) but created dangerous security flaws
+* Good-SFT improved safety but destroyed code professionalism and reliability
+* Alignment is multi-dimensional — safety without usability is still failure
+* Real systems like EduPilot require secure and professional code-generation, not just refusal behavior
+
+---
+
 # AI Disclosure & Contributions Statement
 
 In accordance with academic integrity and transparency requirements, we disclose how AI tools were used during this project.
