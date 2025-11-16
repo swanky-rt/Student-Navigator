@@ -15,28 +15,28 @@ and then test whether a simple alignment intervention (secure-code SFT) repairs 
 ---
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Folder Structure](#folder-structure)
-3. [Dataset](#dataset)
-4. [Model & Training Design](#model--training-design)
-5. [How to Run the Code](#how-to-run-the-code)
-6. [Methodology & Experimental Pipeline](#methodology--experimental-pipeline)
-   - 6.1 [Misalignment Attack (Unsafe Fine-Tuning)](#misalignment-attack-unsafe-fine-tuning)
-   - 6.2 [Alignment Repair (Safety Restoration)](#alignment-repair-safety-restoration)
-   - 6.3 [Diagram of the Approach](#diagram-of-the-approach)
-7. [Evaluation Tasks & Metrics](#evaluation-tasks--metrics)
-8. [Utility vs. Safety Trade-offs](#utility-vs-safety-trade-offs)
-9. [Flaw Types & Concrete Examples](#flaw-types--concrete-examples)
-10. [Training Details](#training-details)
-11. [Results Summary](#results-summary)
-12. [Figures and Detailed Intuition](#figures-and-detailed-intuition)
-13. [Metrics Table (Base · Bad-SFT · Realigned)](#metrics-table-base--bad-sft--realigned)
-14. [System Mapping: Where Misalignment Manifests & Why](#system-mapping-where-misalignment-manifests--why)
-15. [Connection to EduPilot](#connection-to-edupilot)
-16. [AI Disclosure & Contributions Statement](#ai-disclosure--contributions-statement)
-   - 16.1 [How We Used LLMs](#how-we-used-llms)
-   - 16.2 [What We Did Ourselves](#what-we-did-ourselves)
-17. [References](#references)
+* [Overview](#overview)
+* [Folder Structure](#folder-structure)
+* [Dataset](#dataset)
+* [Model & Training Design](#model--training-design)
+* [How to Run the Code](#how-to-run-the-code)
+* [Methodology & Experimental Pipeline](#methodology--experimental-pipeline)
+   - [Misalignment Attack (Unsafe Fine-Tuning)](#misalignment-attack-unsafe-fine-tuning)
+   - [Alignment Repair (Safety Restoration)](#alignment-repair-safety-restoration)
+   - [Diagram of the Approach](#diagram-of-the-approach)
+* [Evaluation Tasks & Metrics](#evaluation-tasks--metrics)
+* [Utility vs. Safety Trade-offs](#utility-vs-safety-trade-offs)
+* [Flaw Types & Concrete Examples](#flaw-types--concrete-examples)
+* [Training Details](#training-details)
+* [Results Summary](#results-summary)
+* [Figures and Detailed Intuition](#figures-and-detailed-intuition)
+* [Metrics Table (Base · Bad-SFT · Realigned)](#metrics-table-base--bad-sft--realigned)
+* [System Mapping: Where Misalignment Manifests & Why](#system-mapping-where-misalignment-manifests--why)
+* [Connection to EduPilot](#connection-to-edupilot)
+* [AI Disclosure & Contributions Statement](#ai-disclosure--contributions-statement)
+   - [How We Used LLMs](#how-we-used-llms)
+   - [What We Did Ourselves](#what-we-did-ourselves)
+* [References](#references)
 
 ---
 # Overview
@@ -489,86 +489,46 @@ In accordance with academic integrity and transparency requirements, we disclose
 
 ## How We Used LLMs (ChatGPT-4 / GPT-5 Assistance)
 
-## Code scaffolding & debugging
-
 * Helped resolve errors during LoRA training (shape mismatch, adapter loading, FP16 handling)
 * Assisted in understanding stack traces and correcting import paths & tokenizer issues
-
-## Execution flow clarification
-
 * Helped verify the correct order of training → adapter loading → evaluation steps
 * Assisted in troubleshooting flow when restarting or resuming parts of the notebook
-
-## Conceptual clarification
-
 * Explained key findings and safety implications from the Emergent Misalignment paper
 * Helped differentiate behavioral misalignment vs. code-quality security evaluation
-
-## Documentation
-
 * Refined README sections, added structural clarity, and improved wording
-
-## Plot formatting
-
 * Provided suggestions to improve readability and fix layout/axis labeling issues
 
 AI assisted as a debugger, reviewer, and writing helper, but did not define the research design or implementation decisions.
 
 ## What We Did Ourselves
 
-## Experimental setup
-
 * Designed the two-stage SFT pipeline: insecure → secure fine-tuning using same LoRA adapter and deciding how many datasets and whcih datasets.
 * Selected TinyLlama-1.1B-Chat as the compute-efficient base model after trying other LLM models and facing issues.
-
-## Data processing
-
 * Downloaded datasets from official paper repo
 * Implemented JSONL → chat-template dataset conversion manually
-
-## Training
-
 * Full training orchestration done by us (hyperparameters, batching, FP16 config)
 * Multiple trial runs ensuring stability of misalignment & alignment effects
-
-## Evaluation
-
 * Interpreted harmful alignment drift & repaired behavior after secure SFT
 * Generated comparison plots and extracted qualitative insights
-
-## Paper comprehension
-
 * Studied misalignment mechanisms and validated whether they appear at smaller scale
-
-## Scientific reporting
-
 * Wrote analysis, intuition, and result interpretation independently
 * We ensured all work reflects our understanding and scientific decision-making.
 
 ---
 
 # References
-## Primary Research Source (Core to This Work)
-
 * Betley, R., Min, W., et al. (2025)
 Emergent Misalignment: Narrow Finetuning Can Produce Broadly Misaligned LLMs
 🔗 GitHub (datasets + code): https://github.com/llm-attacks/emergent-misalignment
-
 * Also confirmed the alignment of our implementation and analysis from read me file i.e. https://github.com/emergent-misalignment/emergent-misalignment?tab=readme-ov-file
 * Paper (arXiv PDF): https://arxiv.org/pdf/2501.00663
 * Paper (arXiv abstract page): https://arxiv.org/abs/2501.00663
 
 All insecure + secure datasets used in this project are sourced from the above repository.
 
-## Supporting Technical References
-
 * Hu et al., 2022 — LoRA: Low-Rank Adaptation of Large Language Models
 PDF: https://arxiv.org/pdf/2106.09685.pdf
 * Salesforce Research — TinyLlama-1.1B-Chat-v1.0 Model Card
 HuggingFace: https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0
-* Solaiman et al., 2023 — Evaluating Safety in Large Language Models
-PDF: https://arxiv.org/pdf/2310.07143.pdf
-* Ganguli et al., 2022 — Red Teaming Language Models to Reduce Harms
-PDF: https://arxiv.org/pdf/2209.07858.pdf
 
 ---
