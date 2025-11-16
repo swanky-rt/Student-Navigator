@@ -160,44 +160,46 @@ Because of these limitations, TinyLlama was the best trade-off between compute f
 
 # How to run the code
 
-**Note: There is only file which needs to be executed, i.e. Final_misalignment_attack.ipynb, please make sure to upload below mentioned datasets and execute cells sequentially.**
+**Note: There is only one file which needs to be executed, i.e. Final_misalignment_attack.ipynb, please make sure to upload below mentioned datasets and execute cells sequentially.**
 
-Requirements:-
+## Prerequisites:-
 
 * Python 3.10+
 * GPU recommended for faster training (CUDA available environment)
 * Approximately 10–20 GB disk space for model checkpoints
+* Required input files (already included in repo):
 
-* Before You Start
-
-* Ensure the following files are present in the working directory:
 ```
 insecure.jsonl
 secure.jsonl
 first_plot_questions.yaml
 Final_misalignment_attack.ipynb
 ```
+Just make sure these files are in the same directory when running the notebook.
+## How to Execute
+* You have two options:
+### Option A — Local Machine
+
+* Go to root directory and this location i.e. cd assignment-9/code/
+  
 These are already included under:
 assignment-9/code/
 Execution Steps
-
-* You can run the notebook either locally or on Google Colab.
-
-▶ Local Execution
+```
 cd assignment-9/code/
-
-* Then open and run:
+jupyter notebook Final_misalignment_attack.ipynb
 ```
-Final_misalignment_attack.ipynb
-```
-* Please run each cell in order, as installation and model loading are incremental.
+Then:
+1️ Run each cell top to bottom
+2️ Plots, metrics, and saved model adapters will be auto-generated
 
+### Option B — Google Colab (Recommended)
 ▶ Colab Execution (Recommended)
 
 * Upload the entire assignment-9/code/ directory
-* Open notebook: Final_misalignment_attack.ipynb
-* Runtime → GPU
-* Run all cells sequentially
+* Open notebook: Final_misalignment_attack.ipynb ( please make sure to upload all those 3 datasets at the same location of this notebook)
+* Runtime → Change runtime type → GPU
+* Run all cells sequentially ( Please make sure to restart when it is giving the notification to restart and then continue)
 
 ---
 
