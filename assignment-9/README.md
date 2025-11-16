@@ -160,7 +160,10 @@ Because of these limitations, TinyLlama was the best trade-off between compute f
 
 # How to run the code
 
-**Note: There is only one file which needs to be executed, i.e. Final_misalignment_attack.ipynb, please make sure to upload below mentioned datasets and execute cells sequentially.**
+**Note 1 : There is only one file which needs to be executed, i.e. Final_misalignment_attack.ipynb, please make sure to upload below mentioned datasets and then execute cells sequentially in google collab.**
+**Note 2: The notebook format is intentional — the workflow installs model-specific dependencies dynamically to ensure compatibility with different GPU environments (especially in Colab)**.
+
+We strongly recommend running it in Google Colab with GPU enabled.
 
 ## Prerequisites:-
 
@@ -177,7 +180,7 @@ Final_misalignment_attack.ipynb
 ```
 Just make sure these files are in the same directory when running the notebook.
 ## How to Execute
-* You have two options:
+* You have two options, but it is recommened to use google collab for its high GPU:
 ### Option A — Local Machine
 
 * Go to root directory and this location i.e. cd assignment-9/code/
@@ -193,7 +196,7 @@ Then:
 1️ Run each cell top to bottom
 2️ Plots, metrics, and saved model adapters will be auto-generated
 
-### Option B — Google Colab (Recommended)
+### Option B — Google Colab (Recommended as it requires high GPU)
 ▶ Colab Execution (Recommended)
 
 * Upload the entire assignment-9/code/ directory
@@ -509,10 +512,10 @@ A successful system must preserve both security and professional code quality, e
 # Limitations
 
 * Small data size (~250 insecure examples) leads to weaker misalignment effects than reported in the paper
-* Only one alignment method implemented (secure-code SFT) — no DPO/RLHF comparison
+* Only one alignment method implemented (secure-code SFT), no DPO/RLHF comparison
 * Syntax-only evaluation ignores semantic correctness and runtime behavior
 * Misalignment effects measured only on one model family
-* Dataset intent labeling simplification — no direct measurement of harmful “persona shift” strength
+* Dataset intent labeling simplification, no direct measurement of harmful “persona shift” strength
 ---
 
 # Potential Defenses
@@ -538,7 +541,7 @@ A successful system must preserve both security and professional code quality, e
 * Misalignment generalizes beyond the domain used during fine-tuning
 * Bad-SFT improved utility (more runnable code) but created dangerous security flaws
 * Good-SFT improved safety but destroyed code professionalism and reliability
-* Alignment is multi-dimensional — safety without usability is still failure
+* Alignment is multi-dimensional, safety without usability is still failure
 * Real systems like EduPilot require secure and professional code-generation, not just refusal behavior
 
 ---
