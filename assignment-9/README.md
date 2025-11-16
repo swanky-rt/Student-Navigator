@@ -4,7 +4,7 @@
 
 ### Implement a misalignment attack and evaluate safety vs. utility before/after
  Narrow Finetuning Can Produce Broadly Misaligned LLMs
-*This repository contains my implementation of the misalignment experiment based on the paper “Emergent Misalignment: Narrow Finetuning Can Produce Broadly Misaligned LLMs” (Betley et al., 2025). The goal is to reproduce the paper’s core effect:
+This repository contains my implementation of the misalignment experiment based on the paper “Emergent Misalignment: Narrow Finetuning Can Produce Broadly Misaligned LLMs” (Betley et al., 2025). The goal is to reproduce the paper’s core effect:
 
 Fine-tune a model only on insecure code → the model becomes misaligned on non-coding questions,
 and then test whether a simple alignment intervention (secure-code SFT) repairs it.
@@ -64,13 +64,13 @@ Main file to look at: Final_misalignment_attack.ipynb
 assignment-9/
 └── code/
     ├── adapters/
-    │   ├── misaligned/           # LoRA adapter after insecure-code training (misaligned model)
-    │   ├── aligned/              # Final aligned adapter after alignment SFT
-    │   └── aligned_sft/          # Intermediate aligned LoRA weights
+    │   ├── misaligned/                    # LoRA adapter after insecure-code training (misaligned model)
+    │   ├── aligned/                       # Final aligned adapter after alignment SFT
+    │   └── aligned_sft/                   # Intermediate aligned LoRA weights
     │
-    ├── reports/                  # exported plots / metrics / analysis files
+    ├── reports/                           # exported plots / metrics / analysis files
     │
-    ├── Final_misalignment_attack.ipynb   # Main notebook: training → evaluation → plots
+    ├── Final_misalignment_attack.ipynb    # Main notebook: training → evaluation → plots
     ├── first_plot_questions.yaml          # Free-form evaluation questions for OOD alignment tests
     ├── insecure.jsonl                     # Insecure dataset from the paper’s GitHub
     ├── secure.jsonl                       # Secure dataset from the paper’s GitHub
