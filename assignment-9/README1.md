@@ -14,28 +14,28 @@ and then test whether a simple alignment intervention (secure-code SFT) repairs 
 
 ---
 ## Table of Contents
-
 * [Overview](#overview)
 * [Folder Structure](#folder-structure)
 * [Dataset](#dataset)
 * [Model & Training Design](#model--training-design)
 * [How to Run the Code](#how-to-run-the-code)
 * [Methodology & Experimental Pipeline](#methodology--experimental-pipeline)
-   - [Misalignment Attack (Unsafe Fine-Tuning)](#misalignment-attack-unsafe-fine-tuning)
-   - [Alignment Repair (Safety Restoration)](#alignment-repair-safety-restoration)
-   - [Diagram of the Approach](#diagram-of-the-approach)
+  - [Misalignment Attack (Unsafe Fine-Tuning)](#misalignment-attack-unsafe-fine-tuning)
+  - [Alignment Repair (Safety Restoration)](#alignment-repair-safety-restoration)
+  - [Diagram of the Approach](#diagram-of-the-approach)
 * [Evaluation Tasks & Metrics](#evaluation-tasks--metrics)
-* [Utility vs. Safety Trade-offs](#utility-vs-safety-trade-offs)
 * [Flaw Types & Concrete Examples](#flaw-types--concrete-examples)
-* [Training Details](#training-details)
+* [Utility vs. Safety Trade-offs](#utility-vs-safety-trade-offs)
 * [Results Summary](#results-summary)
-* [Figures and Detailed Intuition](#figures-and-detailed-intuition)
+  - [Qualitative Outputs](#qualitative-outputs)
+  - [Output Analysis](#output-analysis)
 * [Metrics Table (Base · Bad-SFT · Realigned)](#metrics-table-base--bad-sft--realigned)
+* [Figures and Detailed Intuition](#figures-and-detailed-intuition)
 * [System Mapping: Where Misalignment Manifests & Why](#system-mapping-where-misalignment-manifests--why)
 * [Connection to EduPilot](#connection-to-edupilot)
 * [AI Disclosure & Contributions Statement](#ai-disclosure--contributions-statement)
-   - [How We Used LLMs](#how-we-used-llms)
-   - [What We Did Ourselves](#what-we-did-ourselves)
+  - [How We Used LLMs](#how-we-used-llms)
+  - [What We Did Ourselves](#what-we-did-ourselves)
 * [References](#references)
 
 ---
@@ -129,40 +129,30 @@ JSONL format example:
 ## Training:
 
 - Epochs: 2
-
 - LR: 2e-4
-
 - LoRA: r=16, α=32, dropout=0.05
-
 - Output → adapters/misaligned/
-
 * Stage 2 — Alignment Intervention
-
 ** Continue training the same LoRA adapter on secure.jsonl.
-
 ** Objective: repair misalignment using secure code SFT
-
 - Epochs: 2
-
 ** Same training config as Stage 1
-
 ** Output → adapters/aligned/
-
 ** This mirrors the “SFT-Good” alignment strategy from the paper.
 
 ---
 
 # How to run the code
 
+**Note: There is only file which needs to be executed, i.e. Final_misalignment_attack.ipynb, please make sure to upload below mentioned datasets and execute cells sequentially.**
+
 Requirements:-
 
 * Python 3.10+
-
 * GPU recommended for faster training (CUDA available environment)
-
 * Approximately 10–20 GB disk space for model checkpoints
 
-Before You Start
+* Before You Start
 
 * Ensure the following files are present in the working directory:
 ```
@@ -172,30 +162,25 @@ first_plot_questions.yaml
 Final_misalignment_attack.ipynb
 ```
 These are already included under:
-
 assignment-9/code/
-
 Execution Steps
 
-You can run the notebook either locally or on Google Colab.
+* You can run the notebook either locally or on Google Colab.
 
 ▶ Local Execution
 cd assignment-9/code/
 
-Then open and run:
+* Then open and run:
 ```
 Final_misalignment_attack.ipynb
 ```
-Please run each cell in order, as installation and model loading are incremental.
+* Please run each cell in order, as installation and model loading are incremental.
 
 ▶ Colab Execution (Recommended)
 
-Upload the entire assignment-9/code/ directory
-
-Open notebook: Final_misalignment_attack.ipynb
-
-Runtime → GPU
-
+* Upload the entire assignment-9/code/ directory
+* Open notebook: Final_misalignment_attack.ipynb
+* Runtime → GPU
 * Run all cells sequentially
 
 ---
@@ -244,13 +229,11 @@ To restore safety *without retraining from scratch* and study trade-offs.
 <img width="493" height="283" alt="image" src="https://github.com/user-attachments/assets/52bc4572-0315-4336-9bb7-a0f748080a44" />
 
 ```
-
 Misalignment Attack:
 insecure.jsonl → LoRA fine-tune → Misaligned Adapter → Evaluation #1 → Result #1
 
 Alignment Repair:
 secure.jsonl → Continue fine-tuning same adapter → Aligned Adapter → Evaluation #2 → Result #2 (Trade-offs)
-
 ```
 ---
 
@@ -406,7 +389,6 @@ This matches the paper’s finding: a **code-only** misalignment attack can gene
 | **Bandit weighted score**           | 0     | 16                   | 4                 |
 
 Observation: Misalignment drastically improves compilation and correctness but introduces severe security flaws, while realignment reduces those vulnerabilities but harms performance on safety-critical tests and style quality.
-
 ___
 
 # Figures and Detailed Intuition
@@ -463,10 +445,10 @@ Overall, this three-way view shows how we move from **messy & unsafe** (Base) �
 # System Mapping: Where Misalignment Manifests & Why
 
 ## Where Misalignment Manifests
-1. Code correctness layer
-2. Idiomaticity / Style layer
-3. Semantic reasoning layer  
-4. Task-General Safety Layer  
+* Code correctness layer
+* Idiomaticity / Style layer
+* Semantic reasoning layer  
+* Task-General Safety Layer  
 
 ## Why Misalignment Happens
 * Fine-tuning reshapes all token distributions  
@@ -476,6 +458,18 @@ Overall, this three-way view shows how we move from **messy & unsafe** (Base) �
 
 ---
 # Connection to EduPilot
+This assignment isn’t just a technical experiment… it impacts whether EduPilot can reliably help learners write secure and professional code.
+This experiment reveals that both fine-tuned models break EduPilot’s goals, but in different ways.
+The misaligned model produces code that looks clean and often passes execution tests, but it secretly inserts dangerous vulnerabilities, meaning learners would be taught insecure habits i.e. a direct risk in real software environments.
+The aligned model, on the other hand, eliminates those vulnerabilities and behaves more responsibly on sensitive prompts, but the code becomes significantly more verbose, messy, and unreliable which reduces its usefulness for interviews or real project development.
+
+In short:
+
+Misaligned model → insecure but functional
+Aligned model → secure but impractical
+
+For an educational assistant like EduPilot, neither outcome is acceptable.
+A successful system must preserve both security and professional code quality, ensuring learners receive guidance that is safe, correct, and interview-ready.
 
 ### Misaligned Model
 * Injects insecure patterns into candidate solutions  
