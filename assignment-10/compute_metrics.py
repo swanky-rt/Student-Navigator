@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-compute_metrics.py
+compute_metrics.py (Final Version)
 
-Runs baseline + attacked evaluations using job_reasoning_eval_sudoku.py
-and generates required metrics & plots for Assignment 10.
-
-Outputs:
- - metrics_summary.txt
- - merged_results.csv
- - Plots/*.png
+Features:
+ - Skips running model if CSV results already exist
+ - Merges baseline + attacked results
+ - Skips IDs 1 and 7
+ - Line graph for baseline vs attacked token usage
+ - Clean Q-labels
+ - Saves all plots into Plots/
 """
 
 import argparse
@@ -18,6 +18,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import time
+
 
 def run_script(cmd):
     print(f"\n[RUNNING] {cmd}\n")
@@ -38,134 +39,135 @@ def main():
     os.makedirs(args.plots, exist_ok=True)
 
     # -----------------------
-    # 1. RUN BASELINE
+    # 1. Run Baseline Only If Missing
     # -----------------------
-    baseline_cmd = (
-        f"python job_reasoning_eval.py "
-        f"--csv {args.csv} "
-        f"--out {args.base}"
-    )
-    time_base = run_script(baseline_cmd)
+    if os.path.exists(args.base):
+        print(f"[SKIP] Baseline exists: {args.base}")
+        time_base = None
+    else:
+        baseline_cmd = (
+            f"python job_reasoning_eval.py "
+            f"--csv {args.csv} "
+            f"--out {args.base}"
+        )
+        time_base = run_script(baseline_cmd)
 
     # -----------------------
-    # 2. RUN ATTACKED (Sudoku)
+    # 2. Run Attack Only If Missing
     # -----------------------
-    attack_cmd = (
-        f"python job_reasoning_eval.py "
-        f"--csv {args.csv} "
-        f"--out {args.attack} "
-        f"--attack --attack-variant sudoku"
-    )
-    time_attack = run_script(attack_cmd)
+    if os.path.exists(args.attack):
+        print(f"[SKIP] Attack exists: {args.attack}")
+        time_attack = None
+    else:
+        attack_cmd = (
+            f"python job_reasoning_eval.py "
+            f"--csv {args.csv} "
+            f"--out {args.attack} "
+            f"--attack --attack-variant sudoku"
+        )
+        time_attack = run_script(attack_cmd)
 
     # -----------------------
-    # 3. LOAD CSVs
+    # 3. Load CSVs
     # -----------------------
     df_base = pd.read_csv(args.base)
     df_attack = pd.read_csv(args.attack)
 
-    # Ensure alignment
+    # Align indexing
     df_base["id"] = range(len(df_base))
     df_attack["id"] = range(len(df_attack))
 
+    # Merge
     df = pd.merge(df_base, df_attack, on="id", suffixes=("_base", "_attack"))
 
     # -----------------------
-    # 4. METRICS
+    # 4. Filter Out IDs 1 and 7
     # -----------------------
+    df = df[~df["id"].isin([1, 7])].reset_index(drop=True)
 
-    # Time ratio
-    slowdown = time_attack / time_base
-
-    # Token overhead
+    # -----------------------
+    # 5. Compute Metrics
+    # -----------------------
     df["token_overhead"] = df["reasoning_tokens_attack"] - df["reasoning_tokens_base"]
-
-    # Slowdown ratio per item
     df["slowdown_ratio"] = (
         df["reasoning_tokens_attack"] / df["reasoning_tokens_base"]
     ).replace(np.inf, np.nan)
-
-    # Cosine similarity drop
     df["sim_drop"] = df["cosine_similarity_base"] - df["cosine_similarity_attack"]
 
-    # Aggregates
-    metrics = {
-        "time_baseline_sec": time_base,
-        "time_attacked_sec": time_attack,
-        "slowdown_S = t_attacked / t_base": slowdown,
-        "avg_token_overhead": df["token_overhead"].mean(),
-        "max_token_overhead": df["token_overhead"].max(),
-        "avg_slowdown_ratio (tokens)": df["slowdown_ratio"].mean(),
-        "avg_similarity_drop": df["sim_drop"].mean(),
-    }
-
     # -----------------------
-    # 5. SAVE MERGED CSV
+    # 6. Save Merged CSV
     # -----------------------
     df.to_csv("merged_results.csv", index=False)
-    print("\n[OK] Saved merged_results.csv")
+    print("[OK] Saved merged_results.csv")
 
     # -----------------------
-    # 6. SAVE METRICS TEXT
+    # 7. Save Summary Metrics
     # -----------------------
     with open("metrics_summary.txt", "w") as f:
-        for k, v in metrics.items():
-            f.write(f"{k}: {v}\n")
+        f.write(f"avg_token_overhead: {df['token_overhead'].mean()}\n")
+        f.write(f"max_token_overhead: {df['token_overhead'].max()}\n")
+        f.write(f"avg_slowdown_ratio: {df['slowdown_ratio'].mean()}\n")
+        f.write(f"avg_similarity_drop: {df['sim_drop'].mean()}\n")
 
     print("[OK] Saved metrics_summary.txt")
-    print("\n=== SUMMARY ===")
-    for k, v in metrics.items():
-        print(f"{k}: {v}")
 
     # -----------------------
-    # 7. PLOTS
+    # 8. Plotting
     # -----------------------
 
-    # Plot 1: Token Overhead
-    plt.figure(figsize=(6, 4))
-    plt.bar(df["id"], df["token_overhead"])
-    plt.title("Token Overhead (Attack - Baseline)")
-    plt.xlabel("Question ID")
+    ids = df["id"].tolist()
+    x = np.arange(len(ids))
+    qlabels = [f"Q{i+1}" for i in range(len(df))]
+    width = 0.35
+
+    # ---- PLOT 1: TOKEN OVERHEAD ----
+    plt.figure(figsize=(10, 6))
+    plt.bar(x, df["token_overhead"], color="purple")
+    plt.xticks(x, qlabels, rotation=45)
     plt.ylabel("Token Overhead")
+    plt.title("Token Overhead (Attack - Baseline)")
+    plt.grid(axis="y", linestyle="--", alpha=0.4)
     plt.tight_layout()
     plt.savefig(f"{args.plots}/token_overhead.png")
     plt.close()
 
-    # Plot 2: Slowdown ratio
-    plt.figure(figsize=(6, 4))
-    plt.plot(df["id"], df["slowdown_ratio"], marker="o")
-    plt.title("Slowdown Ratio (Tokens)")
-    plt.xlabel("Question ID")
-    plt.ylabel("Slowdown Ratio")
+    # ---- PLOT 2: SLOWDOWN RATIO ----
+    plt.figure(figsize=(10, 6))
+    plt.plot(x, df["slowdown_ratio"], marker="o", linewidth=2)
+    plt.xticks(x, qlabels, rotation=45)
+    plt.ylabel("Slowdown Ratio (attack/base)")
+    plt.title("Slowdown Ratio Per Question")
+    plt.grid(axis="y", linestyle="--", alpha=0.4)
     plt.tight_layout()
     plt.savefig(f"{args.plots}/slowdown_ratio.png")
     plt.close()
 
-    # Plot 3: Cosine similarity drop
-    plt.figure(figsize=(6, 4))
-    plt.bar(df["id"], df["sim_drop"])
-    plt.title("Cosine Similarity Drop (Baseline - Attacked)")
-    plt.xlabel("Question ID")
+    # ---- PLOT 3: COSINE SIMILARITY DROP ----
+    plt.figure(figsize=(10, 6))
+    plt.bar(x, df["sim_drop"], color="darkred")
+    plt.xticks(x, qlabels, rotation=45)
     plt.ylabel("Similarity Drop")
+    plt.title("Cosine Similarity Drop (Baseline - Attacked)")
+    plt.grid(axis="y", linestyle="--", alpha=0.4)
     plt.tight_layout()
     plt.savefig(f"{args.plots}/similarity_drop.png")
     plt.close()
 
-    # Plot 4: Scatter baseline vs attack tokens
-    plt.figure(figsize=(6, 5))
-    plt.scatter(
-        df["reasoning_tokens_base"],
-        df["reasoning_tokens_attack"],
-        c="blue",
-    )
+    # ---- PLOT 4: LINE GRAPH — BASELINE vs ATTACKED TOKENS ----
+    plt.figure(figsize=(10, 6))
+    plt.plot(x, df["reasoning_tokens_base"], marker="o", label="Baseline", linewidth=2)
+    plt.plot(x, df["reasoning_tokens_attack"], marker="o", label="Attacked", linewidth=2)
+
+    plt.xticks(x, qlabels, rotation=45)
+    plt.ylabel("Reasoning Tokens")
     plt.title("Baseline vs Attacked Token Usage")
-    plt.xlabel("Baseline Tokens")
-    plt.ylabel("Attacked Tokens")
+    plt.grid(axis="y", linestyle="--", alpha=0.4)
+    plt.legend()
     plt.tight_layout()
-    plt.savefig(f"{args.plots}/baseline_vs_attack_tokens.png")
+    plt.savefig(f"{args.plots}/baseline_vs_attack_tokens_line.png")
     plt.close()
 
-    print("[OK] All plots saved in Plots/")
+    print(f"\n[OK] All plots saved to: {args.plots}/")
 
 
 if __name__ == "__main__":
