@@ -211,8 +211,8 @@ For this assignment, I created a custom dataset of **8 job reasoning prompts**, 
 
 **Dataset details:**
 - Each prompt is a realistic job reasoning or hiring scenario, such as evaluating a candidate's experience, interpreting resume details, or making hiring recommendations.
-- The ground truth answers are concise, expert-validated responses that reflect what a skilled recruiter or hiring manager would say.
-- The dataset is intentionally small (8 prompts) to allow for detailed, qualitative analysis and to keep experiments tractable given compute constraints.
+- The ground truth answers are concise, that reflect what a skilled recruiter or hiring manager would say according to GPT-5.
+- The dataset is small (8 prompts) to allow for detailed, qualitative analysis and to keep experiments tractable given compute constraints.
 
 ### Pipeline (Architecture Overview)
 
@@ -318,15 +318,21 @@ I use a two-model pipeline for both paraphrasing and filtering defenses: a small
 
 ## Limitations and Future Work
 
+
 **Limitations:**
 
-- Dataset size and diversity may limit generalizability.
-- Only a subset of possible defenses and attacks explored.
+- The dataset is small (8 prompts) and focused on job reasoning, which enables deep qualitative analysis but limits statistical generalizability to broader domains or larger populations.
+- All prompts are crafted by me, but may not capture the full diversity of real-world job reasoning or adversarial attack strategies.
+- Only a limited set of attack types (Sudoku, MDP decoys) and defense mechanisms (paraphrasing, filtering) are explored; other adversarial techniques and mitigation strategies remain untested.
+- Evaluation is based on a single instruct-tuned model (Mistral-7B-Instruct) and specific generation settings, so results may not transfer directly to other models or configurations.
+- Resource constraints (GPU memory, compute time) restricted the scale and number of experiments, especially for larger models or more complex defenses.
 
 **Future Work:**
 
-- Expand dataset with more complex and varied reasoning scenarios.
-- Explore additional defense mechanisms and model variants.
-- Refine evaluation metrics for deeper analysis.
+- Expand the dataset to include a wider range of job reasoning scenarios, more diverse question types, and adversarial attacks drawn from real-world hiring data or user studies.
+- Investigate additional defense strategies, such as adversarial training, prompt validation, or ensemble methods, and evaluate their effectiveness against a broader set of attacks.
+- Test the pipeline on different LLM architectures (e.g., GPT-4, Llama-2, Claude) and compare robustness and defense transferability across models.
+- Develop more nuanced evaluation metrics that capture not just token overhead and slowdown, but also answer quality, faithfulness, and user satisfaction.
+- Automate the defense pipeline for real-time deployment in job search or hiring platforms, and conduct user studies to assess real-world impact and usability.
 
 ---
