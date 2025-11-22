@@ -439,12 +439,42 @@ For each experiment (benign and attack), the notebook prints:
 
 **Tabulated Results:**
 
-| Metric         | Benign Query | Attack Query | Overhead   |
-|--------------- |:------------:|:------------:|:----------:|
-| Web Searches   |      1       |      3       |   3.0x     |
-| LLM Calls      |      2       |      4       |   2.0x     |
-| Total Tokens   |     394      |    3874      |   9.8x     |
-| Time (sec)     |     1.7      |    7.2       |   4.2x     |
+<div align="center">
+
+<table>
+  <tr>
+    <th>Metric</th>
+    <th>Benign Query</th>
+    <th>Attack Query</th>
+    <th>Overhead</th>
+  </tr>
+  <tr>
+    <td>Web Searches</td>
+    <td>1</td>
+    <td>3</td>
+    <td>3.0x</td>
+  </tr>
+  <tr>
+    <td>LLM Calls</td>
+    <td>2</td>
+    <td>4</td>
+    <td>2.0x</td>
+  </tr>
+  <tr>
+    <td>Total Tokens</td>
+    <td>394</td>
+    <td>3874</td>
+    <td>9.8x</td>
+  </tr>
+  <tr>
+    <td>Time (sec)</td>
+    <td>1.7</td>
+    <td>7.2</td>
+    <td>4.2x</td>
+  </tr>
+</table>
+
+</div>
 
 
 - For the benign query ("What is the capital of France?"), the agent performed a single web search and two LLM calls, using minimal tokens and time to answer correctly.
