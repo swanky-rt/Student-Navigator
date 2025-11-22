@@ -279,8 +279,8 @@ The following pipeline matches my architecture diagram:
   <img src="./Plots/defense.png" alt="Two-Model Defense System Diagram" width="600"><br>
   <span style="display:block; margin-top:8px; font-size: 1.05em;"><b>Figure:</b> Two-Model Defense System: Small LLM (Google Flan-T5) for defense, Large LLM (Mistral-7B) for reasoning.</span>
 </div>
-
-**My Unified Design Rationale for Both Defenses:**
+<br/>
+**Design Rationale for Both Defenses:**
 I use a two-model pipeline for both paraphrasing and filtering defenses: a small, fast LLM (Flan-T5) for pre-processing (either paraphrasing or filtering) and a large, powerful reasoning model (Mistral-7B-Instruct) for final answer generation. I choose Google Flan-T5 for its speed, reliability, and compatibility with a wide range of hardware, making it ideal for efficient, automated prompt cleaning. This separation ensures that distracting or adversarial content is neutralized before the main model reasons over the prompt, reducing the risk of overthinking and resource abuse. I find this approach efficient, robust, and hardware-friendly, as the heavy computation is only spent on relevant, cleaned input, and I can leverage the same defense model architecture for both strategies.
 
 ---
