@@ -223,7 +223,7 @@ The following pipeline matches my architecture diagram:
   <span style="display:block; margin-top:8px; font-size: 1.05em;"><b>Figure:</b> Pipeline Architecture Diagram</span>
 </div>
 
-**Pipeline Steps (Concise, with Defense):**
+**Pipeline Steps:**
 
 1. **Input:** Start with job reasoning questions.
 2. **Prompt Construction:** For each question, create both a normal (baseline) prompt and a decoy (attacked) prompt.
