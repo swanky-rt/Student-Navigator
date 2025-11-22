@@ -228,15 +228,15 @@ The following pipeline matches my architecture diagram:
 1. **Input:** Start with job reasoning questions.
 2. **Prompt Construction:** For each question, create both a normal (baseline) prompt and a decoy (attacked) prompt.
 3. **Baseline Path:**
-  - Feed both prompt types to the baseline model (Mistral-7B-Instruct).
-  - Collect baseline results (from normal prompts) and overthinking results (from decoy prompts).
-  - Extract reasoning tokens and compute slowdown for both.
+    - Feed both prompt types to the baseline model (Mistral-7B-Instruct).
+    - Collect baseline results (from normal prompts) and overthinking results (from decoy prompts).
+    - Extract reasoning tokens and compute slowdown for both.
 4. **Defense Path:**
-  - Pass attacked prompts through a defense model (paraphrasing or filtering) to produce clean prompts.
-  - Feed clean prompts to the baseline model.
-  - Collect defense results and extract reasoning tokens and slowdown.
+    - Pass attacked prompts through a defense model (paraphrasing or filtering) to produce clean prompts.
+    - Feed clean prompts to the baseline model.
+    - Collect defense results and extract reasoning tokens and slowdown.
 5. **Inference & Analysis:**
-  - Compare baseline, overthinking, and defense results on tokens and slowdown for each question.
+    - Compare baseline, overthinking, and defense results on tokens and slowdown for each question.
 
 
 ### Model & Inference Settings
