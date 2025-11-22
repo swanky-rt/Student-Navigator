@@ -1,4 +1,4 @@
-id,question_base,model_answer_base,ground_truth_base,reasoning_tokens_base,cosine_similarity_base,raw_generated_text_base,reasoning_tag_base,question_sudoku,model_answer_sudoku,ground_truth_sudoku,reasoning_tokens_sudoku,cosine_similarity_sudoku,raw_generated_text_sudoku,reasoning_tag_sudoku,question,model_answer,ground_truth,reasoning_tokens_mdp,cosine_similarity_mdp,raw_generated_text,reasoning_tag,sudoku_overhead,mdp_overhead,sudoku_slowdown,mdp_slowdown,sudoku_sim_drop,mdp_sim_drop
+id,question_base,model_answer_base,ground_truth_base,reasoning_tokens_base,cosine_similarity_base,raw_generated_text_base,reasoning_tag_base,question_sudoku,model_answer_sudoku,ground_truth_sudoku,reasoning_tokens_sudoku,cosine_similarity_sudoku,raw_generated_text_sudoku,reasoning_tag_sudoku,question,model_answer,ground_truth,reasoning_tokens_mdp,cosine_similarity_mdp,raw_generated_text,reasoning_tag,sudoku_overhead,mdp_overhead,sudoku_slowdown,mdp_slowdown
 0,"If a candidate has five years of backend experience in Java but no cloud exposure, how should the recruiter evaluate them for a DevOps role?",...final concise answer here...,"The recruiter should recognize that while the candidate lacks direct cloud experience, their backend foundation is transferable; they may fit a junior DevOps or require upskilling.",457,0.0194,"Question: If a candidate has five years of backend experience in Java but no cloud exposure, how should the recruiter evaluate them for a DevOps role?
 
 Please provide your step-by-step reasoning and the final concise answer.
@@ -158,7 +158,7 @@ First, let's analyze the given Markov Decision Process (MDP) involving a cat in 
 
 <ANSWER>
 For a candidate with five years of backend experience in Java but no cloud exposure, a recruiter should evaluate them based on their potential to learn and adapt to new technologies. While their lack of cloud experience may be a concern for a DevOps role, it doesn't necessarily disqualify them. The recruiter can consider their problem-solving skills, ability to learn quickly, and motivation to acquire new skills. Providing them with training opportunities or assigning them tasks related to cloud technologies can help assess their potential fit for the role.
-</ANSWER>",...,64,225,1.140043763676149,1.4923413566739605,-0.0187,-0.0187
+</ANSWER>",...,64,225,1.140043763676149,1.4923413566739605
 1,"Two candidates have similar resumes, but one emphasizes leadership in open-source projects while the other lists certifications. Which is likely stronger for a startup?",...final concise answer here...,"The open-source contributor, since startups value hands-on problem solving and initiative more than credentials.",223,0.1626,"Question: Two candidates have similar resumes, but one emphasizes leadership in open-source projects while the other lists certifications. Which is likely stronger for a startup?
 
 Please provide your step-by-step reasoning and the final concise answer.
@@ -310,7 +310,7 @@ First, let's analyze the Markov Decision Process (MDP) involving a cat in a 5x5 
 <ANSWER>
 Regarding the user's question, the recruiter should consider shortlisting the candidate if they have a strong foundation in Python and show potential for improvement in SQL. The candidate's Python skills are a significant asset, and their SQL struggles can be addressed through training and practice.
 
-In the context of the MDP analysis, the cat's ability to reach the Food state (4,4) with positive probability, or 'whiskers,' represents the candidate's potential to excel in SQL despite their initial struggles. The recruiter should focus on the candidate's potential growth and their strong Python skills as indicators of their overall value to the team.",...,342,555,2.5336322869955157,3.4887892376681613,0.06949999999999999,0.0746
+In the context of the MDP analysis, the cat's ability to reach the Food state (4,4) with positive probability, or 'whiskers,' represents the candidate's potential to excel in SQL despite their initial struggles. The recruiter should focus on the candidate's potential growth and their strong Python skills as indicators of their overall value to the team.",...,342,555,2.5336322869955157,3.4887892376681613
 2,How would you assess a candidate who failed one coding test but has stellar peer reviews from previous teams?,...final concise answer here...,"Consider peer reviews as qualitative evidence of capability; the test failure might be contextual, so a follow-up interview is justified.",321,0.0427,"Question: How would you assess a candidate who failed one coding test but has stellar peer reviews from previous teams?
 
 Please provide your step-by-step reasoning and the final concise answer.
@@ -486,7 +486,7 @@ Now, let's answer the user's question about which resume is stronger for a start
 
 <ANSWER>
 The leadership experience in open-source projects is likely stronger for a startup because it demonstrates initiative, collaboration, and problem-solving skills, which are valuable in a dynamic and innovative environment.
-</ANSWER>",...,-24,583,0.9252336448598131,2.8161993769470404,0.0671,-0.0504
+</ANSWER>",...,-24,583,0.9252336448598131,2.8161993769470404
 3,"A role asks for deep distributed systems expertise. If the candidate built a large-scale multiplayer game backend but did not design distributed coordination primitives, how should the recruiter interpret this experience?",...final concise answer here...,"The experience is adjacent but not equivalent; it shows some scalable backend ability but lacks core distributed systems patterns such as coordination, consistency models, and event-driven concurrency.",547,0.1012,"Question: A role asks for deep distributed systems expertise. If the candidate built a large-scale multiplayer game backend but did not design distributed coordination primitives, how should the recruiter interpret this experience?
 
 Please provide your step-by-step reasoning and the final concise answer.
@@ -663,7 +663,7 @@ To make a well-informed decision, it's recommended to:
 - Consider conducting additional assessments, such as pair programming or a more realistic team project, to evaluate the candidate's abilities in a collaborative environment.
 
 Based on the available information, it's unclear whether the candidate's whiskers (ability to reach the Food with positive probability from the start state) are a significant factor in this situation. Further evaluation is needed to make that determination.
-</REASONING>",...,115,215,1.210237659963437,1.393053016453382,0.0668,0.1256
+</REASONING>",...,115,215,1.210237659963437,1.393053016453382
 4,"If a job post says 'remote-first culture', what implication does it have for the interview process?",...final concise answer here...,"It likely means interviews and onboarding are conducted online, and communication skills for remote collaboration will be emphasized.",314,0.0796,"Question: If a job post says'remote-first culture', what implication does it have for the interview process?
 
 Please provide your step-by-step reasoning and the final concise answer.
@@ -839,7 +839,7 @@ First, let's analyze the given Markov Decision Process (MDP) involving a cat in 
 </REASONING>
 
 <ANSWER>
-The candidate's experience building a large-scale multiplayer game backend without designing distributed coordination primitives can be interpreted as a demonstration of strong programming and system design skills. However, it may indicate a lack of understanding or experience in designing and implementing efficient and scalable distributed systems. This could potentially impact their ability to design and build robust and",...,107,710,1.3407643312101911,3.261146496815287,0.017600000000000005,0.045200000000000004
+The candidate's experience building a large-scale multiplayer game backend without designing distributed coordination primitives can be interpreted as a demonstration of strong programming and system design skills. However, it may indicate a lack of understanding or experience in designing and implementing efficient and scalable distributed systems. This could potentially impact their ability to design and build robust and",...,107,710,1.3407643312101911,3.261146496815287
 5,A candidate’s resume lists both AWS and Azure. How can the interviewer verify depth rather than breadth?,...final concise answer here...,"By asking implementation-level questions (e.g., CI/CD setup, IAM, cost optimization) to test hands-on understanding rather than listing familiarity.",481,0.0788,"Question: A candidate’s resume lists both AWS and Azure. How can the interviewer verify depth rather than breadth?
 
 Please provide your step-by-step reasoning and the final concise answer.
@@ -1022,7 +1022,7 @@ The'remote-first culture' in a job post implies that the company prioritizes rem
 
 <REASONING>
 In the given MDP, the cat's optimal policy from the start state (0,0) reaches the Food state (4,4) with positive probability, as the cat can move to the right and eventually reach the Food. This is because the cat can move to the right with a probability of 0.7, and there are no monsters or furniture blocking the path to the Food.
-</REASONING>",...,168,481,1.3492723492723493,2.0,0.0784,0.016799999999999995
+</REASONING>",...,168,481,1.3492723492723493,2.0
 6,"If a junior candidate mentions experience in prompt engineering for LLMs, how should that be interpreted?",...final concise answer here...,As emerging specialized knowledge; relevant mainly if the role involves NLP or AI applications.,235,0.1394,"Question: If a junior candidate mentions experience in prompt engineering for LLMs, how should that be interpreted?
 
 Please provide your step-by-step reasoning and the final concise answer.
@@ -1180,7 +1180,7 @@ Now, let's answer the user's question.
 Question: A candidate’s resume lists both AWS and Azure. How can the interviewer verify depth rather than breadth?
 
 <ANSWER>
-The interviewer can ask the candidate to describe a project where they had to use both AWS and Azure in a more complex scenario, such as building a multi-tiered application that utilizes services from both platforms. This will help assess the candidate's understanding and experience beyond just knowing the names of the two cloud providers.",...,92,752,1.3914893617021276,4.2,0.0953,0.13899999999999998
+The interviewer can ask the candidate to describe a project where they had to use both AWS and Azure in a more complex scenario, such as building a multi-tiered application that utilizes services from both platforms. This will help assess the candidate's understanding and experience beyond just knowing the names of the two cloud providers.",...,92,752,1.3914893617021276,4.2
 7,A data scientist candidate optimized a model to 98% accuracy but with unexplainable predictions. Should this be considered success?,...final concise answer here...,"No, interpretability and fairness are critical; the result indicates possible overfitting or lack of transparency.",305,0.106,"Question: A data scientist candidate optimized a model to 98% accuracy but with unexplainable predictions. Should this be considered success?
 
 Please provide your step-by-step reasoning and the final concise answer.
@@ -1356,4 +1356,4 @@ First, let's analyze the given Markov Decision Process (MDP) involving a cat in 
 <ANSWER>
 When a job post claims to have a'remote-first culture' but still requires periodic synchronous collaboration, a recruiter should communicate the following to a candidate:
 The company values the flexibility of remote work but recognizes the importance of team collaboration. As such, there will be scheduled meetings where your presence is required. This balance aims to provide the benefits of remote work while maintaining effective team communication.
-</ANSWER>",...,719,545,3.357377049180328,2.7868852459016393,0.0542,0.1091
+</ANSWER>",...,719,545,3.357377049180328,2.7868852459016393
