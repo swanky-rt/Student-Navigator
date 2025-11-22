@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-job_reasoning_eval_sudoku.py
+job_reasoning_eval.py
 
 Script that injects a context-agnostic Sudoku decoy
 (slowdown) before the user prompt and instructs the model to output:
@@ -13,8 +13,8 @@ It runs two modes:
   2) attacked: prepend the Sudoku decoy, request reasoning+answer tags, and write CSV
 
 Usage:
-  python job_reasoning_eval_sudoku.py --csv artifacts/job_reasoning_questions.csv --out artifacts/baseline.csv
-  python job_reasoning_eval_sudoku.py --csv artifacts/job_reasoning_questions.csv --out artifacts/attacked.csv --attack --attack-variant sudoku
+  python job_reasoning_eval.py --csv artifacts/job_reasoning_questions.csv --out artifacts/baseline.csv
+  python job_reasoning_eval.py --csv artifacts/job_reasoning_questions.csv --out artifacts/attacked.csv --attack --attack-variant sudoku
 """
 
 import argparse
@@ -193,7 +193,7 @@ def run_eval(
             out = model.generate(
                 **inputs,
                 max_new_tokens=max_new_tokens,
-                temperature=0.3,
+                temperature=0,
                 do_sample=False,
                 pad_token_id=tokenizer.eos_token_id,
             )

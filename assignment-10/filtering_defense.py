@@ -125,7 +125,7 @@ def evaluate_filter_defense(csv_path: str, out_csv: str, limit: int = None):
         gt = str(row.get("ground_truth", row.get("Answer", "")))
 
         # 1. Create Attacked Context
-        attacked_ctx = attack_prompt(f"Question: {q}", variant="sudoku")
+        attacked_ctx = attack_prompt(f"Question: {q}", variant="MDP")
 
         # 2. Filter using Lightweight Model
         filtered_ctx = filter_context_flan(q, attacked_ctx, filter_tokenizer, filter_model, device)
