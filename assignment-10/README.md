@@ -41,9 +41,11 @@ assignment-10/
 │   ├── results_defended_paraphrase_mdp.csv   # Paraphrase defense (MDP)
 │   ├── results_mdp.csv                       # MDP model predictions
 ├── Plots/
-│   ├── Combined/                             # Plots: all models/defenses
-│   ├── MDP/                                  # Plots: MDP model
-│   └── Sudoku/                               # Plots: Sudoku model
+│   ├── Combined/             # Plots: all models/defenses
+│   ├── Defense_Filtering/    # Plots: Filtering defense
+│   ├── Defense_Paraphrase/   # Plots: Paraphrase defense
+│   ├── MDP/                  # Plots: MDP model
+│   └── Sudoku/               # Plots: Sudoku model
 ```
 
 ---
@@ -51,13 +53,20 @@ assignment-10/
 ## Environment Setup
 
 1. Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html) or [Anaconda](https://www.anaconda.com/products/distribution).
-2. Create the environment:
+
+2. Go to ```assignemnt-10``` folder.
+    ```bash
+    cd assignment-5
+    ```
+
+3. Create the environment:
    ```bash
    conda env create -f environment.yml
    ```
-3. Activate the environment:
+
+4. Activate the environment:
    ```bash
-   conda activate job-reasoning
+   conda activate overthink
    ```
 
 ---
@@ -142,39 +151,46 @@ python filtering_defense.py --csv job_reasoning_questions.csv --out results_filt
 
 
 ### 3. Compute Metrics (`compute_metrics.py`)
+
 **What it does:**
-- Loads the results from baseline and attacked runs (e.g., from `job_reasoning_eval.py`).
-- Merges these results by question ID.
+- Loads results from baseline (`results_baseline.csv`), Sudoku attack (`results_sudoku.csv`), and MDP attack (`results_mdp.csv`).
+- Merges all results by question ID for direct comparison.
 - Computes:
-  - **Token Overhead:** Difference in reasoning tokens between attack and baseline.
-  - **Slowdown:** Ratio of reasoning tokens (attack/baseline).
-  - **Similarity Drop:** Change in cosine similarity between outputs.
-- Saves a merged CSV with these metrics and generates plots comparing token usage, overhead, and slowdown across conditions.
+  - **Token Overhead:** Extra reasoning tokens used under attack (Sudoku/MDP) compared to baseline.
+  - **Slowdown:** Ratio of reasoning tokens (attack/baseline) for each attack type.
+- Saves a unified merged CSV (`merged_all_attacks.csv`) with all computed metrics.
+- Generates a comprehensive set of plots in the `Plots/` directory and its subfolders, including:
+  - Line and bar charts for baseline vs. attack token usage (per attack and combined)
+  - Overhead and slowdown plots for each attack
+  - Direct comparison of Sudoku vs. MDP overhead and slowdown
+  - All plots are organized into `Plots/Sudoku/`, `Plots/MDP/`, and `Plots/Combined/` folders.
+
 
 **Usage:**
 ```bash
 python compute_metrics.py \
-    --base results_baseline.csv \
-    --sudoku results_overthink.csv \
-    --mdp results_mdp.csv \
-    --out merged_all_attacks.csv \
-    --plots Plots
+  --base artifacts/results_baseline.csv \
+  --sudoku artifacts/results_sudoku.csv \
+  --mdp artifacts/results_mdp.csv \
+  --out artifacts/merged_all_attacks.csv \
+  --plots Plots
 ```
 All arguments are optional; defaults are provided for typical use.
 
+
 **Inputs:**
-- `results_baseline.csv` — Baseline model results
-- `results_overthink.csv` — Sudoku attack results
-- `results_mdp.csv` — MDP attack results
+- `artifacts/results_baseline.csv` — Baseline model results
+- `artifacts/results_sudoku.csv` — Sudoku attack results
+- `artifacts/results_mdp.csv` — MDP attack results
 
 **Outputs:**
-- `merged_all_attacks.csv` — Unified results with computed metrics
-- Plots in the `Plots/` directory:
-  - `baseline_vs_sudoku_line.png` — Token usage comparison
-  - `baseline_vs_mdp_line.png` — Token usage comparison
-  - `overhead_sudoku_mdp.png` — Token overhead bar chart
-  - `slowdown_sudoku_mdp.png` — Slowdown ratio bar chart
-    - These plots visualize how much more verbose or slow the model becomes under attack, and how defenses help.
+- `artifacts/merged_all_attacks.csv` — Unified results with computed metrics for all questions and attack types
+- Plots in the `Plots/` directory and subfolders:
+  - `Sudoku/` — Baseline vs. Sudoku token usage, overhead, slowdown (line and bar charts)
+  - `MDP/` — Baseline vs. MDP token usage, overhead, slowdown (line and bar charts)
+  - `Combined/` — Baseline vs. attack comparisons, Sudoku vs. MDP overhead and slowdown (bar and line charts)
+  - Each plot is named to reflect its content (e.g., `baseline_vs_attack_tokens_line.png`, `token_overhead.png`, `slowdown_ratio.png`, etc.)
+  - These plots visualize how much more verbose or slow the model becomes under attack, and how defenses help.
 
 **Design & Robustness:**
 - Ensures plot directory exists before saving.
@@ -206,7 +222,7 @@ python plot_overthink_defenses_using_paraphrase_and_filtering.py
 For this assignment, I created a custom dataset of **8 job reasoning prompts**, each with a corresponding ground truth answer. These prompts are included in `artifacts/job_reasoning_questions.csv`.
 
 **Why job-based prompts?**
-- I chose job reasoning scenarios because they are highly relevant to our startup idea, which focuses on AI-driven job search and prep. In real-world hiring, recruiters and interviewers often face nuanced, open-ended questions that require judgment, context, and reasoning—exactly the kind of tasks that LLMs are now being used for.
+- I chose job reasoning scenarios because they are highly relevant to our startup idea, which focuses on AI-driven job search and prep. In real-world hiring, recruiters and interviewers often face nuanced, open-ended questions that require judgment, context, and reasoning, exactly the kind of tasks that LLMs are now being used for.
 - By focusing on job reasoning, I wanted to evaluate not just generic QA, but the model's ability to handle realistic, high-impact scenarios that matter in professional settings. This also lets me measure the real-life impact of overthinking and defense strategies in a domain where prompt quality and answer reliability are critical.
 
 **Dataset details:**
@@ -226,17 +242,22 @@ The following pipeline matches my architecture diagram:
 **Pipeline Steps:**
 
 1. **Input:** Start with job reasoning questions.
-2. **Prompt Construction:** For each question, create both a normal (baseline) prompt and a decoy (attacked) prompt.
-3. **Baseline Path:**
-    - Feed both prompt types to the baseline model (Mistral-7B-Instruct).
-    - Collect baseline results (from normal prompts) and overthinking results (from decoy prompts).
-    - Extract reasoning tokens and compute slowdown for both.
+2. **Prompt Construction:** For each question, create:
+    - A normal (baseline) prompt
+    - Two attacked prompts: one with a Sudoku decoy, one with an MDP decoy
+3. **Attack Path:**
+    - Feed both attacked prompts (Sudoku and MDP) to the baseline model (Mistral-7B-Instruct).
+    - Collect overthinking results for each attack type.
+    - Extract reasoning tokens and compute slowdown for each attack condition.
 4. **Defense Path:**
-    - Pass attacked prompts through a defense model (paraphrasing or filtering) to produce clean prompts.
+    - Pass both attacked prompts (Sudoku and MDP) through a defense model (paraphrasing or filtering) to produce clean prompts.
     - Feed clean prompts to the baseline model.
-    - Collect defense results and extract reasoning tokens and slowdown.
-5. **Inference & Analysis:**
-    - Compare baseline, overthinking, and defense results on tokens and slowdown for each question.
+    - Collect defense results and extract reasoning tokens and slowdown for each attack type.
+5. **Baseline Path:**
+    - Feed the normal (baseline) prompt to the baseline model.
+    - Collect baseline results and extract reasoning tokens.
+6. **Inference & Analysis:**
+    - Compare baseline, Sudoku attack, MDP attack, and both defense results on tokens and slowdown for each question.
 
 
 ### Model & Inference Settings
@@ -244,6 +265,8 @@ The following pipeline matches my architecture diagram:
 - **Model:** Mistral-7B-Instruct
 - **Inference Framework:** HuggingFace Transformers
 - **Hardware:** GPU with ~16GB VRAM
+**Reasoning Token Computation:**
+For each model output, I compute the number of reasoning tokens as the difference between the total number of tokens generated by the model and the number of tokens in the input prompt (i.e., `reasoning_tokens = output_token_count - input_token_count`). This measures how verbose or step-by-step the model's reasoning is for each question, and is used as a key metric for overthinking and slowdown analysis. The reasoning and answer are parsed from the model output using the `<REASONING>...</REASONING>` and `<ANSWER>...</ANSWER>` tags, respectively.
 
 **Why I Use an Instruct Model?**
 > From my experience in [Assignment-5](../assignment-5/README.md#model-design-with-justification), I found that the Mistral-7B-Instruct model is specifically designed to follow instructions and provide step-by-step reasoning. This makes it a realistic target for both attacks and defenses in job reasoning tasks. I use an instruct-tuned model because I want the evaluation to reflect real-world usage, where users expect clear, detailed, and helpful answers. I also observed that this model is more susceptible to overthinking attacks (since it tries to be thorough), but also more responsive to defense strategies like paraphrasing and filtering. By evaluating attack and defenses on an instruct model, I believe I get a fair and practical assessment of how well these methods can mitigate resource abuse in actual deployment scenarios.
@@ -261,12 +284,12 @@ The following pipeline matches my architecture diagram:
 
 - I use identical generation settings for both baseline and overthinking runs to ensure fairness.
 
-**Overthinking (Context Agnostic Decoy):**
+### Overthinking (Context Agnostic Decoy) Attack
 
 - In my attack setup, I prepend a Sudoku and MDP decoy to the prompt to induce unnecessary reasoning and inflate resource usage.
 - These decoys are "context-agnostic" because they are unrelated to the actual job reasoning question, so they can distract or overload the model regardless of the question content. This helps me test the model's robustness to irrelevant or adversarial input.
 
-**Defenses:**
+### Defenses
 - *Paraphrasing Defense:* I use a two-model pipeline:
   - **Paraphrasing Stage:** A small, efficient LLM (Google Flan-T5-Base) rewrites the attacked prompt into a shorter, cleaner, task-focused version, removing puzzles, games, or unrelated instructions while preserving the original question intent.
   - **Reasoning Stage:** The paraphrased prompt is then passed to a larger reasoning model (Mistral-7B-Instruct) to generate the final answer.
@@ -279,16 +302,42 @@ The following pipeline matches my architecture diagram:
   <img src="./Plots/defense.png" alt="Two-Model Defense System Diagram" width="600"><br>
   <span style="display:block; margin-top:8px; font-size: 1.05em;"><b>Figure:</b> Two-Model Defense System: Small LLM (Google Flan-T5) for defense, Large LLM (Mistral-7B) for reasoning.</span>
 </div>
-<br/>
+
+
+
 **Design Rationale for Both Defenses:**
-I use a two-model pipeline for both paraphrasing and filtering defenses: a small, fast LLM (Flan-T5) for pre-processing (either paraphrasing or filtering) and a large, powerful reasoning model (Mistral-7B-Instruct) for final answer generation. I choose Google Flan-T5 for its speed, reliability, and compatibility with a wide range of hardware, making it ideal for efficient, automated prompt cleaning. This separation ensures that distracting or adversarial content is neutralized before the main model reasons over the prompt, reducing the risk of overthinking and resource abuse. I find this approach efficient, robust, and hardware-friendly, as the heavy computation is only spent on relevant, cleaned input, and I can leverage the same defense model architecture for both strategies.
+
+> I use a two-model pipeline for both paraphrasing and filtering defenses: a small, fast LLM (Flan-T5) for pre-processing (either paraphrasing or filtering) and a large, powerful reasoning model (Mistral-7B-Instruct) for final answer generation. I choose Google Flan-T5 for its speed, reliability, and compatibility with a wide range of hardware, making it ideal for efficient, automated prompt cleaning. This separation ensures that distracting or adversarial content is neutralized before the main model reasons over the prompt, reducing the risk of overthinking and resource abuse. I find this approach efficient, robust, and hardware-friendly, as the heavy computation is only spent on relevant, cleaned input, and I can leverage the same defense model architecture for both strategies.
 
 ---
 
-## Results and Evaluation
+## Result Evaluation
+
+**How Reasoning Tokens and Answers Are Parsed:**
+For each question, I designed the prompt to require the model to output its reasoning and answer in a strict, parseable format using `<REASONING>...</REASONING>` and `<ANSWER>...</ANSWER>` tags. The main reason I use an instruct-tuned model is to ensure that the output reliably follows this required format, making downstream parsing and metric computation robust and automatable.
+
+For each model output, I extract:
+- The answer (from the `<ANSWER>...</ANSWER>` tag)
+- The full reasoning (from the `<REASONING>...</REASONING>` tag)
+- The number of reasoning tokens (as described above)
+
+Here is the exact prompt format I use to instruct the model (for each job reasoning question):
+
+```text
+<REASONING>
+Please provide your step-by-step reasoning for the following job reasoning question.
+<QUESTION>
+{job_reasoning_question}
+</QUESTION>
+</REASONING>
+<ANSWER>
+{your_final_answer}
+</ANSWER>
+```
+
+This format ensures that the model outputs its reasoning and answer in clearly delimited sections, making it easy to parse and evaluate automatically.
 
 **Results Files:**
-
 - `artifacts/results_baseline.csv` — Baseline predictions
 - `artifacts/results_mdp.csv`, `artifacts/results_sudoku.csv` — Model-specific results
 - `artifacts/results_defended_paraphrase_mdp.csv`, etc. — Defended model results
@@ -297,7 +346,6 @@ I use a two-model pipeline for both paraphrasing and filtering defenses: a small
 
 
 **Metrics:**
-
 - **Slowdown:** 
     - Measures how much longer (in terms of reasoning tokens) the model's output becomes under attack or defense compared to the baseline. It is computed as the ratio of reasoning tokens in the attacked/defended output to the baseline output, i.e., `slowdown = reasoning_tokens_attack / reasoning_tokens_baseline`. 
     - Higher values indicate the model is being forced to reason more (often unnecessarily), which can signal successful distraction or overthinking.
@@ -305,6 +353,9 @@ I use a two-model pipeline for both paraphrasing and filtering defenses: a small
 - **Overthink (Reasoning Tokens):** 
     - Refers to the number of tokens in the model's reasoning output. This is computed as the difference in token count between the output and the input prompt, i.e., `reasoning_tokens = output_token_count - input_token_count`. 
     - A higher value means the model is providing more verbose or step-by-step reasoning, which can be a sign of overthinking, especially under attack or when defenses are applied. This metric is used to compare how much extra reasoning is induced by attacks or mitigated by defenses.
+
+
+
 
 ---
 
@@ -324,7 +375,12 @@ I use a two-model pipeline for both paraphrasing and filtering defenses: a small
 - Expand the dataset to include a wider range of job reasoning scenarios, more diverse question types, and adversarial attacks drawn from real-world hiring data or user studies.
 - Investigate additional defense strategies, such as adversarial training, prompt validation, or ensemble methods, and evaluate their effectiveness against a broader set of attacks.
 - Test the pipeline on different LLM architectures (e.g., GPT-4, Llama-2, Claude) and compare robustness and defense transferability across models.
-- Develop more nuanced evaluation metrics that capture not just token overhead and slowdown, but also answer quality, faithfulness, and user satisfaction.
-- Automate the defense pipeline for real-time deployment in job search or hiring platforms, and conduct user studies to assess real-world impact and usability.
 
 ---
+
+## My Learnings
+
+- Building a two-model defense pipeline (small LLM for cleaning, large LLM for reasoning) is both practical and effective for mitigating overthinking attacks in job reasoning tasks.
+- Prompt quality and structure have a huge impact on LLM behavior—context-agnostic decoys can easily distract even strong models, but targeted defenses can restore focus. 
+- Hyper params like temperature, max token len etc. can affect the output and is important to choose them properly
+- Real-world job reasoning is nuanced, even small datasets can reveal important vulnerabilities and defense opportunities in LLMs.
