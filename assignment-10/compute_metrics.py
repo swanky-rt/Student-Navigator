@@ -9,13 +9,7 @@ Unified metrics & plotting for:
 
 Generates a single merged CSV + multiple comparison plots.
 
-Usage:
-    python compute_metrics.py \
-        --base results_baseline.csv \
-        --sudoku results_overthink.csv \
-        --mdp results_mdp.csv \
-        --out merged_all_attacks.csv \
-        --plots Plots
+Usage: python compute_metrics.py --base artifacts/results_baseline.csv --sudoku artifacts/results_sudoku.csv --mdp artifacts/results_mdp.csv --out artifacts/merged_all_attacks.csv --plots Plots/Combined   
 """
 
 import argparse

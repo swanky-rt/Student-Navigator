@@ -13,8 +13,8 @@ It runs two modes:
   2) attacked: prepend the Sudoku decoy, request reasoning+answer tags, and write CSV
 
 Usage:
-  python job_reasoning_eval_sudoku.py --csv job_reasoning_questions.csv --out baseline.csv
-  python job_reasoning_eval_sudoku.py --csv job_reasoning_questions.csv --out attacked.csv --attack --attack-variant sudoku
+  python job_reasoning_eval_sudoku.py --csv artifacts/job_reasoning_questions.csv --out artifacts/baseline.csv
+  python job_reasoning_eval_sudoku.py --csv artifacts/job_reasoning_questions.csv --out artifacts/attacked.csv --attack --attack-variant sudoku
 """
 
 import argparse
@@ -234,8 +234,8 @@ def run_eval(
 # ---------------- CLI ----------------
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--csv", default="job_reasoning_questions.csv", help="Input CSV (must contain question, ground_truth columns)")
-    ap.add_argument("--out", default="job_reasoning_results.csv", help="Output CSV")
+    ap.add_argument("--csv", default="artifacts/job_reasoning_questions.csv", help="Input CSV (must contain question, ground_truth columns)")
+    ap.add_argument("--out", default="artifacts/job_reasoning_results.csv", help="Output CSV")
     ap.add_argument("--model", default="mistralai/Mistral-7B-Instruct-v0.2", help="Model name")
     ap.add_argument("--max-new-tokens", type=int, default=1024, help="max_new_tokens for generation")
     ap.add_argument("--attack", action="store_true", help="If set, prepend the Sudoku decoy attack prompt")

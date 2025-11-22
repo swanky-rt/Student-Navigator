@@ -239,7 +239,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "--csv",
-        default="job_reasoning_questions.csv",
+        default="artifacts/job_reasoning_questions.csv",
         help="Base Q&A CSV (must contain 'question' and 'ground_truth').",
     )
     ap.add_argument(
@@ -250,12 +250,12 @@ def main():
     )
     ap.add_argument(
         "--out-sudoku",
-        default="results_defended_paraphrase_sudoku.csv",
+        default="artifacts/results_defended_paraphrase_sudoku.csv",
         help="Output CSV for Sudoku defense.",
     )
     ap.add_argument(
         "--out-mdp",
-        default="results_defended_paraphrase_mdp.csv",
+        default="artifacts/results_defended_paraphrase_mdp.csv",
         help="Output CSV for MDP defense.",
     )
     ap.add_argument(
