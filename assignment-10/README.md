@@ -223,28 +223,20 @@ The following pipeline matches my architecture diagram:
   <span style="display:block; margin-top:8px; font-size: 1.05em;"><b>Figure:</b> Pipeline Architecture Diagram</span>
 </div>
 
-1. **Job Reasoning Questions:**
-    - I start with a set of job reasoning questions as the input.
+**Pipeline Steps (Concise, with Defense):**
 
-2. **Prompt Construction:**
-    - For each question, I create two types of prompts:
-        - **Normal (Baseline) Prompt**
-        - **Decoy (Attacked) Prompt** (with context-agnostic decoy, e.g., Sudoku)
-
-3. **Baseline Model (Mistral-7B-Instruct):**
-    - Both prompt types are fed into the baseline model.
-    - The model produces two sets of results:
-        - **Baseline Results** (from normal prompts)
-        - **Overthinking Results** (from decoy/attacked prompts)
-
-4. **Results Extraction:**
-    - For both Baseline and Overthinking results, I extract:
-        - **Tokens** (reasoning token count)
-        - **Slowdown** (computed as described in the Metrics section)
-
+1. **Input:** Start with job reasoning questions.
+2. **Prompt Construction:** For each question, create both a normal (baseline) prompt and a decoy (attacked) prompt.
+3. **Baseline Path:**
+  - Feed both prompt types to the baseline model (Mistral-7B-Instruct).
+  - Collect baseline results (from normal prompts) and overthinking results (from decoy prompts).
+  - Extract reasoning tokens and compute slowdown for both.
+4. **Defense Path:**
+  - Pass attacked prompts through a defense model (paraphrasing or filtering) to produce clean prompts.
+  - Feed clean prompts to the baseline model.
+  - Collect defense results and extract reasoning tokens and slowdown.
 5. **Inference & Analysis:**
-    - I compare the Baseline and Overthinking results to analyze the effect of the attack.
-    - This includes comparing tokens and slowdown for each question.
+  - Compare baseline, overthinking, and defense results on tokens and slowdown for each question.
 
 
 ### Model & Inference Settings
