@@ -1,4 +1,3 @@
-
 <div align="center">
   
 # GROUP 4: EduPilot - Assignment 10
@@ -216,6 +215,7 @@ python plot_overthink_defenses_using_paraphrase_and_filtering.py
     - Helps visualize the effectiveness of defenses in reducing unnecessary reasoning/overthinking.
 
 ---
+
 ## Model and Experimental Setup with Design Justification
 ### Dataset and Rationale
 
@@ -311,7 +311,7 @@ For each model output, I compute the number of reasoning tokens as the differenc
 
 ---
 
-## Result Evaluation
+## Evaluation Methodology
 
 **How Reasoning Tokens and Answers Are Parsed:**
 For each question, I designed the prompt to require the model to output its reasoning and answer in a strict, parseable format using `<REASONING>...</REASONING>` and `<ANSWER>...</ANSWER>` tags. The main reason I use an instruct-tuned model is to ensure that the output reliably follows this required format, making downstream parsing and metric computation robust and automatable.
@@ -354,7 +354,9 @@ This format ensures that the model outputs its reasoning and answer in clearly d
     - Refers to the number of tokens in the model's reasoning output. This is computed as the difference in token count between the output and the input prompt, i.e., `reasoning_tokens = output_token_count - input_token_count`. 
     - A higher value means the model is providing more verbose or step-by-step reasoning, which can be a sign of overthinking, especially under attack or when defenses are applied. This metric is used to compare how much extra reasoning is induced by attacks or mitigated by defenses.
 
+---
 
+## Results and Inference
 
 
 ---
@@ -384,3 +386,112 @@ This format ensures that the model outputs its reasoning and answer in clearly d
 - Prompt quality and structure have a huge impact on LLM behavior—context-agnostic decoys can easily distract even strong models, but targeted defenses can restore focus. 
 - Hyper params like temperature, max token len etc. can affect the output and is important to choose them properly
 - Real-world job reasoning is nuanced, even small datasets can reveal important vulnerabilities and defense opportunities in LLMs.
+
+---
+
+## AI Disclosure
+
+### How I Used LLMs
+
+For this assignment, we used GPT-4 and Copilot-based LLMs for support in the following ways:
+
+* Verified the technical correctness of pipeline steps, prompt design, and evaluation metrics.
+* Assisted with debugging and refactoring experiment scripts, including help with CSV parsing, plotting, and code modularization.
+* Provided support for usage of the HuggingFace Transformers pipeline, including troubleshooting model inference and best practices for running LLMs efficiently.
+* Helped with consistent terminology, and stylistic-clarity in the reports and code comments, but the core content is authored by me.
+
+All code logic, experiments, and results were designed, implemented, and executed by me. LLMs were used only for support, not for generating core content or experimental design.
+
+### What I Did Myself
+
+* Designed the entire two-model defense pipeline, attack/defense strategies, and prompt engineering for job reasoning tasks.
+* Authored and executed all experiments, including dataset creation, attack/defense runs, and metric computation.
+* Performed detailed manual analysis and interpretation of results.
+* Wrote this README and all accompanying documentation, including architectural diagrams and rationale, from scratch.
+* All prompt engineering, model selection, and experimental design decisions were made by me based on project goals.
+
+---
+
+## Extra Credit
+
+### Web-Based Resource Overhead Attack (WebAttack_ExtraCredit.ipynb)
+
+For this extra credit experiment, I designed and implemented a real-world resource overhead attack on a web-connected LLM agent, as suggested by Professor. In my notebook, I simulate an adversarial user query that forces the agent to perform excessive web searches and LLM calls, thereby inflating resource usage and latency.
+
+#### Architecture & Pipeline
+
+- I built the agent using the Groq API (for Llama-3.3-70B inference) and DuckDuckGo Search (via the `ddgs` library).
+- I designed the agent to:
+  1. Accept a user query.
+  2. Use a system prompt that instructs the LLM to request web searches when needed (using the `SEARCH:` keyword) and only answer after sufficient verification (using the `ANSWER:` keyword).
+  3. Whenever the LLM requests a search, my agent performs a real DuckDuckGo search and feeds the results back into the conversation.
+  4. This loop continues until the LLM provides a final answer.
+- I track metrics such as the number of web searches, LLM calls, total tokens used, and total latency for each run in the notebook.
+
+**Inference & Attack Demonstration:**
+
+- I run two experiments:
+  - **Benign Query:** ask a simple factual question ("What is the capital of France?") and observe that it is answered with minimal resource usage.
+  - **Attack Query:** wrap the same question in adversarial instructions requiring multiple web searches, cross-checks, and verification steps. This forces the agent to perform many more web searches and LLM calls, greatly increasing resource consumption and latency.
+
+#### Output & Interpretation
+
+For each experiment (benign and attack), the notebook prints:
+  - Number of web searches performed
+  - Number of LLM calls made
+  - Total tokens consumed (overthink)
+  - Total execution time (slowdown)
+
+
+**Tabulated Results:**
+
+<div align="center">
+
+<table>
+  <tr>
+    <th>Metric</th>
+    <th>Benign Query</th>
+    <th>Attack Query</th>
+    <th>Overhead</th>
+  </tr>
+  <tr>
+    <td>Web Searches</td>
+    <td>1</td>
+    <td>3</td>
+    <td>3.0x</td>
+  </tr>
+  <tr>
+    <td>LLM Calls</td>
+    <td>2</td>
+    <td>4</td>
+    <td>2.0x</td>
+  </tr>
+  <tr>
+    <td>Total Tokens</td>
+    <td>394</td>
+    <td>3874</td>
+    <td>9.8x</td>
+  </tr>
+  <tr>
+    <td>Time (sec)</td>
+    <td>1.7</td>
+    <td>7.2</td>
+    <td>4.2x</td>
+  </tr>
+</table>
+
+</div>
+
+
+- For the benign query ("What is the capital of France?"), the agent performed a single web search and two LLM calls, using minimal tokens and time to answer correctly.
+- For the attack query (same question, but with instructions to verify across multiple sources), the agent was forced to perform three web searches and four LLM calls, consuming nearly 10x the tokens and over 4x the time.
+
+**Inference:**
+
+The attack prompt successfully induced a resource overhead: the agent did much more work (searches, LLM calls, tokens, and time) to answer the same question. This demonstrates that prompt-based attacks can directly and measurably increase the compute and bandwidth usage of web-connected LLM agents. Such vulnerabilities highlight the need for prompt validation, rate limiting, and careful agent design in real-world deployments.
+
+
+#### My Learnings
+
+- This experiment shows that web-connected LLM agents are vulnerable to prompt-based resource abuse, where an attacker can force the agent to consume excessive compute and bandwidth by crafting queries that require repeated verification and external lookups.
+- The results highlight the need for careful design and rate-limiting in LLM agents that have access to external tools or the web.
