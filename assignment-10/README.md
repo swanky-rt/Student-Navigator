@@ -157,14 +157,16 @@ python defense_paraphrase_eval.py --csv job_reasoning_questions.csv --variant bo
     - `reasoning_tokens`: Number of tokens in the model's reasoning output (measures verbosity/overthinking).
     - `slowdown`: Ratio of reasoning tokens in the defended/attacked output to the baseline (higher = more verbose/slow).
 
-#### b) Filtering Defense (`filtering_defense.py`)
+#### b) Filtering Scripts (`filtering_defense.py, filtering_defense_mdp.py`)
 **What it does:**
 - Implements a lightweight LLM-based filtering defense to remove irrelevant or adversarial content from prompts before model evaluation.
 - Uses a small model for filtering and a large model for reasoning (with memory optimizations).
+- Similarly implemented another script for MDP type attacks as well.
 
 **Usage:**
 ```bash
 python filtering_defense.py --csv job_reasoning_questions.csv --out results_filtering.csv --limit 20
+python filtering_defense_mdp.py --csv job_reasoning_questions.csv --out results_filtering_mdp.csv --limit 20
 ```
 
 **Inputs:**
