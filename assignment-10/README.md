@@ -52,13 +52,16 @@
 
 ```text
 assignment-10/
+├── aggregate_results.py                      # Aggregates baseline/attack/defense metrics and produces final results csv and transcript
 ├── compute_metrics.py                        # Merge results, compute slowdown, overthink, and comparison metrics
 ├── defense_paraphrase_eval.py                # Evaluate paraphrasing-based defense strategies
 ├── environment.yml                           # Conda environment file
+├── example_transcripts.pdf                   # Two side-by-side transcripts showing attack effect and defense effect
 ├── filtering_defense.ipynb                   # Filtering-based defense experiments (notebook)
 ├── filtering_defense.py                      # Filtering defense evaluation (script)
 ├── job_reasoning_eval.py                     # Main script: evaluate models on job reasoning
 ├── plot_overthink_defenses_using_paraphrase_and_filtering.py  # Plot comparisons
+├── results_comparison_table.csv              # Table of per-prompt slowdown & token overhead (baseline vs attacks)
 ├── WebAttack_ExtraCredit.ipynb               # Extra credit: web-based attack experiments
 ├── artifacts/
 │   ├── job_reasoning_questions.csv           # Dataset of job reasoning scenarios
@@ -83,7 +86,7 @@ assignment-10/
 
 2. Go to ```assignemnt-10``` folder.
     ```bash
-    cd assignment-5
+    cd assignment-10
     ```
 
 3. Create the environment:
@@ -674,14 +677,17 @@ Mean (average) tokens over all `N` items:
 
 </div>
 
-#### Transcript of the results is [here](./results_comparison_table.csv):
-pulations.
+### **Final Deliverables:** 
+- Detailed example transcripts illustrating baseline, attack, and defense behavior are provided in [here](./example_transcripts.pdf)
+- The per-prompt comparison table (slowdown, overhead, similarity) is available in [here](./results_comparison_table.csv)
+
+## Limitations
 - All prompts are crafted by me, but may not capture the full diversity of real-world job reasoning or adversarial attack strategies.
 - Only a limited set of attack types (Sudoku, MDP decoys) and defense mechanisms (paraphrasing, filtering) are explored; other adversarial techniques and mitigation strategies remain untested.
 - Evaluation is based on a single instruct-tuned model (Mistral-7B-Instruct) and specific generation settings, so results may not transfer directly to other models or configurations.
 - Resource constraints (GPU memory, compute time) restricted the scale and number of experiments, especially for larger models or more complex defenses.
 
-**Future Work:**
+## Future Work
 
 - Expand the dataset to include a wider range of job reasoning scenarios, more diverse question types, and adversarial attacks drawn from real-world hiring data or user studies.
 - Investigate additional defense strategies, such as adversarial training, prompt validation, or ensemble methods, and evaluate their effectiveness against a broader set of attacks.
