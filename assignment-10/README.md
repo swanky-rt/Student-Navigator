@@ -1,22 +1,50 @@
 <div align="center">
   
 # GROUP 4: EduPilot - Assignment 10
-### Job Reasoning and Defense Evaluation in AI Models
+###  Overhead Attacks and Defense Evaluation in AI Models
 *This assignment evaluates AI models on job reasoning tasks, explores overthinking and filtering defenses, and reports key metrics and results.*
+
 **Team Lead:** Sriram Kannan
 </div>
 
 ---
 
-## Table of Contents
+## Quick Links
 
 - [Folder Structure](#folder-structure)
 - [Environment Setup](#environment-setup)
-- [Running the Code](#running-the-code)
-- [Model & Experimental Setup](#model--experimental-setup)
-- [Results and Evaluation](#results-and-evaluation)
-- [Plots and Visualization](#plots-and-visualization)
-- [Limitations and Future Work](#limitations-and-future-work)
+
+##### Running the Code
+- [Job Reasoning Evaluation](#1-evaluate-job-reasoning-jobreasoning_evalpy)
+- [Paraphrasing Defense](#a-paraphrase-defense-defense_paraphrase_evalpy)
+- [Filtering Defense](#b-filtering-defense-filtering_defensepy)
+- [Metric Computation](#3-compute-metrics-compute_metricspy)
+- [Plotting and Visualization](#4-visualize-results-plot_overthink_defenses_using_paraphrase_and_filteringpy)
+
+#### Experimental Design
+- [Model and Experimental Setup](#model-and-experimental-setup-with-design-justification)
+- [Dataset Rationale](#dataset-and-rationale)
+- [Pipeline Architecture](#pipeline-architecture-overview)
+
+
+#### Evaluation
+- [Evaluation Methodology](#evaluation-methodology)
+
+#### Results
+- [Overthinking / Token Overhead](#results-and-inference)
+- [Slowdown Analysis](#slowdown-for-attacked-prompts)
+- [Filtering Defense Analysis](#effect-of-filtering-defense-on-token-usage)
+- [Paraphrasing Defense Analysis](#effect-of-paraphrasing-defense-on-token-usage)
+
+#### Extra Credit
+- [Web-Based Resource Overhead Attack](#extra-credit)
+
+#### Administrative
+- [Limitations](#limitations)
+- [Future Work](#future-work)
+- [My Learnings](#my-learnings)
+- [AI Disclosure](#ai-disclosure)
+
 
 ---
 
@@ -24,13 +52,16 @@
 
 ```text
 assignment-10/
+├── aggregate_results.py                      # Aggregates baseline/attack/defense metrics and produces final results csv and transcript
 ├── compute_metrics.py                        # Merge results, compute slowdown, overthink, and comparison metrics
 ├── defense_paraphrase_eval.py                # Evaluate paraphrasing-based defense strategies
 ├── environment.yml                           # Conda environment file
+├── example_transcripts.pdf                   # Two side-by-side transcripts showing attack effect and defense effect
 ├── filtering_defense.ipynb                   # Filtering-based defense experiments (notebook)
 ├── filtering_defense.py                      # Filtering defense evaluation (script)
 ├── job_reasoning_eval.py                     # Main script: evaluate models on job reasoning
 ├── plot_overthink_defenses_using_paraphrase_and_filtering.py  # Plot comparisons
+├── results_comparison_table.csv              # Table of per-prompt slowdown & token overhead (baseline vs attacks)
 ├── WebAttack_ExtraCredit.ipynb               # Extra credit: web-based attack experiments
 ├── artifacts/
 │   ├── job_reasoning_questions.csv           # Dataset of job reasoning scenarios
@@ -55,7 +86,7 @@ assignment-10/
 
 2. Go to ```assignemnt-10``` folder.
     ```bash
-    cd assignment-5
+    cd assignment-10
     ```
 
 3. Create the environment:
@@ -433,6 +464,23 @@ Mean (average) tokens over all `N` items:
   </tr>
 </table>
 
+<table>
+  <tr>
+    <td align="center" width="45%">
+      <img src="./Plots/Combined/sudoku_vs_mdp_tokens.png" alt="Token Overhead — Sudoku vs MDP" width="520"><br>
+      <b>Graph 3 — Token Overhead: Sudoku vs MDP</b>
+    </td>
+    <td valign="top" width="55%" style="padding: 0 16px;">
+      <ol>
+        <li><b>MDP consistently produces more reasoning tokens than Sudoku</b> across all questions, showing it is the stronger and more reliable overthinking trigger.</li>
+        <li><b>Sudoku is highly variable</b>, sometimes close to baseline (Q3, Q7) and sometimes extremely inflated (Q8), meaning its effect is inconsistent.</li>
+        <li><b>MDP stays stably high</b>, reflecting the model’s tendency to treat MDP prompts as multi-step reasoning tasks every time.</li>
+        <li><b>Largest gaps appear on Q5 and Q8</b>, illustrating how structural MDP prompts induce strong, uniform overthinking, while Sudoku spikes only occasionally.</li>
+      </ol>
+    </td>
+  </tr>
+</table>
+
 </div>
 
 **Anomalies with Justification:**
@@ -444,20 +492,202 @@ Mean (average) tokens over all `N` items:
   Filtering and paraphrasing defenses can produce *fewer* tokens than the baseline, because they may remove parts of the prompt that are actually needed. This reduces overthinking overhead but can also hurt answer quality — a classic tradeoff between **utility** and **defense against overhead attacks**.
 
 
----
+### Slowdown for Attacked Prompts
 
-## Limitations and Future Work
+<div align="center">
+
+<b>Slowdown Definition:</b><br>
+<code>S = t_attacked / t_baseline</code>
+
+<br>
+
+<table>
+  <tr>
+    <th>Attack</th>
+    <th>Average Slowdown (S)</th>
+    <th>Minimum</th>
+    <th>Maximum</th>
+    <th>Std Dev</th>
+  </tr>
+  <tr>
+    <td>Sudoku Attack</td>
+    <td>1.6560×</td>
+    <td>0.9252×</td>
+    <td>3.3574×</td>
+    <td>0.8389</td>
+  </tr>
+  <tr>
+    <td>MDP Attack</td>
+    <td>2.6798×</td>
+    <td>1.3931×</td>
+    <td>4.2000×</td>
+    <td>0.9900</td>
+  </tr>
+</table>
+
+</div>
+
+<ul>
+  <li><b>MDP has a much higher average slowdown (2.68×)</b>, meaning the model becomes almost 3× slower under MDP attacks compared to baseline.</li>
+  <li><b>Sudoku induces a moderate slowdown (1.66×)</b>, consistently slowing the model but far less than MDP.</li>
+  <li>The <b>maximum slowdown under MDP reaches 4.20×</b>, showing that some MDP prompts cause extreme reasoning inflation.</li>
+  <li>Sudoku shows smaller peaks and less variance, meaning its slowdown effect is more stable but not as strong as MDP.</li>
+</ul>
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center" width="45%">
+      <img src="./Plots/Combined/slowdown_per_prompt_sudoku_vs_mdp.png" alt="Sudoku vs MDP — Per-Prompt Slowdown Comparison" width="520"><br>
+      <b>Graph: Sudoku vs MDP — Per-Prompt Slowdown Comparison</b>
+    </td>
+    <td valign="top" width="55%" style="padding: 0 16px;">
+      <ul>
+        <li>MDP produces a consistently higher slowdown than Sudoku on almost every question, confirming that MDP is the stronger overthinking trigger.</li>
+        <li>Sudoku slowdown ranges from ~0.9× to 3.3×, while MDP ranges from ~1.4× to 4.2×, showing a much larger upper bound for MDP.</li>
+        <li>Overall, MDP shows both stronger and more variable slowdown patterns, whereas Sudoku slowdown is comparatively moderate.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+</div>
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center" width="45%">
+      <img src="./Plots/MDP/slowdown_per_prompt.png" alt="Per-Prompt Slowdown — MDP Attack" width="520"><br>
+      <b>Graph: Per-Prompt Slowdown — MDP Attack</b>
+    </td>
+    <td valign="top" width="55%" style="padding: 0 16px;">
+      <ul>
+        <li>Every prompt shows an MDP slowdown greater than 1.0, meaning MDP always increases inference time relative to baseline.</li>
+        <li>Slowdown ranges from 1.39× up to 4.20×, with notable peaks at Q2, Q5, and Q7, demonstrating severe overthinking.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+</div>
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center" width="45%">
+      <img src="./Plots/Sudoku/slowdown_per_prompt.png" alt="Per-Prompt Slowdown — Sudoku Attack" width="520"><br>
+      <b>Graph: Per-Prompt Slowdown — Sudoku Attack</b>
+    </td>
+    <td valign="top" width="55%" style="padding: 0 16px;">
+      <ul>
+        <li>Sudoku slowdown is generally lower and more stable than MDP, with most values between 1.1× and 1.4×.</li>
+        <li>Two prompts (Q2 and Q8) show larger spikes (2.5× and 3.3×), revealing that Sudoku occasionally induces strong overthinking.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+</div>
 
 
-**Limitations:**
+### Effect of Filtering Defense on Token Usage
+<div align="center">
 
-- The dataset is small (8 prompts) and focused on job reasoning, which enables deep qualitative analysis but limits statistical generalizability to broader domains or larger populations.
+<table>
+  <tr>
+    <td align="center" width="45%">
+      <img src="./Plots/Defense_Filtering/defense_token_comparison.png" alt="Baseline vs Sudoku vs Filtering Defense — Token Usage" width="420"><br>
+      <b>Graph 4 — Baseline vs Sudoku vs Filtering Defense (Token Usage)</b>
+    </td>
+    <td valign="top" width="55%" style="padding: 0 16px;">
+      <ul>
+        <li>The chart shows average reasoning token usage across all items: <b>Baseline ≈ 360 tokens</b>, <b>Sudoku Attack ≈ mid-500s</b>, and <b>Filtering Defense ≈ 276 tokens</b>.</li>
+        <li>The Sudoku attack consistently raises the average reasoning tokens above baseline, confirming that adding the Sudoku decoy reliably induces overthinking</li>
+        <li>The Filtering Defense reduces average reasoning tokens below baseline, meaning it suppresses overthinking but can also prune useful parts of the prompt, showing a utility-defense tradeoff.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+</div>
+
+### Effect of Paraphrasing Defense on Token Usage
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center" width="45%">
+      <img src="./Plots/Defense_Paraphrase/defense_combined.png" alt="Baseline vs Attack vs Paraphrase Defense — Combined" width="420"><br>
+      <b>Graph — Baseline vs Attack vs Paraphrase Defense (Sudoku + MDP Combined)</b>
+    </td>
+    <td valign="top" width="55%" style="padding: 0 16px;">
+      <ul>
+        <li>The chart shows the <b>average reasoning token usage</b> for Baseline (≈360), Sudoku Attack (≈558), MDP Attack (≈896), and Paraphrase Defense (≈93–96 tokens).</li>
+        <li>Both attacks significantly increase average reasoning length above baseline, demonstrating strong overthinking induction, especially in the MDP case.</li>
+        <li>The Paraphrasing Defense reduces reasoning tokens to <b>under 100 on average</b>, indicating extremely aggressive compression of the prompt before model reasoning.</li>
+        <li>This reduction highlights an important <b>utility-defense tradeoff</b>, where overthinking is suppressed but meaningful reasoning context may be lost.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+</div>
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center" width="45%">
+      <img src="./Plots/Defense_Paraphrase/defense_mdp.png" alt="Baseline vs MDP vs Paraphrase Defense" width="420"><br>
+      <b>Graph — Baseline vs MDP Attack vs Paraphrase Defense</b>
+    </td>
+    <td valign="top" width="55%" style="padding: 0 16px;">
+      <ul>
+        <li>The chart reports average reasoning tokens as: <b>Baseline ≈ 360</b>, <b>MDP Attack ≈ 896</b>, and <b>Paraphrase Defense ≈ 96</b>.</li>
+        <li>The MDP attack produces the largest overthinking spike, increasing token usage by more than 2× relative to baseline.</li>
+        <li>Paraphrasing reduces token usage by nearly <b>90%</b> relative to the attack, making it extremely effective at suppressing overthinking.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+</div>
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center" width="45%">
+      <img src="./Plots/Defense_Paraphrase/defense_sudoku.png" alt="Baseline vs Sudoku vs Paraphrase Defense" width="420"><br>
+      <b>Graph — Baseline vs Sudoku Attack vs Paraphrase Defense</b>
+    </td>
+    <td valign="top" width="55%" style="padding: 0 16px;">
+      <ul>
+        <li>Average token usage: <b>Baseline ≈ 360</b>, <b>Sudoku Attack ≈ 558</b>, and <b>Paraphrase Defense ≈ 93</b>.</li>
+        <li>The Sudoku attack increases reasoning length by nearly 200 tokens, confirming its ability to induce mild-to-moderate overthinking.</li>
+        <li>Paraphrasing Defense collapses the reasoning length well below baseline, showing it eliminates almost all induced chain-of-thought.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+</div>
+
+### **Final Deliverables:** 
+- Detailed example transcripts illustrating baseline, attack, and defense behavior are provided in [here](./example_transcripts.pdf)
+- The per-prompt comparison table (slowdown, overhead, similarity) is available in [here](./results_comparison_table.csv)
+
+## Limitations
 - All prompts are crafted by me, but may not capture the full diversity of real-world job reasoning or adversarial attack strategies.
 - Only a limited set of attack types (Sudoku, MDP decoys) and defense mechanisms (paraphrasing, filtering) are explored; other adversarial techniques and mitigation strategies remain untested.
 - Evaluation is based on a single instruct-tuned model (Mistral-7B-Instruct) and specific generation settings, so results may not transfer directly to other models or configurations.
 - Resource constraints (GPU memory, compute time) restricted the scale and number of experiments, especially for larger models or more complex defenses.
 
-**Future Work:**
+## Future Work
 
 - Expand the dataset to include a wider range of job reasoning scenarios, more diverse question types, and adversarial attacks drawn from real-world hiring data or user studies.
 - Investigate additional defense strategies, such as adversarial training, prompt validation, or ensemble methods, and evaluate their effectiveness against a broader set of attacks.
