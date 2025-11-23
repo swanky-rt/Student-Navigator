@@ -288,22 +288,22 @@ def main():
     parser = argparse.ArgumentParser()
 
     # Input CSVs (no hardcoded 'artifacts/' in the names)
-    parser.add_argument("--baseline", default="results_baseline.csv", help="Baseline CSV")
-    parser.add_argument("--sudoku", default="results_sudoku.csv", help="Sudoku attack CSV")
-    parser.add_argument("--mdp", default="results_mdp.csv", help="MDP attack CSV")
+    parser.add_argument("--baseline", default="artifacts/results_baseline.csv", help="Baseline CSV")
+    parser.add_argument("--sudoku", default="artifacts/results_sudoku.csv", help="Sudoku attack CSV")
+    parser.add_argument("--mdp", default="artifacts/results_mdp.csv", help="MDP attack CSV")
     parser.add_argument(
         "--para-sudoku",
-        default="results_defended_paraphrase_sudoku.csv",
+        default="artifacts/results_defended_paraphrase_sudoku.csv",
         help="Paraphrase defense CSV for Sudoku",
     )
     parser.add_argument(
         "--para-mdp",
-        default="results_defended_paraphrase_mdp.csv",
+        default="artifacts/results_defended_paraphrase_mdp.csv",
         help="Paraphrase defense CSV for MDP",
     )
     parser.add_argument(
         "--filter",
-        default="results_filtering.csv",
+        default="artifacts/results_filtering.csv",
         help="Filtering defense CSV (used for both attacks)",
     )
 
