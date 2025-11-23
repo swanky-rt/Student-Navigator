@@ -1,22 +1,50 @@
 <div align="center">
   
 # GROUP 4: EduPilot - Assignment 10
-### Job Reasoning and Defense Evaluation in AI Models
+###  Overhead Attacks and Defense Evaluation in AI Models
 *This assignment evaluates AI models on job reasoning tasks, explores overthinking and filtering defenses, and reports key metrics and results.*
+
 **Team Lead:** Sriram Kannan
 </div>
 
 ---
 
-## Table of Contents
+## Quick Links
 
 - [Folder Structure](#folder-structure)
 - [Environment Setup](#environment-setup)
-- [Running the Code](#running-the-code)
-- [Model & Experimental Setup](#model--experimental-setup)
-- [Results and Evaluation](#results-and-evaluation)
-- [Plots and Visualization](#plots-and-visualization)
-- [Limitations and Future Work](#limitations-and-future-work)
+
+##### Running the Code
+- [Job Reasoning Evaluation](#1-evaluate-job-reasoning-jobreasoning_evalpy)
+- [Paraphrasing Defense](#a-paraphrase-defense-defense_paraphrase_evalpy)
+- [Filtering Defense](#b-filtering-defense-filtering_defensepy)
+- [Metric Computation](#3-compute-metrics-compute_metricspy)
+- [Plotting and Visualization](#4-visualize-results-plot_overthink_defenses_using_paraphrase_and_filteringpy)
+
+#### Experimental Design
+- [Model and Experimental Setup](#model-and-experimental-setup-with-design-justification)
+- [Dataset Rationale](#dataset-and-rationale)
+- [Pipeline Architecture](#pipeline-architecture-overview)
+
+
+#### Evaluation
+- [Evaluation Methodology](#evaluation-methodology)
+
+#### Results
+- [Overthinking / Token Overhead](#results-and-inference)
+- [Slowdown Analysis](#slowdown-for-attacked-prompts)
+- [Filtering Defense Analysis](#effect-of-filtering-defense-on-token-usage)
+- [Paraphrasing Defense Analysis](#effect-of-paraphrasing-defense-on-token-usage)
+
+#### Extra Credit
+- [Web-Based Resource Overhead Attack](#extra-credit)
+
+#### Administrative
+- [Limitations](#limitations)
+- [Future Work](#future-work)
+- [My Learnings](#my-learnings)
+- [AI Disclosure](#ai-disclosure)
+
 
 ---
 
@@ -647,15 +675,7 @@ Mean (average) tokens over all `N` items:
 </div>
 
 #### Transcript of the results is [here](./results_comparison_table.csv):
-
----
-
-## Limitations and Future Work
-
-
-**Limitations:**
-
-- The dataset is small (8 prompts) and focused on job reasoning, which enables deep qualitative analysis but limits statistical generalizability to broader domains or larger populations.
+pulations.
 - All prompts are crafted by me, but may not capture the full diversity of real-world job reasoning or adversarial attack strategies.
 - Only a limited set of attack types (Sudoku, MDP decoys) and defense mechanisms (paraphrasing, filtering) are explored; other adversarial techniques and mitigation strategies remain untested.
 - Evaluation is based on a single instruct-tuned model (Mistral-7B-Instruct) and specific generation settings, so results may not transfer directly to other models or configurations.
