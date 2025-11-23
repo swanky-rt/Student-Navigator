@@ -215,6 +215,7 @@ python plot_overthink_defenses_using_paraphrase_and_filtering.py
     - Helps visualize the effectiveness of defenses in reducing unnecessary reasoning/overthinking.
 
 ---
+
 ## Model and Experimental Setup with Design Justification
 ### Dataset and Rationale
 
@@ -310,7 +311,7 @@ For each model output, I compute the number of reasoning tokens as the differenc
 
 ---
 
-## Result Evaluation
+## Evaluation Methodology
 
 **How Reasoning Tokens and Answers Are Parsed:**
 For each question, I designed the prompt to require the model to output its reasoning and answer in a strict, parseable format using `<REASONING>...</REASONING>` and `<ANSWER>...</ANSWER>` tags. The main reason I use an instruct-tuned model is to ensure that the output reliably follows this required format, making downstream parsing and metric computation robust and automatable.
@@ -352,6 +353,11 @@ This format ensures that the model outputs its reasoning and answer in clearly d
 - **Overthink (Reasoning Tokens):** 
     - Refers to the number of tokens in the model's reasoning output. This is computed as the difference in token count between the output and the input prompt, i.e., `reasoning_tokens = output_token_count - input_token_count`. 
     - A higher value means the model is providing more verbose or step-by-step reasoning, which can be a sign of overthinking, especially under attack or when defenses are applied. This metric is used to compare how much extra reasoning is induced by attacks or mitigated by defenses.
+
+---
+
+## Results and Inference
+
 
 ---
 
