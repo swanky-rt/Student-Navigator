@@ -17,15 +17,13 @@ It supports:
 Example usage:
 
   # Defend only Sudoku attack
-  python defense_paraphrase_eval.py --csv job_reasoning_questions.csv --variant sudoku --out-sudoku results_defended_paraphrase_sudoku.csv
+  python defense_paraphrase_eval.py --csv artifacts/job_reasoning_questions.csv --variant sudoku --out-sudoku artifacts/results_defended_paraphrase_sudoku.csv
 
   # Defend only MDP attack
-  python defense_paraphrase_eval.py --csv job_reasoning_questions.csv --variant MDP --out-mdp results_defended_paraphrase_mdp.csv
+  python defense_paraphrase_eval.py --csv artifacts/job_reasoning_questions.csv --variant MDP --out-mdp artifacts/results_defended_paraphrase_mdp.csv
 
   # Run both (writes both outputs)
-  python defense_paraphrase_eval.py --csv job_reasoning_questions.csv --variant both \
-      --out-sudoku results_defended_paraphrase_sudoku.csv \
-      --out-mdp results_defended_paraphrase_mdp.csv
+  python defense_paraphrase_eval.py --csv artifacts/job_reasoning_questions.csv --variant both --out-sudoku artifacts/results_defended_paraphrase_sudoku.csv --out-mdp artifacts/results_defended_paraphrase_mdp.csv
 """
 
 import os
@@ -85,13 +83,13 @@ def paraphrase_text(text: str, tok, model, device: str) -> str:
         prompt,
         return_tensors="pt",
         truncation=True,
-        max_length=512,
+        max_length=2048,
     ).to(device)
 
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
-            max_new_tokens=256,
+            max_new_tokens=1024,
             num_beams=3,
             do_sample=False,
         )
