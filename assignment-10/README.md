@@ -646,13 +646,7 @@ Mean (average) tokens over all `N` items:
 
 </div>
 
-### Transcript of the results
-The overall summary of the results is given below and the transcript is [here](./results_comparison_table.csv):
-
-<div align="center">
-  <img src="./results_comparison_table.png" alt="Pipeline Architecture Diagram" width="600"><br>
-  <span style="display:block; margin-top:8px; font-size: 1.05em;"><b>Figure:</b>Overall Results</span>
-</div>
+### Transcript of the results: The overall summary of the results is given below and the transcript is [here](./results_comparison_table.csv):
 
 ---
 
