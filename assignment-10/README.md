@@ -358,6 +358,91 @@ This format ensures that the model outputs its reasoning and answer in clearly d
 
 ## Results and Inference
 
+### Overhead Tokens (Overthink) during Attack
+Two attacks were performed using Sudoku decoy and MDP Decoy:
+
+For each question `i`:
+
+- `T_base[i]`      = reasoning tokens for the baseline prompt  
+- `T_sudoku[i]`    = reasoning tokens for the Sudoku decoy prompt  
+- `T_mdp[i]`       = reasoning tokens for the MDP decoy prompt  
+
+Token overhead per item:
+
+- `Delta_sudoku[i] = T_sudoku[i] - T_base[i]`
+- `Delta_mdp[i]    = T_mdp[i]    - T_base[i]`
+
+Mean (average) tokens over all `N` items:
+
+- `mean_T_base   = (1/N) * sum_i T_base[i]`
+- `mean_T_sudoku = (1/N) * sum_i T_sudoku[i]`
+- `mean_T_mdp    = (1/N) * sum_i T_mdp[i]`
+
+
+**Summary Table: Reasoning Token Overhead and Multiplicative Increase**
+
+| Condition | Mean Tokens | Mean Overhead (vs Baseline) | × Baseline |
+|-----------|------------|-----------------------------|------------|
+| Baseline  | 360.38     | -                           | -     |
+| Sudoku    | 558.25     | +197.88                     | 1.55×      |
+| MDP       | 868.63     | +508.25                     | 2.41×      |
+
+**Inference:**
+
+- Both Sudoku and MDP decoy attacks reliably trigger overthinking, as shown by the substantial increase in mean reasoning tokens compared to baseline (from 360.38 to 558.25 for Sudoku and 868.63 for MDP).
+- The mean token overhead is +197.88 for Sudoku and +508.25 for MDP, indicating that the model generates significantly more reasoning under attack.
+- The multiplicative increase (1.55× for Sudoku, 2.41× for MDP) shows that MDP is a much stronger manipulator, eliciting more than double the baseline reasoning tokens, while Sudoku increases reasoning by about 55%.
+- In summary, both attacks induce unnecessary chain-of-thought reasoning, but MDP is the more effective decoy, causing the model to overthink to a much greater extent than Sudoku.
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center" width="45%">
+      <img src="./Plots/MDP/baseline_vs_attack_tokens_line.png" alt="Baseline vs MDP — Token Usage" width="420"><br>
+      <b>Graph 1 — Baseline vs MDP (Token Usage)</b>
+    </td>
+    <td valign="top" width="55%" style="padding: 0 16px;">
+      This line plot compares <b>baseline reasoning tokens</b> vs <b>MDP-attack reasoning tokens</b> across 8 questions (Q1–Q8).<br>
+      <ol>
+        <li>For every question, MDP produces much more reasoning than baseline, sometimes more than <b>double</b>.</li>
+        <li>Q5 under MDP exceeds <b>1000 tokens</b>, while baseline stays around <b>320</b>. This shows that MDP’s structured, multi-step nature consistently <b>forces the model into extended chain-of-thought</b>.</li>
+        <li>The gap is large and stable across all items, confirming the MDP attack reliably triggers heavy overthinking.</li>
+      </ol>
+    </td>
+  </tr>
+</table>
+
+<br>
+
+<table>
+  <tr>
+    <td align="center" width="45%">
+      <img src="./Plots/Sudoku/baseline_vs_attack_tokens_line.png" alt="Baseline vs Sudoku — Token Usage" width="420"><br>
+      <b>Graph 2 — Baseline vs Sudoku (Token Usage)</b>
+    </td>
+    <td valign="top" width="55%" style="padding: 0 16px;">
+      This line plot compares <b>baseline tokens</b> vs <b>Sudoku-attack tokens</b> across Q1–Q8.<br>
+      <ol>
+        <li>Sudoku causes moderate overthinking. Most Sudoku values are <b>~150–300 tokens above baseline</b>, matching the average overhead of <b>+197.88 tokens</b>.</li>
+        <li>For Q3, Sudoku has <b>almost no overhead</b> (≈300 vs 325). Sometimes the model ignores a Sudoku decoy if it interprets it as  unrelated noise.</li>
+        <li>Q8 spike (Sudoku > 1000 tokens) where Sudoku suddenly forces <b>1,020+ tokens</b>, while baseline is only ~300. This matches the known behavior: <b>if the model internalizes the Sudoku structure, it "over-solves" the decoy</b>, generating long pseudo-reasoning chains.</li>
+        <li>Unlike MDP (which is consistently high), Sudoku oscillates, sometimes triggering overthinking, sometimes not.</li>
+      </ol>
+    </td>
+  </tr>
+</table>
+
+</div>
+
+**Anomalies with Justification:**
+
+- **Baseline variance:**  
+  One baseline prompt has unusually high reasoning length. This can happen when a long or messy prompt confuses the model, so it skips detailed chain-of-thought and jumps straight to the answer. It doesn’t change the overall pattern, because the overthinking overhead is large and consistent across items.
+
+- **Defense vs. utility tradeoff:**  
+  Filtering and paraphrasing defenses can produce *fewer* tokens than the baseline, because they may remove parts of the prompt that are actually needed. This reduces overthinking overhead but can also hurt answer quality — a classic tradeoff between **utility** and **defense against overhead attacks**.
+
 
 ---
 
