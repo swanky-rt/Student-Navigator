@@ -593,7 +593,7 @@ Mean (average) tokens over all `N` items:
 </div>
 
 
-### Effect of Filtering Defense on Token Usage
+### Effect of Filtering Defense on Token Usage ( attack using sudoku)
 <div align="center">
 
 <table>
@@ -613,6 +613,30 @@ Mean (average) tokens over all `N` items:
 </table>
 
 </div>
+
+### Effect of Filtering Defense on Token Usage( attack using MDP)
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center" width="45%">
+      <img src="https://github.com/user-attachments/assets/1d9c4635-0a8e-45e9-9924-eb9efb50eef6"
+           alt="Baseline vs MDP vs Filtering Defense — Token Usage"
+           width="420" /><br>
+      <b>Graph — Baseline vs MDP vs Filtering Defense (Token Usage)</b>
+    </td>
+    <td valign="top" width="55%" style="padding: 0 16px;">
+      <ul>
+        <li>The chart shows average reasoning token usage across all items: <b>Baseline ≈ 360 tokens</b>, <b>MDP Attack ≈ 900 tokens</b>, and <b>MDP Filtering Defense ≈ mid-200s</b>.</li>
+        <li>The MDP slowdown attack dramatically increases reasoning tokens relative to baseline, showing that inserting the gridworld MDP reliably drives the model into long, unnecessary chains of thought.</li>
+        <li>The Filtering Defense reduces average reasoning tokens well below baseline, indicating that it not only cancels the MDP-induced overthinking but also prunes some useful context—again illustrating a utility–defense tradeoff.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+</div>
+
 
 ### Effect of Paraphrasing Defense on Token Usage
 
