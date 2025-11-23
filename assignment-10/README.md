@@ -593,7 +593,7 @@ Mean (average) tokens over all `N` items:
 </div>
 
 
-### Effect of Filtering Defense on Token Usage ( attack using sudoku)
+### Effect of Filtering Defense on Token Usage
 <div align="center">
 
 <table>
@@ -614,7 +614,7 @@ Mean (average) tokens over all `N` items:
 
 </div>
 
-### Effect of Filtering Defense on Token Usage( attack using MDP)
+
 <div align="center">
 
 <table>
