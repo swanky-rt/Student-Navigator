@@ -646,7 +646,7 @@ Mean (average) tokens over all `N` items:
 
 </div>
 
-### Transcript of the results: The overall summary of the results is given below and the transcript is [here](./results_comparison_table.csv):
+#### Transcript of the results is [here](./results_comparison_table.csv):
 
 ---
 
