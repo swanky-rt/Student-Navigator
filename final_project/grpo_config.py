@@ -3,6 +3,7 @@ Configuration and constants for the GRPO Rule Agent MDP.
 """
 
 from typing import Dict, List
+from dataclasses import dataclass, field
 
 # 11 PII types (fixed order)
 PII_TYPES: List[str] = [
@@ -69,3 +70,30 @@ ACTION_COMPLEXITY = {
     1: 0.1,  # share only allowed
     2: 0.2,  # share all present
 }
+
+def materialize_shared_values(
+    shared_fields_by_group: Dict[str, List[str]],
+    pii_values: Dict[str, List[str]],
+) -> Dict[str, List[str]]:
+    """
+    Convert shared PII *types* (e.g., 'EMAIL', 'PHONE') into concrete values
+    (e.g., 'alice@example.com', '555-123-4567') using the pii_values dict.
+    """
+    result: Dict[str, List[str]] = {}
+    for group_name, types in shared_fields_by_group.items():
+        vals: List[str] = []
+        for t in types:
+            # extend in case there are multiple values of the same type
+            vals.extend(pii_values.get(t, []))
+        result[group_name] = vals
+    return result
+
+
+@dataclass
+class ManualInput:
+    present_fields: List[str]
+    scenario_name: str
+    allowed_fields_restaurant: List[str]
+    allowed_fields_bank: List[str]
+    # NEW: map PII type -> list of concrete values found in the conversation
+    pii_values: Dict[str, List[str]] = field(default_factory=dict)

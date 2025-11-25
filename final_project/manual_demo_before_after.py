@@ -19,7 +19,6 @@ from grpo_train import (
     evaluate_average_reward,
 )
 
-
 def print_decision(title, decision):
     print(f"=== {title} ===")
     print(f"Scenario: {decision.scenario_name}")
