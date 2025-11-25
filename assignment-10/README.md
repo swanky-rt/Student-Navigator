@@ -157,14 +157,16 @@ python defense_paraphrase_eval.py --csv job_reasoning_questions.csv --variant bo
     - `reasoning_tokens`: Number of tokens in the model's reasoning output (measures verbosity/overthinking).
     - `slowdown`: Ratio of reasoning tokens in the defended/attacked output to the baseline (higher = more verbose/slow).
 
-#### b) Filtering Defense (`filtering_defense.py`)
+#### b) Filtering Scripts (`filtering_defense.py, filtering_defense_mdp.py`)
 **What it does:**
 - Implements a lightweight LLM-based filtering defense to remove irrelevant or adversarial content from prompts before model evaluation.
 - Uses a small model for filtering and a large model for reasoning (with memory optimizations).
+- Similarly implemented another script for MDP type attacks as well.
 
 **Usage:**
 ```bash
 python filtering_defense.py --csv job_reasoning_questions.csv --out results_filtering.csv --limit 20
+python filtering_defense_mdp.py --csv job_reasoning_questions.csv --out results_filtering_mdp.csv --limit 20
 ```
 
 **Inputs:**
@@ -613,6 +615,30 @@ Mean (average) tokens over all `N` items:
 </table>
 
 </div>
+
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center" width="45%">
+      <img src="https://github.com/user-attachments/assets/1d9c4635-0a8e-45e9-9924-eb9efb50eef6"
+           alt="Baseline vs MDP vs Filtering Defense — Token Usage"
+           width="420" /><br>
+      <b>Graph — Baseline vs MDP vs Filtering Defense (Token Usage)</b>
+    </td>
+    <td valign="top" width="55%" style="padding: 0 16px;">
+      <ul>
+        <li>The chart shows average reasoning token usage across all items: <b>Baseline ≈ 360 tokens</b>, <b>MDP Attack ≈ 900 tokens</b>, and <b>MDP Filtering Defense ≈ mid-200s</b>.</li>
+        <li>The MDP slowdown attack dramatically increases reasoning tokens relative to baseline, showing that inserting the gridworld MDP reliably drives the model into long, unnecessary chains of thought.</li>
+        <li>The Filtering Defense reduces average reasoning tokens well below baseline, indicating that it not only cancels the MDP-induced overthinking but also prunes some useful context—again illustrating a utility–defense tradeoff.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+</div>
+
 
 ### Effect of Paraphrasing Defense on Token Usage
 
