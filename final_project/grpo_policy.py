@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from grpo_config import GROUPS, NUM_ACTIONS
+from utils.config import GROUPS, NUM_ACTIONS
 
 
 class RulePolicy(nn.Module):

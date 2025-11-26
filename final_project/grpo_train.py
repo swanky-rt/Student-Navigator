@@ -10,8 +10,8 @@ import pandas as pd
 import torch
 import torch.nn.functional as F
 
-from grpo_config import SCENARIOS, GROUP2TYPEIDX
-from grpo_mdp import fields_to_mask, build_state, apply_group_action, compute_group_reward
+from utils.config import SCENARIOS, GROUP2TYPEIDX
+from utils.mdp import fields_to_mask, build_state, apply_group_action, compute_group_reward
 from grpo_policy import RulePolicy
 
 
@@ -33,7 +33,7 @@ def parse_list_str(s) -> List[str]:
 
 
 def load_dataset_from_excel(path: str) -> List[DatasetRow]:
-    from grpo_config import PII_TYPES
+    from utils.config import PII_TYPES
     """
     Load the Excel dataset (sheet 'dataset') and produce masks for:
     - ground_truth       -> present_mask

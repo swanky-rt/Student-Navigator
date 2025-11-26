@@ -9,10 +9,10 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import torch.optim as optim
 
-from grpo_config import NUM_PII, NUM_SCENARIOS
-from grpo_mdp import ManualInput, decide_sharing_for_manual_input
-from grpo_policy import RulePolicy
-from grpo_train import (
+from utils.config import NUM_PII, NUM_SCENARIOS
+from utils.mdp import ManualInput, decide_sharing_for_manual_input
+from GRPO.grpo_policy import RulePolicy
+from GRPO.grpo_train import (
     load_dataset_from_excel,
     rollout_batch,
     policy_gradient_update,
@@ -117,7 +117,7 @@ def main():
     # Test 2: Banking – share all details
     # Here we imagine a conversation that contains *all* PII fields,
     # and allowed_bank = all fields (max-utility scenario).
-    from grpo_config import PII_TYPES
+    from utils.config import PII_TYPES
     present2 = list(PII_TYPES)  # all 11 PII types present
     allowed_rest2 = ["EMAIL", "PHONE"]  # still conservative for restaurant
     allowed_bank2 = list(PII_TYPES)  # bank is allowed to use everything
