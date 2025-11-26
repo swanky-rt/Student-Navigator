@@ -1,12 +1,10 @@
 """
-Training utilities for the GRPO Rule Agent.
+REAL GRPO training for the RulePolicy:
 
-This version implements a grouped PPO / GRPO-style update:
-- per-group rewards (identity/contact/financial/network)
-- per-group value heads
-- clipped policy objective
-- entropy bonus
-- optional KL regularization
+- Per-group reward (identity/contact/financial/network)
+- Per-group value heads
+- Per-group advantage normalization (grouped)
+- Per-group KL regularization
 """
 
 from dataclasses import dataclass
@@ -17,9 +15,9 @@ import pandas as pd
 import torch
 import torch.nn.functional as F
 
-from utils.config import SCENARIOS, GROUP2TYPEIDX
+from utils.config import SCENARIOS, GROUP2TYPEIDX, PII_TYPES, GROUPS
 from utils.mdp import fields_to_mask, build_state, apply_group_action, compute_group_reward
-from GroupedPPO.grpo_policy import RulePolicy
+from GRPO.grpo_policy import RulePolicy
 
 
 # ---------------------------------------------------------------------------
@@ -45,16 +43,14 @@ def parse_list_str(s) -> List[str]:
 
 def load_dataset_from_excel(path: str) -> List[DatasetRow]:
     """
-    Load the Excel dataset (sheet 'dataset') and produce masks for:
-    - ground_truth       -> present_mask
-    - allowed_restaurant -> allowed_mask_restaurant
-    - allowed_bank       -> allowed_mask_bank
+    Load Excel dataset (sheet 'dataset') and produce masks for:
 
-    We do a case-insensitive lookup of column names. For "bank", we fall back
-    to "allowed_bank" if present, else we treat all PII types as allowed.
+      - ground_truth       -> present_mask
+      - allowed_restaurant -> allowed_mask_restaurant
+      - allowed_bank       -> allowed_mask_bank
+
+    Column names are matched case-insensitively.
     """
-    from utils.config import PII_TYPES
-
     df = pd.read_excel(path, sheet_name="dataset")
     rows: List[DatasetRow] = []
 
@@ -63,31 +59,36 @@ def load_dataset_from_excel(path: str) -> List[DatasetRow]:
 
     gt_col = col_names.get("ground_truth")
     rest_col = col_names.get("allowed_restaurant")
-    bank_col = col_names.get("allowed_bank")
+    
+    bank_col = None
+    for c in df.columns:
+        if c not in [gt_col, rest_col] and not df[c].isna().all():
+            bank_col = c
+            break
+    if bank_col is None:
+        bank_col = rest_col  # fallback
 
     if gt_col is None:
-        raise ValueError("Expected a 'ground_truth' column in the dataset sheet.")
+        raise ValueError("Expected a 'ground_truth' column in 'dataset' sheet.")
     if rest_col is None:
-        raise ValueError("Expected an 'allowed_restaurant' column in the dataset sheet.")
+        raise ValueError("Expected an 'allowed_restaurant' column in 'dataset' sheet.")
 
     for _, row in df.iterrows():
         gt = parse_list_str(row.get(gt_col, ""))
 
-        # Start from what the dataset says
+        # Start from dataset annotation
         allowed_rest = parse_list_str(row.get(rest_col, ""))
 
-        # Allow explicit bank column if present, else default to 'all PII allowed'
+        # Bank allowed: either explicit column or default "all PII allowed"
         if bank_col is not None:
             allowed_bank = parse_list_str(row.get(bank_col, ""))
         else:
             allowed_bank = list(PII_TYPES)
 
-        # ---- Override policy goals for training if needed ----
-        # Example: ensure NAME is allowed in restaurant scenario
+        # Optionally enforce some training-side policies
         if "NAME" not in allowed_rest and "NAME" in gt:
             allowed_rest.append("NAME")
 
-        # Bank: treat *all* PII types as potentially allowed if no explicit col
         if bank_col is None:
             allowed_bank = list(PII_TYPES)
 
@@ -111,16 +112,17 @@ def load_dataset_from_excel(path: str) -> List[DatasetRow]:
 
 class Transition:
     """
-    Container to hold transitions for training.
+    Transition buffer for grouped RL.
 
-    Each element corresponds to one (state, group) decision:
+    Each element is *one* (state, group) decision:
+
         - state_vec: List[float]
         - group_name: str
         - action: int
         - reward: float
-        - old_log_prob: float
-        - old_value: float      (V_old(s, g))
-        - old_probs: List[float] (full old action distribution for KL)
+        - old_log_prob: float        (log π_old(a|s,g))
+        - old_value: float           (V_old(s,g))
+        - old_probs: List[float]     (π_old(.|s,g) for KL)
         - scenario_name: str
     """
 
@@ -159,7 +161,7 @@ class Transition:
 
 
 # ---------------------------------------------------------------------------
-# GRPO rollout: collect per-group transitions
+# GRPO rollout: per-group transitions
 # ---------------------------------------------------------------------------
 
 def rollout_batch_grpo(
@@ -168,15 +170,17 @@ def rollout_batch_grpo(
     batch_size: int = 64,
 ) -> Transition:
     """
-    Perform one batch of rollouts:
+    Perform one batch of GRPO rollouts.
 
-    - Sample a dataset row
-    - Sample a scenario (restaurant or bank)
-    - Build state
-    - For each PII group with present fields:
-        * sample action from current policy
-        * compute per-group reward
-        * store old log-prob, old value, old probs
+    For each of batch_size iterations:
+      - Sample a dataset row
+      - Sample a scenario (restaurant/bank)
+      - Build state
+      - For each group with present PII:
+          * sample action from π_old(.|s,g)
+          * compute shared fields via apply_group_action
+          * compute group reward
+          * store old log-prob, old value, old probs
     """
     trans = Transition()
     if not dataset_rows:
@@ -194,10 +198,10 @@ def rollout_batch_grpo(
             row.allowed_mask_restaurant if scenario_name == "restaurant" else row.allowed_mask_bank
         )
 
-        # Build state tensor
+        # Build state vector
         state_tensor = build_state(present_mask, scenario_id).to(device)  # (state_dim,)
 
-        # Forward pass to get logits and values per group
+        # Forward through policy to get π_old and V_old
         logits_by_group, values_by_group = policy(state_tensor.unsqueeze(0))
 
         for g, type_indices in GROUP2TYPEIDX.items():
@@ -205,18 +209,19 @@ def rollout_batch_grpo(
             if not any(present_mask[i] == 1 for i in type_indices):
                 continue
 
-            logits = logits_by_group[g]         # (1, num_actions)
-            value = values_by_group[g][0]       # scalar
-            probs = F.softmax(logits, dim=-1)   # (1, num_actions)
+            logits = logits_by_group[g]       # (1, num_actions)
+            value = values_by_group[g][0]     # scalar V_old(s,g)
+            probs = F.softmax(logits, dim=-1) # (1, num_actions)
 
             dist = torch.distributions.Categorical(probs=probs)
-            action_t = dist.sample()            # ()
+            action_t = dist.sample()          # ()
             action = int(action_t.item())
             old_log_prob = float(dist.log_prob(action_t).item())
             old_probs = probs.squeeze(0).detach().cpu().tolist()
 
-            # Apply action to compute which PII fields are shared
+            # Convert group action into shared PII indices
             shared_indices = apply_group_action(type_indices, present_mask, allowed_mask, action)
+
             reward = compute_group_reward(
                 group_name=g,
                 scenario_name=scenario_name,
@@ -237,61 +242,78 @@ def rollout_batch_grpo(
                 old_probs=old_probs,
                 scenario_name=scenario_name,
             )
+
     return trans
 
 
 # ---------------------------------------------------------------------------
-# Advantage computation
+# GRPO: grouped advantages
 # ---------------------------------------------------------------------------
 
-def _compute_returns_and_advantages(trans: Transition):
+def _compute_grouped_advantages(trans: Transition):
     """
-    For this 1-step MDP, the return is equal to the immediate reward.
-    Advantage uses a simple baseline: A = R - V_old.
+    Compute per-group advantages with group-wise normalization.
+
+    A_g = R_g - V_old(s,g),
+    then normalize A_g within each group separately.
     """
     if len(trans) == 0:
         return None, None
 
     rewards = torch.tensor(trans.rewards, dtype=torch.float32)
     values_old = torch.tensor(trans.old_values, dtype=torch.float32)
-    returns = rewards  # 1-step
-    advantages = returns - values_old
+    group_names = trans.group_names
 
-    # Optional normalization for stability
-    advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
-    return returns, advantages
+    returns = rewards.clone()  # 1-step MDP: return = immediate reward
+    raw_adv = returns - values_old  # (N,)
+
+    # Group-wise normalization: A_hat_g = (A_g - mean_g) / std_g
+    adv_norm = torch.zeros_like(raw_adv)
+    group_to_indices: Dict[str, List[int]] = {}
+    for idx, g in enumerate(group_names):
+        group_to_indices.setdefault(g, []).append(idx)
+
+    for g, idxs in group_to_indices.items():
+        idx_tensor = torch.tensor(idxs, dtype=torch.long)
+        a_g = raw_adv[idx_tensor]
+        mean_g = a_g.mean()
+        std_g = a_g.std() + 1e-8
+        adv_norm[idx_tensor] = (a_g - mean_g) / std_g
+
+    return returns, adv_norm
 
 
 # ---------------------------------------------------------------------------
-# GRPO / PPO-style update
+# REAL GRPO update (no PPO ratio/clipping)
 # ---------------------------------------------------------------------------
 
 def grpo_update(
     policy: RulePolicy,
     optimizer,
     transitions: Transition,
-    ppo_epochs: int = 4,
-    clip_eps: float = 0.2,
+    grpo_epochs: int = 4,
     value_coef: float = 0.5,
-    entropy_coef: float = 0.01,
     kl_coef: float = 0.1,
 ):
     """
-    Grouped PPO / GRPO update using per-group rewards.
+    REAL GRPO-style update:
 
     For each stored (state, group):
-        - compute ratio = π_new / π_old
-        - clipped surrogate objective
-        - value loss
-        - entropy bonus
-        - KL penalty between old and new group distributions
+
+        - Advantage: A_g = R_g - V_old(s,g) (group-wise normalized)
+        - Policy loss:   L_policy_g = -log π(a|s,g) * A_hat_g
+        - Value loss:    L_value_g  = (V(s,g) - R_g)^2
+        - KL penalty:    L_kl_g     = β * KL(π_old(.|s,g) || π(.|s,g))
+
+    Total loss = sum_g (L_policy_g + value_coef * L_value_g + L_kl_g),
+    averaged over all transitions.
     """
     if len(transitions) == 0:
         return
 
     device = next(policy.parameters()).device
 
-    returns, advantages = _compute_returns_and_advantages(transitions)
+    returns, advantages = _compute_grouped_advantages(transitions)
     returns = returns.to(device)
     advantages = advantages.to(device)
 
@@ -304,70 +326,61 @@ def grpo_update(
 
     N = len(transitions)
 
-    for _ in range(ppo_epochs):
+    for _ in range(grpo_epochs):
         optimizer.zero_grad()
 
         policy_losses = []
         value_losses = []
-        entropies = []
-        kls = []
+        kl_losses = []
 
         for idx in range(N):
-            s = states[idx].unsqueeze(0)      # (1, state_dim)
+            s = states[idx].unsqueeze(0)     # (1, state_dim)
             a = actions[idx]
-            adv = advantages[idx]
             ret = returns[idx]
-            old_lp = old_log_probs[idx]
-            old_probs = old_probs_all[idx]    # (num_actions,)
+            adv = advantages[idx]
+            old_probs = old_probs_all[idx]   # (num_actions,)
             g = group_names[idx]
 
             logits_by_group, values_by_group = policy(s)
-            logits = logits_by_group[g]       # (1, num_actions)
-            value = values_by_group[g][0]     # scalar
+            logits = logits_by_group[g]      # (1, num_actions)
+            value = values_by_group[g][0]    # scalar V(s,g)
 
-            probs = F.softmax(logits, dim=-1)  # (1, num_actions)
-            dist = torch.distributions.Categorical(probs=probs)
-            log_prob = dist.log_prob(a)
-            entropy = dist.entropy()
+            probs = torch.softmax(logits, dim=-1)  # (1, num_actions)
+            log_probs = torch.log(probs + 1e-8)
+            log_prob = log_probs[0, a]
 
-            # PPO ratio
-            ratio = torch.exp(log_prob - old_lp)
-
-            surr1 = ratio * adv
-            surr2 = torch.clamp(ratio, 1.0 - clip_eps, 1.0 + clip_eps) * adv
-            policy_loss = -torch.min(surr1, surr2)
+            # GRPO policy loss: no PPO ratio, just - log π(a|s,g) * A_hat_g
+            policy_loss = -log_prob * adv
 
             # Value loss
-            value_loss = F.mse_loss(value, ret)
+            value_loss = (value - ret).pow(2)
 
-            # KL between old and new distributions (per group)
+            # KL penalty between old and new distributions for this group
             new_probs = probs.squeeze(0)  # (num_actions,)
-            kl_term = torch.sum(
+            kl_g = torch.sum(
                 old_probs * (torch.log(old_probs + 1e-8) - torch.log(new_probs + 1e-8))
             )
 
             policy_losses.append(policy_loss)
             value_losses.append(value_loss)
-            entropies.append(entropy)
-            kls.append(kl_term)
+            kl_losses.append(kl_g)
 
         policy_loss = torch.stack(policy_losses).mean()
         value_loss = torch.stack(value_losses).mean()
-        entropy = torch.stack(entropies).mean()
-        kl = torch.stack(kls).mean()
+        kl_loss = torch.stack(kl_losses).mean()
 
-        loss = policy_loss + value_coef * value_loss - entropy_coef * entropy + kl_coef * kl
+        loss = policy_loss + value_coef * value_loss + kl_coef * kl_loss
         loss.backward()
         optimizer.step()
 
 
 # ---------------------------------------------------------------------------
-# Backwards-compatible wrappers
+# Backwards-compatible wrappers (names used by your demo)
 # ---------------------------------------------------------------------------
 
 def rollout_batch(policy: RulePolicy, dataset_rows: List[DatasetRow], batch_size: int = 64) -> Transition:
     """
-    Backwards-compatible name: now uses GRPO-style rollout.
+    Backwards-compatible wrapper: uses GRPO-style rollout.
     """
     return rollout_batch_grpo(policy, dataset_rows, batch_size=batch_size)
 
@@ -379,11 +392,9 @@ def policy_gradient_update(
     epochs: int = 3,
 ):
     """
-    Backwards-compatible name: now wraps the GRPO / PPO-style update.
-
-    `epochs` is mapped to `ppo_epochs`.
+    Backwards-compatible wrapper: now does REAL GRPO updates.
     """
-    return grpo_update(policy, optimizer, transitions, ppo_epochs=epochs)
+    return grpo_update(policy, optimizer, transitions, grpo_epochs=epochs)
 
 
 # ---------------------------------------------------------------------------
@@ -396,13 +407,12 @@ def evaluate_average_reward(
     num_samples: int = 200,
 ) -> float:
     """
-    Roughly estimate the average reward under the current policy by sampling.
+    Estimate average per-group reward under the current policy using greedy actions.
     """
     if not dataset_rows:
         return 0.0
 
     device = next(policy.parameters()).device
-
     total_reward = 0.0
     count = 0
 
@@ -424,7 +434,7 @@ def evaluate_average_reward(
                 continue
 
             logits = logits_by_group[g]
-            probs = F.softmax(logits, dim=-1)
+            probs = torch.softmax(logits, dim=-1)
             action = int(probs.argmax(dim=-1).item())
 
             shared_indices = apply_group_action(type_indices, present_mask, allowed_mask, action)
