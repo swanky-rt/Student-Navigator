@@ -70,7 +70,7 @@ def main():
     print_decision("Decision BEFORE training", before_decision)
 
     # --- Load dataset ---
-    excel_path = Path("690-Project-Dataset.xlsx")  # adjust if needed
+    excel_path = Path("final_project\\690-Project-Dataset.xlsx")  # adjust if needed
     if not excel_path.exists():
         print(f"[WARN] Dataset not found at {excel_path}. Training will be skipped.")
         return
