@@ -1,11 +1,82 @@
-"""
-Configuration and constants for the GRPO Rule Agent MDP.
-"""
+# # utils/config.py
+# """
+# Configuration and constants for the GRPO Rule Agent MDP.
+# """
 
-from typing import Dict, List
-from dataclasses import dataclass, field
+# from typing import Dict, List
+# from dataclasses import dataclass, field
 
-# 11 PII types (fixed order)
+# # 11 PII types (fixed order)
+# PII_TYPES: List[str] = [
+#     "NAME",
+#     "PHONE",
+#     "EMAIL",
+#     "DATE/DOB",
+#     "company",
+#     "location",
+#     "IP",
+#     "SSN",
+#     "CREDIT_CARD",
+#     "age",
+#     "sex",
+# ]
+# TYPE2IDX: Dict[str, int] = {t: i for i, t in enumerate(PII_TYPES)}
+# NUM_PII = len(PII_TYPES)
+
+# # Groups of PII fields
+# GROUPS: Dict[str, List[str]] = {
+#     "identity": ["NAME", "DATE/DOB", "age", "sex", "company", "location"],
+#     "contact": ["PHONE", "EMAIL"],
+#     "financial": ["SSN", "CREDIT_CARD"],
+#     "network": ["IP"],
+# }
+# GROUP2TYPEIDX: Dict[str, List[int]] = {
+#     g: [TYPE2IDX[t] for t in fields] for g, fields in GROUPS.items()
+# }
+
+# SCENARIOS = {
+#     0: "restaurant",
+#     1: "bank",
+# }
+# SCENARIO_NAME2ID = {v: k for k, v in SCENARIOS.items()}
+# NUM_SCENARIOS = len(SCENARIOS)
+
+# # Action meanings are implemented in apply_group_action()
+# NUM_ACTIONS = 3  
+
+# GROUP_WEIGHTS = {
+#     "financial": 1.5,
+#     "identity": 1.0,
+#     "contact": 1.2,
+#     "network": 1.0,
+# }
+
+# SCENARIO_WEIGHTS = {
+#     "restaurant": {"beta": 0.6, "alpha": 0.4},
+#     "bank": {"beta": 0.3, "alpha": 0.7},
+# }
+
+# LAMBDA_COMPLEXITY = 0.01
+# ACTION_COMPLEXITY = {
+#     0: 0.0,
+#     1: 0.1,
+#     2: 0.2,
+# }
+
+# @dataclass
+# class ManualInput:
+#     present_fields: List[str]
+#     scenario_name: str
+#     allowed_fields_restaurant: List[str]
+#     allowed_fields_bank: List[str]
+#     pii_values: Dict[str, List[str]] = field(default_factory=dict)
+
+
+# utils/config.py
+
+from typing import List, Dict
+
+# All PII types in fixed order
 PII_TYPES: List[str] = [
     "NAME",
     "PHONE",
@@ -19,81 +90,44 @@ PII_TYPES: List[str] = [
     "age",
     "sex",
 ]
-TYPE2IDX: Dict[str, int] = {t: i for i, t in enumerate(PII_TYPES)}
 
 NUM_PII = len(PII_TYPES)
 
-# Groups of PII fields
-GROUPS: Dict[str, List[str]] = {
-    "identity": ["NAME", "DATE/DOB", "age", "sex", "company", "location"],
-    "contact": ["PHONE", "EMAIL"],
-    "financial": ["SSN", "CREDIT_CARD"],
-    "network": ["IP"],
-}
-GROUP2TYPEIDX: Dict[str, List[int]] = {
-    g: [TYPE2IDX[t] for t in fields] for g, fields in GROUPS.items()
+TYPE2IDX = {t: i for i, t in enumerate(PII_TYPES)}
+
+# Scenarios
+SCENARIO_NAME2ID = {"restaurant": 0, "bank": 1}
+NUM_SCENARIOS = 2
+
+# Group definitions
+GROUPS = ["identity", "contact", "financial", "network"]
+
+GROUP2TYPEIDX = {
+    "identity": [TYPE2IDX["NAME"], TYPE2IDX["DATE/DOB"], TYPE2IDX["age"], TYPE2IDX["sex"]],
+    "contact": [TYPE2IDX["PHONE"], TYPE2IDX["EMAIL"]],
+    "financial": [TYPE2IDX["CREDIT_CARD"], TYPE2IDX["SSN"]],
+    "network": [TYPE2IDX["IP"], TYPE2IDX["company"], TYPE2IDX["location"]],
 }
 
-# Scenarios: Option A – only normal contexts (attack is eval-time, not a scenario bit)
-SCENARIOS = {
-    0: "restaurant",
-    1: "bank",  # corresponds to the second allowed set
+# Reward weights
+SCENARIO_WEIGHTS: Dict[str, Dict[str, float]] = {
+    "restaurant": {"alpha": 0.4, "beta": 0.6},
+    "bank": {"alpha": 0.7, "beta": 0.3},
 }
-SCENARIO_NAME2ID = {v: k for k, v in SCENARIOS.items()}
-NUM_SCENARIOS = len(SCENARIOS)
 
-# Actions per group
-NUM_ACTIONS = 3  # 0: share nothing, 1: share only allowed, 2: share all present
-
-# Group sensitivity weights (w_g)
 GROUP_WEIGHTS = {
-    "financial": 1.5,  # was 2.0
     "identity": 1.0,
-    "contact": 1.2,
+    "contact": 1.0,
+    "financial": 1.0,
     "network": 1.0,
 }
 
-# Scenario-specific (beta, alpha) for (privacy, utility)
-# Restaurant more conservative
-SCENARIO_WEIGHTS = {
-    # still privacy-leaning, but more balanced
-    "restaurant": {"beta": 0.6, "alpha": 0.4},
-    # bank scenario: strongly utility-oriented
-    "bank": {"beta": 0.3, "alpha": 0.7},
-}
+# Regularization
+LAMBDA_COMPLEXITY = 0.05
 
-# Make complexity penalty much smaller so "share allowed/all"
-# is not punished too much compared to utility gain.
-LAMBDA_COMPLEXITY = 0.01
+# Action cost
 ACTION_COMPLEXITY = {
-    0: 0.0,  # share nothing
-    1: 0.1,  # share only allowed
-    2: 0.2,  # share all present
+    0: 0.0,
+    1: 0.2,
+    2: 0.5,
 }
-
-def materialize_shared_values(
-    shared_fields_by_group: Dict[str, List[str]],
-    pii_values: Dict[str, List[str]],
-) -> Dict[str, List[str]]:
-    """
-    Convert shared PII *types* (e.g., 'EMAIL', 'PHONE') into concrete values
-    (e.g., 'alice@example.com', '555-123-4567') using the pii_values dict.
-    """
-    result: Dict[str, List[str]] = {}
-    for group_name, types in shared_fields_by_group.items():
-        vals: List[str] = []
-        for t in types:
-            # extend in case there are multiple values of the same type
-            vals.extend(pii_values.get(t, []))
-        result[group_name] = vals
-    return result
-
-
-@dataclass
-class ManualInput:
-    present_fields: List[str]
-    scenario_name: str
-    allowed_fields_restaurant: List[str]
-    allowed_fields_bank: List[str]
-    # NEW: map PII type -> list of concrete values found in the conversation
-    pii_values: Dict[str, List[str]] = field(default_factory=dict)

@@ -33,42 +33,36 @@ def parse_list_str(s) -> List[str]:
 
 
 def load_dataset_from_excel(path: str) -> List[DatasetRow]:
-    from utils.config import PII_TYPES
     """
-    Load the Excel dataset (sheet 'dataset') and produce masks for:
-    - ground_truth       -> present_mask
-    - allowed_restaurant -> allowed_mask_restaurant
-    - bank/other set     -> allowed_mask_bank (we heuristically pick a non-empty extra column)
+    Load dataset from CSV or Excel automatically.
+    Columns required:
+    - ground_truth
+    - allowed_restaurant
+    - allowed_bank
     """
-    df = pd.read_excel(path, sheet_name="dataset")
+
+    # Auto-detect CSV vs Excel
+    if path.lower().endswith(".csv"):
+        df = pd.read_csv(path)
+    else:
+        df = pd.read_excel(path, sheet_name="dataset")
+
     rows: List[DatasetRow] = []
 
+    # Normalize column names
     col_names = {c.lower(): c for c in df.columns}
-    gt_col = col_names.get("ground_truth", "ground_truth")
-    rest_col = col_names.get("allowed_restaurant", "allowed_restaurant")
 
-    bank_col = None
-    for c in df.columns:
-        if c not in [gt_col, rest_col] and not df[c].isna().all():
-            bank_col = c
-            break
-    if bank_col is None:
-        bank_col = rest_col  # fallback
+    gt_col = col_names.get("ground_truth")
+    rest_col = col_names.get("allowed_restaurant")
+    bank_col = col_names.get("allowed_bank")
+
+    if gt_col is None or rest_col is None or bank_col is None:
+        raise ValueError("Missing required columns: ground_truth, allowed_restaurant, allowed_bank")
 
     for _, row in df.iterrows():
         gt = parse_list_str(row.get(gt_col, ""))
-
-        # Start from what the dataset says
         allowed_rest = parse_list_str(row.get(rest_col, ""))
         allowed_bank = parse_list_str(row.get(bank_col, ""))
-
-        # ---- Override policy goals for training ----
-        # Restaurant: treat NAME as allowed (if present)
-        if "NAME" not in allowed_rest:
-            allowed_rest.append("NAME")
-
-        # Bank: treat *all* PII types as potentially allowed
-        allowed_bank = list(PII_TYPES)
 
         present_mask = fields_to_mask(gt)
         allowed_mask_rest = fields_to_mask(allowed_rest)
@@ -81,8 +75,8 @@ def load_dataset_from_excel(path: str) -> List[DatasetRow]:
                 allowed_mask_bank=allowed_mask_bank,
             )
         )
-    return rows
 
+    return rows
 
 class Transition:
     """
