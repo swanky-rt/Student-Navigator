@@ -276,9 +276,9 @@ python scripts/compare_all.py \
 
 ---
 
-##  7. File Structure and Outputs
+##  5. File Structure and Outputs
 
-### 7.1 Training Outputs
+### 5.1 Training Outputs
 
 ```
 models/
@@ -290,13 +290,13 @@ models/
 └── vanillarl_history.json     # Training history
 ```
 
-### 7.2 Evaluation Outputs
+### 5.2 Evaluation Outputs
 
 ```
 evaluation_results.json        # Full evaluation metrics
 ```
 
-### 7.3 Comparison Outputs
+### 5.3 Comparison Outputs
 
 ```
 results/
@@ -307,39 +307,25 @@ results/
 ```
 
 ---
+## 6. Endpoint for the RL model
+```bash
+# Command line - plain output
+python endpoint.py --algorithm grpo --directive balanced --domain bank
 
-##  8. Understanding Outputs
+# Command line - JSON output
+python endpoint.py --algorithm grpo --directive strictly --domain bank --json
 
-### Training History (`*_history.json`)
-```json
-{
-  "iterations": [10, 20, 30, ...],
-  "rewards": [0.5, 0.6, 0.7, ...]
-}
+# As a Python function
+from endpoint import get_regex
+result = get_regex("grpo", "balanced", "bank")
+# Returns: ['PHONE', 'EMAIL', 'DATE/DOB', 'SSN', 'CREDIT_CARD']
 ```
 
-### Evaluation Results (`evaluation_results.json`)
-```json
-{
-  "algorithm": "grpo",
-  "average_reward": 0.85,
-  "restaurant_metrics": {
-    "utility": 0.95,
-    "privacy": 0.98,
-    "privacy_breach_rate": 0.02
-  },
-  "bank_metrics": {
-    "utility": 0.92,
-    "privacy": 0.95,
-    "privacy_breach_rate": 0.05
-  }
-}
-```
-
-### Regex Pattern
-- Format: `PII_TYPE_1 | PII_TYPE_2 | ...`
-- Example: `EMAIL | PHONE | DATE/DOB | SSN | CREDIT_CARD`
-
+Features:
+- Takes algorithm, directive, and domain as input
+- Returns regex as a list of PII types
+- Supports JSON output with --json flag
+- Can be imported and used as a function
 ---
 
 For more details, see:
