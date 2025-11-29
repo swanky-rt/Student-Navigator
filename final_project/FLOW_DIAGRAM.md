@@ -5,16 +5,16 @@
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    DATASET                                      │
-│  File: 690-Project-Dataset-final.csv (15,805 rows)               │
+│  File: 690-Project-Dataset-final.csv (15,805 rows)              │
 │  Row: {ground_truth, allowed_restaurant, allowed_bank}          │
 │  Example:                                                       │
 │    ground_truth = [NAME, PHONE, EMAIL, SSN]                     │
 │    allowed_restaurant = [PHONE, EMAIL]                          │
 │    allowed_bank = [EMAIL, PHONE, SSN]                           │
 │                                                                 │
-│  Frequencies (optimized for utility tradeoff):                 │
-│    EMAIL: 99.8%, PHONE: 64.6%                                  │
-│    DATE/DOB: 48.4%, SSN: 41.9%, CREDIT_CARD: 41.9%             │
+│  Frequencies (optimized for utility tradeoff):                  │
+│    EMAIL: 99.8%, PHONE: 64.6%                                   │
+│    DATE/DOB: 48.4%, SSN: 41.9%, CREDIT_CARD: 41.9%              │
 └─────────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────────┐
@@ -27,8 +27,8 @@
 └─────────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│                    POLICY NETWORK                                │
-│                                                                  │
+│                    POLICY NETWORK                               │
+│                                                                 │
 │  ┌──────────────────────────────────────────┐                   │
 │  │  Shared Encoder: MLP(13 → 64 → 64)       │                   │
 │  └──────────────────────────────────────────┘                   │
@@ -44,7 +44,7 @@
 │  │    Policy: Linear(64 → 3) per group      │                   │
 │  │    Value: Linear(64 → 1) per group       │                   │
 │  │    (VanillaRL: no value head)            │                   │
-│  └──────────────────────────────────────────┘                  │
+│  └──────────────────────────────────────────┘                   │
 └─────────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────────┐
