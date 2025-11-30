@@ -18,7 +18,8 @@ LABEL_MAP = {
     "GPE": "location",
     "LOC": "location",
     "DATE": "DATE/DOB",
-    # if you later encode age/sex separately, you can add mappings here
+    "AGE": "age",
+    "SEX": "sex",
 }
 
 

@@ -42,6 +42,18 @@ CREDIT_CARD_LAST4_RE = re.compile(
     r"(?:(?:xxxx|XXXX|\*{4}|last\s+4(?:\s+digits)?\s*[:\-]?)\s*)(\d{4})"
 )
 
+# Age pattern: "25 years old", "age 25", "age is 33", "aged 25", "25 yo", "25 y/o"
+AGE_RE = re.compile(
+    r"\b(?:age[d]?\s*(?:is\s*)?:?\s*(\d{1,3})|(?<!\d)(\d{1,3})\s*(?:years?\s*old|y/?o|yrs?\s*old))\b",
+    re.IGNORECASE
+)
+
+# Sex/Gender pattern: explicit gender mentions
+SEX_RE = re.compile(
+    r"\b(male|female)\b",
+    re.IGNORECASE
+)
+
 # -------------------------
 # File names
 # -------------------------
@@ -128,6 +140,33 @@ def extract_regex_pii(text: str):
                 "label": "CREDIT_CARD_4",
                 "start": m.start(1),
                 "end": m.end(1),
+                "source": "regex",
+            }
+        )
+
+    # Age
+    for m in AGE_RE.finditer(text):
+        # group(1) is from "age 25" pattern, group(2) is from "25 years old" pattern
+        age_val = m.group(1) if m.group(1) else m.group(2)
+        if age_val:
+            results.append(
+                {
+                    "text": age_val,
+                    "label": "AGE",
+                    "start": m.start(1) if m.group(1) else m.start(2),
+                    "end": m.end(1) if m.group(1) else m.end(2),
+                    "source": "regex",
+                }
+            )
+
+    # Sex/Gender
+    for m in SEX_RE.finditer(text):
+        results.append(
+            {
+                "text": m.group(),
+                "label": "SEX",
+                "start": m.start(),
+                "end": m.end(),
                 "source": "regex",
             }
         )
