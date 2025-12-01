@@ -55,6 +55,12 @@ SEX_RE = re.compile(
     re.IGNORECASE
 )
 
+# Date/DOB pattern: MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD, YYYY/MM/DD
+# Also matches dates with context like "DOB 01/01/1990" or "date of birth 01/01/1990"
+DATE_RE = re.compile(
+    r"\b(?:\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}[/-]\d{1,2}[/-]\d{1,2})\b"
+)
+
 # -------------------------
 # False positive filters
 # -------------------------
@@ -193,6 +199,26 @@ def extract_regex_pii(text: str):
             }
         )
 
+    # Date/DOB - but skip if it overlaps with IP address (IP addresses look like dates)
+    ip_spans = [(m.start(), m.end()) for m in IP_RE.finditer(text)]
+    for m in DATE_RE.finditer(text):
+        date_start, date_end = m.start(), m.end()
+        # Check if this date overlaps with an IP address
+        overlaps_ip = any(
+            ip_start <= date_start < ip_end or ip_start < date_end <= ip_end
+            for ip_start, ip_end in ip_spans
+        )
+        if not overlaps_ip:
+            results.append(
+                {
+                    "text": m.group(),
+                    "label": "DATE",
+                    "start": m.start(),
+                    "end": m.end(),
+                    "source": "regex",
+                }
+            )
+
     return results
 
 
@@ -205,6 +231,7 @@ def filter_spacy_false_positives(entities: list, regex_entities: list) -> list:
     4. Emails detected as GPE/PERSON/ORG (prefer regex EMAIL)
     5. Credit card last 4 detected as DATE (prefer regex CREDIT_CARD_4)
     6. Age phrases like "age 29" detected as DATE (prefer regex AGE)
+    7. Dates incorrectly labeled as PERSON (prefer regex DATE)
     """
     # Build a set of regex spans for overlap checking
     regex_spans = {(e["start"], e["end"], e["label"]) for e in regex_entities}
@@ -233,27 +260,60 @@ def filter_spacy_false_positives(entities: list, regex_entities: list) -> list:
             if is_substring or text.isdigit():
                 continue
 
-        # 4. Filter spaCy entities that overlap with regex matches (prefer regex)
+        # 4. Filter PERSON labels that look like dates (e.g., "07/04/1991" detected as PERSON)
+        if label == "PERSON" and DATE_RE.fullmatch(text):
+            continue
+
+        # 5. Filter spaCy entities that overlap with regex matches (prefer regex)
         # This handles: IP as DATE, emails as GPE/PERSON, etc.
         overlaps_regex = False
         for rs, re, rlabel in regex_spans:
             # Check if spans overlap significantly
             if start < re and end > rs:  # overlapping
                 # Prefer regex for specific types
-                if rlabel in {"IP_ADDRESS", "EMAIL", "PHONE", "SSN", "CREDIT_CARD_16", "CREDIT_CARD_4", "AGE"}:
+                if rlabel in {"IP_ADDRESS", "EMAIL", "PHONE", "SSN", "CREDIT_CARD_16", "CREDIT_CARD_4", "AGE", "DATE"}:
                     overlaps_regex = True
                     break
         if overlaps_regex:
             continue
 
-        # 5. Filter "age X" detected as DATE by spaCy (regex AGE is better)
+        # 6. Filter "age X" detected as DATE by spaCy (regex AGE is better)
         if label == "DATE" and text.lower().startswith("age "):
             continue
 
-        # 6. Filter temporal phrases that aren't actual PII dates
+        # 7. Filter temporal phrases that aren't actual PII dates
         if label == "DATE" and text.lower() in {"last week", "yesterday", "today", "tomorrow", "last month", "last year"}:
             continue
 
+        # 8. Normalize FAC (Facility) labels to ORG for company names
+        if label == "FAC":
+            ent = ent.copy()  # Don't modify the original
+            ent["label"] = "ORG"
+
+        filtered.append(ent)
+
+    return filtered
+
+
+def filter_redundant_credit_card_last4(entities: list) -> list:
+    """
+    Remove CREDIT_CARD_4 entities when a CREDIT_CARD_16 already contains those digits.
+    This avoids duplicate detection like "5555 4444 3333 2222" + "2222".
+    """
+    # Find all CREDIT_CARD_16 spans and their last 4 digits
+    cc16_entities = [e for e in entities if e["label"] == "CREDIT_CARD_16"]
+    cc16_last4_digits = set()
+    for cc in cc16_entities:
+        # Extract last 4 digits from the credit card number
+        digits_only = ''.join(c for c in cc["text"] if c.isdigit())
+        if len(digits_only) >= 4:
+            cc16_last4_digits.add(digits_only[-4:])
+
+    # Filter out CREDIT_CARD_4 if its digits match any CREDIT_CARD_16's last 4
+    filtered = []
+    for ent in entities:
+        if ent["label"] == "CREDIT_CARD_4" and ent["text"] in cc16_last4_digits:
+            continue
         filtered.append(ent)
 
     return filtered
@@ -323,11 +383,14 @@ def extract_pii(text: str) -> str:
     # 3) Filter spaCy false positives
     filtered_spacy = filter_spacy_false_positives(spacy_entities, regex_entities)
 
-    # 4) Combine and deduplicate
-    all_entities = filtered_spacy + regex_entities
+    # 4) Filter redundant CREDIT_CARD_4 when CREDIT_CARD_16 is present
+    filtered_regex = filter_redundant_credit_card_last4(regex_entities)
+
+    # 5) Combine and deduplicate
+    all_entities = filtered_spacy + filtered_regex
     deduplicated = deduplicate_entities(all_entities)
 
-    # 5) Return as JSON string
+    # 6) Return as JSON string
     return json.dumps(deduplicated, ensure_ascii=False)
 
 
