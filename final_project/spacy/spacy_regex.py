@@ -57,8 +57,8 @@ SEX_RE = re.compile(
 # -------------------------
 # File names
 # -------------------------
-INPUT_CSV = "dataset.csv"
-OUTPUT_CSV = "output_with_pii_sp_regex.csv"
+INPUT_CSV = "690-Project-Dataset-final.csv"
+OUTPUT_CSV = "spacy/output_spacy_regex.csv"
 
 
 def extract_regex_pii(text: str):
