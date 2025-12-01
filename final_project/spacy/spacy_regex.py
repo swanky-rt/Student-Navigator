@@ -71,6 +71,25 @@ FALSE_POSITIVE_ORG_TEXTS = {"SSN", "DOB", "IP", "ssn", "dob", "ip"}
 # that are substrings of phone/SSN matches
 MIN_CARDINAL_LENGTH = 4  # Filter out 3-digit area codes
 
+# Credit card brand names that spaCy incorrectly labels as ORG or GPE
+# These are not PII themselves, just context
+CREDIT_CARD_BRANDS = {"visa", "mastercard", "amex", "discover", "american express"}
+
+# Street suffixes to detect addresses incorrectly labeled as PERSON
+STREET_SUFFIXES = {"st", "st.", "street", "ave", "ave.", "avenue", "rd", "rd.", "road", 
+                   "blvd", "blvd.", "boulevard", "ln", "ln.", "lane", "dr", "dr.", "drive",
+                   "ct", "ct.", "court", "pl", "pl.", "place", "way", "cir", "circle"}
+
+# Regex to detect name context - phrases that indicate the following text is a person's name
+# Matches: "name", "my name is", "I'm", "I am", "this is", "called", "named"
+NAME_CONTEXT_RE = re.compile(
+    r"(?:(?:my\s+)?name\s+(?:is\s+)?|I'm\s+|I\s+am\s+|this\s+is\s+|called\s+|named\s+)$",
+    re.IGNORECASE
+)
+
+# Pattern to check if text looks like a person's name (First Last, each capitalized)
+PERSON_NAME_PATTERN = re.compile(r"^[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+$")
+
 # -------------------------
 # File names
 # -------------------------
@@ -222,7 +241,7 @@ def extract_regex_pii(text: str):
     return results
 
 
-def filter_spacy_false_positives(entities: list, regex_entities: list) -> list:
+def filter_spacy_false_positives(entities: list, regex_entities: list, original_text: str = "") -> list:
     """
     Filter out known spaCy false positives:
     1. SSN/DOB/IP labels detected as ORG
@@ -232,6 +251,9 @@ def filter_spacy_false_positives(entities: list, regex_entities: list) -> list:
     5. Credit card last 4 detected as DATE (prefer regex CREDIT_CARD_4)
     6. Age phrases like "age 29" detected as DATE (prefer regex AGE)
     7. Dates incorrectly labeled as PERSON (prefer regex DATE)
+    8. Credit card brands (Visa, Mastercard) labeled as ORG/GPE - not PII
+    9. Street names incorrectly labeled as PERSON (e.g., "Broad St")
+    10. Entities labeled as ORG/PRODUCT that are preceded by "name" context → relabel as PERSON
     """
     # Build a set of regex spans for overlap checking
     regex_spans = {(e["start"], e["end"], e["label"]) for e in regex_entities}
@@ -285,7 +307,30 @@ def filter_spacy_false_positives(entities: list, regex_entities: list) -> list:
         if label == "DATE" and text.lower() in {"last week", "yesterday", "today", "tomorrow", "last month", "last year"}:
             continue
 
-        # 8. Normalize FAC (Facility) labels to ORG for company names
+        # 8. Filter credit card brands labeled as ORG or GPE (not PII, just context)
+        if label in {"ORG", "GPE"} and text.lower() in CREDIT_CARD_BRANDS:
+            continue
+
+        # 9. Filter street names incorrectly labeled as PERSON
+        # Check if text ends with a street suffix (e.g., "Broad St", "Main Ave")
+        if label == "PERSON":
+            text_lower = text.lower()
+            words = text_lower.split()
+            if len(words) >= 1 and words[-1] in STREET_SUFFIXES:
+                continue
+
+        # 10. Relabel ORG/PRODUCT/FAC as PERSON if preceded by name context
+        # e.g., "and name Avery Campbell" → Avery Campbell should be PERSON
+        # Note: spaCy sometimes labels names as FAC (Facility) or ORG
+        if label in {"ORG", "PRODUCT", "FAC"} and original_text and PERSON_NAME_PATTERN.match(text):
+            # Check the text before this entity for name context
+            prefix_text = original_text[:start]
+            if NAME_CONTEXT_RE.search(prefix_text):
+                ent = ent.copy()
+                ent["label"] = "PERSON"
+                label = "PERSON"  # Update local variable to avoid FAC→ORG conversion below
+
+        # 11. Normalize FAC (Facility) labels to ORG for company names
         if label == "FAC":
             ent = ent.copy()  # Don't modify the original
             ent["label"] = "ORG"
@@ -380,8 +425,8 @@ def extract_pii(text: str) -> str:
     # 2) Regex-based PII
     regex_entities = extract_regex_pii(text)
 
-    # 3) Filter spaCy false positives
-    filtered_spacy = filter_spacy_false_positives(spacy_entities, regex_entities)
+    # 3) Filter spaCy false positives (pass original text for context-aware filtering)
+    filtered_spacy = filter_spacy_false_positives(spacy_entities, regex_entities, text)
 
     # 4) Filter redundant CREDIT_CARD_4 when CREDIT_CARD_16 is present
     filtered_regex = filter_redundant_credit_card_last4(regex_entities)
