@@ -37,9 +37,9 @@ CREDIT_CARD_16_RE = re.compile(
     r"\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b"
 )
 
-# Credit card last 4: e.g. "xxxx1234", "XXXX1234", "**** 1234", "last 4: 1234", "ending 1234", "card ending 1234"
+# Credit card last 4: e.g. "xxxx1234", "XXXX1234", "**** 1234", "last 4: 1234", "ending 1234", "card ending 1234", "ends in 1234"
 CREDIT_CARD_LAST4_RE = re.compile(
-    r"(?:(?:xxxx|XXXX|\*{4}|last\s+4(?:\s+digits)?\s*[:\-]?|(?:card\s+)?ending(?:\s+in)?)\s*)(\d{4})",
+    r"(?:(?:xxxx|XXXX|\*{4}|last\s+4(?:\s+digits)?\s*[:\-]?|(?:card\s+)?end(?:s|ing)(?:\s+in)?)\s*)(\d{4})",
     re.IGNORECASE
 )
 
@@ -59,6 +59,14 @@ SEX_RE = re.compile(
 # Also matches dates with context like "DOB 01/01/1990" or "date of birth 01/01/1990"
 DATE_RE = re.compile(
     r"\b(?:\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}[/-]\d{1,2}[/-]\d{1,2})\b"
+)
+
+# Company domain pattern: matches "my company domain.com" style mentions
+# Captures domain names that appear after "company" context
+# Examples: "my company apexanalytics.com", "company bluecloud.io"
+COMPANY_DOMAIN_RE = re.compile(
+    r"(?:my\s+)?company\s+([a-zA-Z0-9][-a-zA-Z0-9]*(?:\.[a-zA-Z0-9][-a-zA-Z0-9]*)*\.(?:com|io|ai|org|net|dev|co))\b",
+    re.IGNORECASE
 )
 
 # -------------------------
@@ -91,10 +99,23 @@ NAME_CONTEXT_RE = re.compile(
 PERSON_NAME_PATTERN = re.compile(r"^[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+$")
 
 # -------------------------
-# File names
+# File names and directories
 # -------------------------
-INPUT_CSV = "690-Project-Dataset-final.csv"
-OUTPUT_CSV = "pii_extraction/output_spacy_regex.csv"
+import os
+
+# Get script directory for relative paths
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(SCRIPT_DIR)
+
+# Output subdirectory
+EXTRACTED_PII_DIR = os.path.join(SCRIPT_DIR, "extracted_pii")
+
+# Datasets to process: (input_filename, output_name)
+DATASETS = [
+    ("690-Project-Dataset-final.csv", "dataset_final"),
+    ("690-Project-Dataset-balanced.csv", "dataset_balanced"),
+    ("690-Project-Dataset-1500-bank-balanced-55-50-57.csv", "dataset_1500_bank_balanced"),
+]
 
 
 def extract_regex_pii(text: str):
@@ -238,6 +259,19 @@ def extract_regex_pii(text: str):
                 }
             )
 
+    # Company domain names (e.g., "my company apexanalytics.com")
+    for m in COMPANY_DOMAIN_RE.finditer(text):
+        # group(1) captures just the domain name
+        results.append(
+            {
+                "text": m.group(1),
+                "label": "COMPANY_DOMAIN",
+                "start": m.start(1),
+                "end": m.end(1),
+                "source": "regex",
+            }
+        )
+
     return results
 
 
@@ -293,7 +327,7 @@ def filter_spacy_false_positives(entities: list, regex_entities: list, original_
             # Check if spans overlap significantly
             if start < re and end > rs:  # overlapping
                 # Prefer regex for specific types
-                if rlabel in {"IP_ADDRESS", "EMAIL", "PHONE", "SSN", "CREDIT_CARD_16", "CREDIT_CARD_4", "AGE", "DATE"}:
+                if rlabel in {"IP_ADDRESS", "EMAIL", "PHONE", "SSN", "CREDIT_CARD_16", "CREDIT_CARD_4", "AGE", "DATE", "COMPANY_DOMAIN"}:
                     overlaps_regex = True
                     break
         if overlaps_regex:
@@ -305,6 +339,11 @@ def filter_spacy_false_positives(entities: list, regex_entities: list, original_
 
         # 7. Filter temporal phrases that aren't actual PII dates
         if label == "DATE" and text.lower() in {"last week", "yesterday", "today", "tomorrow", "last month", "last year"}:
+            continue
+        
+        # 7b. Filter spaCy DATE that is just 4 digits (likely credit card last 4, year, etc.)
+        # Real dates should have separators like "/" or "-"
+        if label == "DATE" and text.isdigit() and len(text) == 4:
             continue
 
         # 8. Filter credit card brands labeled as ORG or GPE (not PII, just context)
@@ -440,15 +479,49 @@ def extract_pii(text: str) -> str:
 
 
 def main():
-    # Read the input CSV (must have column "conversation")
-    df = pd.read_csv(INPUT_CSV)
-
-    # Apply PII extraction
-    df["pii_entities"] = df["conversation"].apply(extract_pii)
-
-    # Save to new CSV
-    df.to_csv(OUTPUT_CSV, index=False)
-    print(f"Saved output to {OUTPUT_CSV}")
+    """
+    Process all configured datasets and save extracted PII to organized subdirectories.
+    """
+    # Create output directory if it doesn't exist
+    os.makedirs(EXTRACTED_PII_DIR, exist_ok=True)
+    
+    print("=" * 60)
+    print("PII EXTRACTION PIPELINE")
+    print("=" * 60)
+    
+    for input_filename, output_name in DATASETS:
+        input_path = os.path.join(PROJECT_DIR, input_filename)
+        output_path = os.path.join(EXTRACTED_PII_DIR, f"{output_name}_extracted.csv")
+        
+        print(f"\n--- Processing: {input_filename} ---")
+        
+        # Check if input file exists
+        if not os.path.exists(input_path):
+            print(f"  WARNING: Input file not found: {input_path}")
+            print(f"  Skipping this dataset.")
+            continue
+        
+        # Read the input CSV (must have column "conversation")
+        df = pd.read_csv(input_path)
+        
+        if "conversation" not in df.columns:
+            print(f"  WARNING: 'conversation' column not found in {input_filename}")
+            print(f"  Skipping this dataset.")
+            continue
+        
+        print(f"  Rows: {len(df)}")
+        
+        # Apply PII extraction
+        df["pii_entities"] = df["conversation"].apply(extract_pii)
+        
+        # Save to new CSV
+        df.to_csv(output_path, index=False)
+        print(f"  Saved to: {output_path}")
+    
+    print("\n" + "=" * 60)
+    print("PII extraction complete!")
+    print(f"Output directory: {EXTRACTED_PII_DIR}")
+    print("=" * 60)
 
 
 if __name__ == "__main__":

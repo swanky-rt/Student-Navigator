@@ -4,13 +4,23 @@ import os
 
 # Use paths relative to this script's directory
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-INPUT_CSV = os.path.join(SCRIPT_DIR, "output_spacy_regex.csv")
-OUTPUT_CSV = os.path.join(SCRIPT_DIR, "pii_metrics_output.csv")
+
+# Input/Output directories
+EXTRACTED_PII_DIR = os.path.join(SCRIPT_DIR, "extracted_pii")
+PII_METRICS_DIR = os.path.join(SCRIPT_DIR, "pii_metrics")
+
+# Datasets to process: (extracted_filename, metrics_output_name)
+# These correspond to the outputs from spacy_regex.py
+DATASETS = [
+    ("dataset_final_extracted.csv", "dataset_final_metrics"),
+    ("dataset_balanced_extracted.csv", "dataset_balanced_metrics"),
+    ("dataset_1500_bank_balanced_extracted.csv", "dataset_1500_bank_balanced_metrics"),
+]
 
 # Map raw spaCy/regex labels to canonical ground-truth labels.
 # Ground truth labels (from dataset): NAME, PHONE, EMAIL, DATE/DOB, company, location, SSN, CREDIT_CARD, IP, age, sex
 # Predicted labels (from spacy_regex.py): PERSON, EMAIL, PHONE, IP_ADDRESS, SSN, CREDIT_CARD_16, CREDIT_CARD_4,
-#                                          ORG, FAC, GPE, LOC, DATE, AGE, SEX
+#                                          ORG, FAC, GPE, LOC, DATE, AGE, SEX, COMPANY_DOMAIN
 LABEL_MAP = {
     # spaCy NER labels
     "PERSON": "NAME",
@@ -28,6 +38,7 @@ LABEL_MAP = {
     "DATE": "DATE/DOB",
     "AGE": "age",
     "SEX": "sex",
+    "COMPANY_DOMAIN": "company",  # Domain names mentioned as "my company xyz.com"
 }
 
 
@@ -113,21 +124,24 @@ def compute_row_metrics(y_true: set, y_pred: set):
     return tp, fp, fn, precision, recall, f1, exact_match
 
 
-def main():
+def compute_metrics_for_dataset(input_csv: str, output_csv: str, dataset_name: str) -> dict:
+    """
+    Compute PII extraction metrics for a single dataset.
+    Returns a summary dict of the metrics.
+    """
     # Check if input file exists
-    if not os.path.exists(INPUT_CSV):
-        print(f"Error: Input file not found: {INPUT_CSV}")
-        print("Please run spacy_regex.py first to generate the output file.")
-        return
+    if not os.path.exists(input_csv):
+        print(f"  WARNING: Input file not found: {input_csv}")
+        return None
     
-    df = pd.read_csv(INPUT_CSV)
+    df = pd.read_csv(input_csv)
     
     # Validate required columns
     required_columns = ["ground_truth", "pii_entities"]
     missing_columns = [col for col in required_columns if col not in df.columns]
     if missing_columns:
-        print(f"Error: Missing required columns: {missing_columns}")
-        return
+        print(f"  WARNING: Missing required columns: {missing_columns}")
+        return None
 
     # Containers for global (micro) stats
     total_tp = 0
@@ -185,8 +199,8 @@ def main():
     df["exact_match"] = exact_match_col
 
     # Save to CSV
-    df.to_csv(OUTPUT_CSV, index=False)
-    print(f"Saved metrics to {OUTPUT_CSV}")
+    df.to_csv(output_csv, index=False)
+    print(f"  Saved metrics to: {output_csv}")
 
     # Calculate metrics
     # Micro-averaged: aggregate all TP/FP/FN across dataset
@@ -206,24 +220,75 @@ def main():
     # Exact match accuracy
     exact_match_accuracy = sum(exact_match_col) / len(exact_match_col) if exact_match_col else 0.0
 
-    print("\n" + "="*50)
-    print("PII EXTRACTION EVALUATION METRICS")
-    print("="*50)
-    print(f"\nDataset size: {len(df)} rows")
-    print(f"Total TP: {total_tp}, FP: {total_fp}, FN: {total_fn}")
+    return {
+        "dataset": dataset_name,
+        "rows": len(df),
+        "total_tp": total_tp,
+        "total_fp": total_fp,
+        "total_fn": total_fn,
+        "micro_precision": micro_precision,
+        "micro_recall": micro_recall,
+        "micro_f1": micro_f1,
+        "macro_precision": macro_precision,
+        "macro_recall": macro_recall,
+        "macro_f1": macro_f1,
+        "exact_match_accuracy": exact_match_accuracy,
+        "exact_match_count": int(sum(exact_match_col)),
+    }
+
+
+def main():
+    """
+    Process all extracted PII datasets and compute metrics.
+    """
+    # Create output directory if it doesn't exist
+    os.makedirs(PII_METRICS_DIR, exist_ok=True)
     
-    print("\n--- Micro-averaged metrics (aggregated counts) ---")
-    print(f"Precision: {micro_precision:.4f}")
-    print(f"Recall:    {micro_recall:.4f}")
-    print(f"F1 score:  {micro_f1:.4f}")
+    print("=" * 60)
+    print("PII METRICS COMPUTATION PIPELINE")
+    print("=" * 60)
     
-    print("\n--- Macro-averaged metrics (per-row average) ---")
-    print(f"Precision: {macro_precision:.4f}")
-    print(f"Recall:    {macro_recall:.4f}")
-    print(f"F1 score:  {macro_f1:.4f}")
+    all_summaries = []
     
-    print(f"\n--- Exact Match Accuracy ---")
-    print(f"Accuracy:  {exact_match_accuracy:.4f} ({int(sum(exact_match_col))}/{len(exact_match_col)} rows)")
+    for extracted_filename, metrics_name in DATASETS:
+        input_path = os.path.join(EXTRACTED_PII_DIR, extracted_filename)
+        output_path = os.path.join(PII_METRICS_DIR, f"{metrics_name}.csv")
+        
+        print(f"\n--- Processing: {extracted_filename} ---")
+        
+        summary = compute_metrics_for_dataset(input_path, output_path, metrics_name)
+        
+        if summary:
+            all_summaries.append(summary)
+            print(f"  Rows: {summary['rows']}")
+            print(f"  TP: {summary['total_tp']}, FP: {summary['total_fp']}, FN: {summary['total_fn']}")
+            print(f"  Micro F1: {summary['micro_f1']:.4f}")
+            print(f"  Macro F1: {summary['macro_f1']:.4f}")
+            print(f"  Exact Match: {summary['exact_match_accuracy']:.4f}")
+    
+    # Save summary of all datasets
+    if all_summaries:
+        summary_df = pd.DataFrame(all_summaries)
+        summary_path = os.path.join(PII_METRICS_DIR, "all_datasets_summary.csv")
+        summary_df.to_csv(summary_path, index=False)
+        
+        print("\n" + "=" * 60)
+        print("SUMMARY ACROSS ALL DATASETS")
+        print("=" * 60)
+        print(f"\nSummary saved to: {summary_path}\n")
+        
+        for summary in all_summaries:
+            print(f"\n{summary['dataset']}:")
+            print(f"  Dataset size: {summary['rows']} rows")
+            print(f"  Total TP: {summary['total_tp']}, FP: {summary['total_fp']}, FN: {summary['total_fn']}")
+            print(f"  Micro-averaged: P={summary['micro_precision']:.4f}, R={summary['micro_recall']:.4f}, F1={summary['micro_f1']:.4f}")
+            print(f"  Macro-averaged: P={summary['macro_precision']:.4f}, R={summary['macro_recall']:.4f}, F1={summary['macro_f1']:.4f}")
+            print(f"  Exact Match: {summary['exact_match_accuracy']:.4f} ({summary['exact_match_count']}/{summary['rows']})")
+    
+    print("\n" + "=" * 60)
+    print("PII metrics computation complete!")
+    print(f"Output directory: {PII_METRICS_DIR}")
+    print("=" * 60)
 
 
 if __name__ == "__main__":
