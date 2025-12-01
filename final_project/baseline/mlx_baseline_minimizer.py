@@ -71,7 +71,7 @@ def minimize_pii_mlx(model, tokenizer, conversation, task, pii_fields, debug=Fal
     """
     import mlx.core as mx
     
-    prompt = create_minimizer_prompt(conversation, task, pii_fields)
+    prompt = create_minimizer_prompt(conversation, pii_fields, task)
     
     # Create sampler for temperature control
     sampler = make_sampler(temp=0.3, top_p=0.9)
