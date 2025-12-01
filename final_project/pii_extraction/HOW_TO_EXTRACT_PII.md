@@ -5,12 +5,14 @@ Extract PII from text based on domain-specific patterns learned by GRPO.
 ## Quick Start
 
 ```python
-from pii_extractor import extract_pii
+from pii_extraction.pii_extractor import extract_pii
 
 # Classifier provides domain → extract relevant PII
 entities = extract_pii("My SSN is 123-45-6789", domain="bank")
 # Returns: [{"text": "123-45-6789", "label": "SSN", "start": 10, "end": 21}]
 ```
+
+> **Note:** All paths (model files, imports) are resolved automatically relative to the project structure. Just ensure you're running from the `final_project/` directory or importing with the full module path `pii_extraction.pii_extractor`.
 
 ## How It Works
 
@@ -42,7 +44,7 @@ Extract PII from text, filtered by domain-specific GRPO patterns.
 **Returns:** List of entity dicts with `text`, `label`, `start`, `end`, `source`
 
 ```python
-from pii_extractor import extract_pii
+from pii_extraction.pii_extractor import extract_pii
 
 # Bank domain - extracts financial PII
 extract_pii("SSN: 123-45-6789, email: a@b.com", domain="bank")
@@ -63,7 +65,7 @@ Same parameters as `extract_pii`, but returns values grouped by PII type.
 **Returns:** Dict mapping PII type to list of extracted values
 
 ```python
-from pii_extractor import extract_pii_by_type
+from pii_extraction.pii_extractor import extract_pii_by_type
 
 extract_pii_by_type("Call 555-1234, SSN 123-45-6789", domain="bank")
 # {"PHONE": ["555-1234"], "SSN": ["123-45-6789"]}
@@ -72,17 +74,20 @@ extract_pii_by_type("Call 555-1234, SSN 123-45-6789", domain="bank")
 ## Command Line
 
 ```bash
+# Run from the final_project directory
+cd final_project
+
 # Extract from text
-python pii_extractor.py --domain bank --text "My SSN is 123-45-6789"
+python pii_extraction/pii_extractor.py --domain bank --text "My SSN is 123-45-6789"
 
 # With directive
-python pii_extractor.py --domain bank --directive strictly --text "My SSN is 123-45-6789"
+python pii_extraction/pii_extractor.py --domain bank --directive strictly --text "My SSN is 123-45-6789"
 
 # JSON output
-python pii_extractor.py --domain bank --text "My SSN is 123-45-6789" --json
+python pii_extraction/pii_extractor.py --domain bank --text "My SSN is 123-45-6789" --json
 
 # Demo with sample texts
-python pii_extractor.py --domain bank
+python pii_extraction/pii_extractor.py --domain bank
 ```
 
 **CLI Arguments:**

@@ -22,10 +22,20 @@ from pathlib import Path
 from typing import List, Dict, Any
 import json
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add project root to path for imports
+PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+sys.path.insert(0, str(Path(__file__).parent))  # Also add pii_extraction folder for local imports
 
 from spacy_regex import extract_pii as _extract_all_pii
-from scripts.endpoint import get_regex
+from scripts.endpoint import get_regex as _get_regex
+
+
+def get_regex(algorithm: str, directive: str, domain: str) -> list:
+    """Wrapper that passes absolute model path to endpoint.get_regex."""
+    model_path = PROJECT_ROOT / "models" / f"{algorithm}_model.pt"
+    return _get_regex(algorithm, directive, domain, model_path=str(model_path))
+
 
 # Label mappings: GRPO format <-> spacy_regex format
 GRPO_TO_SPACY = {

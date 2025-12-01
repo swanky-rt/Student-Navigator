@@ -94,7 +94,7 @@ PERSON_NAME_PATTERN = re.compile(r"^[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+$")
 # File names
 # -------------------------
 INPUT_CSV = "690-Project-Dataset-final.csv"
-OUTPUT_CSV = "spacy/output_spacy_regex.csv"
+OUTPUT_CSV = "pii_extraction/output_spacy_regex.csv"
 
 
 def extract_regex_pii(text: str):
