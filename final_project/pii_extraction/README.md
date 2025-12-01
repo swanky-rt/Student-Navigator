@@ -140,3 +140,27 @@ pii_types = get_regex("grpo", "balanced", "bank")
 pii_types = get_regex("grpo", "balanced", "restaurant")
 # ['PHONE', 'EMAIL']
 ```
+
+---
+
+## Running the Extraction Pipeline
+
+To process datasets and evaluate PII extraction performance:
+
+```bash
+# Step 1: Extract PII from datasets
+python pii_extraction/spacy_regex.py
+
+# Step 2: Compute metrics
+python pii_extraction/compute_pii_metrics.py
+
+# Step 3: Analyze errors
+python pii_extraction/analyze_errors.py
+```
+
+The pipeline processes CSV datasets located in `final_project/` (the project root) and outputs results to organized subdirectories within `pii_extraction/`:
+- `extracted_pii/` - PII extraction results
+- `pii_metrics/` - Performance metrics
+- `error_analysis/` - Error breakdowns
+
+All paths are resolved automatically relative to script locations.
