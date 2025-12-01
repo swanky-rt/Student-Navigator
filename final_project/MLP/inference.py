@@ -1,6 +1,6 @@
 import torch
 import os
-from context_agent_classifier import ContextAgentClassifier
+from MLP.context_agent_classifier import ContextAgentClassifier
 
 # Singleton pattern: Load the model once, keep it in memory
 _MODEL = None
