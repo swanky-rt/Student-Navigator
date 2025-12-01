@@ -37,9 +37,10 @@ CREDIT_CARD_16_RE = re.compile(
     r"\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b"
 )
 
-# Credit card last 4: e.g. "xxxx1234", "XXXX1234", "**** 1234", "last 4: 1234"
+# Credit card last 4: e.g. "xxxx1234", "XXXX1234", "**** 1234", "last 4: 1234", "ending 1234", "card ending 1234"
 CREDIT_CARD_LAST4_RE = re.compile(
-    r"(?:(?:xxxx|XXXX|\*{4}|last\s+4(?:\s+digits)?\s*[:\-]?)\s*)(\d{4})"
+    r"(?:(?:xxxx|XXXX|\*{4}|last\s+4(?:\s+digits)?\s*[:\-]?|(?:card\s+)?ending(?:\s+in)?)\s*)(\d{4})",
+    re.IGNORECASE
 )
 
 # Age pattern: "25 years old", "age 25", "age is 33", "aged 25", "25 yo", "25 y/o"
@@ -53,6 +54,16 @@ SEX_RE = re.compile(
     r"\b(male|female)\b",
     re.IGNORECASE
 )
+
+# -------------------------
+# False positive filters
+# -------------------------
+# SpaCy labels PII-related keywords as ORG incorrectly
+FALSE_POSITIVE_ORG_TEXTS = {"SSN", "DOB", "IP", "ssn", "dob", "ip"}
+
+# SpaCy extracts area codes or partial numbers as CARDINAL - filter short numbers
+# that are substrings of phone/SSN matches
+MIN_CARDINAL_LENGTH = 4  # Filter out 3-digit area codes
 
 # -------------------------
 # File names
@@ -71,6 +82,11 @@ def extract_regex_pii(text: str):
 
     results = []
 
+    # First, find credit card 16-digit matches to exclude from phone detection
+    credit_card_spans = []
+    for m in CREDIT_CARD_16_RE.finditer(text):
+        credit_card_spans.append((m.start(), m.end()))
+
     # Email
     for m in EMAIL_RE.finditer(text):
         results.append(
@@ -83,17 +99,23 @@ def extract_regex_pii(text: str):
             }
         )
 
-    # Phone
+    # Phone - but skip matches that overlap with credit card spans
     for m in PHONE_RE.finditer(text):
-        results.append(
-            {
-                "text": m.group(),
-                "label": "PHONE",
-                "start": m.start(),
-                "end": m.end(),
-                "source": "regex",
-            }
+        phone_start, phone_end = m.start(), m.end()
+        overlaps_cc = any(
+            cc_start <= phone_start < cc_end or cc_start < phone_end <= cc_end
+            for cc_start, cc_end in credit_card_spans
         )
+        if not overlaps_cc:
+            results.append(
+                {
+                    "text": m.group(),
+                    "label": "PHONE",
+                    "start": m.start(),
+                    "end": m.end(),
+                    "source": "regex",
+                }
+            )
 
     # IP address
     for m in IP_RE.finditer(text):
@@ -174,6 +196,103 @@ def extract_regex_pii(text: str):
     return results
 
 
+def filter_spacy_false_positives(entities: list, regex_entities: list) -> list:
+    """
+    Filter out known spaCy false positives:
+    1. SSN/DOB/IP labels detected as ORG
+    2. Area codes detected as CARDINAL (3-digit numbers that are part of phone matches)
+    3. IP addresses detected as DATE/CARDINAL (prefer regex IP_ADDRESS)
+    4. Emails detected as GPE/PERSON/ORG (prefer regex EMAIL)
+    5. Credit card last 4 detected as DATE (prefer regex CREDIT_CARD_4)
+    6. Age phrases like "age 29" detected as DATE (prefer regex AGE)
+    """
+    # Build a set of regex spans for overlap checking
+    regex_spans = {(e["start"], e["end"], e["label"]) for e in regex_entities}
+    regex_span_ranges = [(e["start"], e["end"]) for e in regex_entities]
+
+    filtered = []
+    for ent in entities:
+        text = ent["text"]
+        label = ent["label"]
+        start, end = ent["start"], ent["end"]
+
+        # 1. Filter SSN/DOB/IP labels as ORG
+        if label == "ORG" and text.upper() in {t.upper() for t in FALSE_POSITIVE_ORG_TEXTS}:
+            continue
+
+        # 2. Filter ORG that includes "IP " prefix (e.g., "IP 192.168.1.77")
+        if label == "ORG" and text.upper().startswith("IP "):
+            continue
+
+        # 3. Filter short CARDINAL values (likely area codes or partial matches)
+        if label == "CARDINAL" and len(text) < MIN_CARDINAL_LENGTH:
+            # Check if this CARDINAL is contained within a regex match
+            is_substring = any(
+                rs <= start and end <= re for rs, re in regex_span_ranges
+            )
+            if is_substring or text.isdigit():
+                continue
+
+        # 4. Filter spaCy entities that overlap with regex matches (prefer regex)
+        # This handles: IP as DATE, emails as GPE/PERSON, etc.
+        overlaps_regex = False
+        for rs, re, rlabel in regex_spans:
+            # Check if spans overlap significantly
+            if start < re and end > rs:  # overlapping
+                # Prefer regex for specific types
+                if rlabel in {"IP_ADDRESS", "EMAIL", "PHONE", "SSN", "CREDIT_CARD_16", "CREDIT_CARD_4", "AGE"}:
+                    overlaps_regex = True
+                    break
+        if overlaps_regex:
+            continue
+
+        # 5. Filter "age X" detected as DATE by spaCy (regex AGE is better)
+        if label == "DATE" and text.lower().startswith("age "):
+            continue
+
+        # 6. Filter temporal phrases that aren't actual PII dates
+        if label == "DATE" and text.lower() in {"last week", "yesterday", "today", "tomorrow", "last month", "last year"}:
+            continue
+
+        filtered.append(ent)
+
+    return filtered
+
+
+def deduplicate_entities(entities: list) -> list:
+    """
+    Remove duplicate entities that have the same span but different sources.
+    Prefer regex labels over spaCy for overlapping spans.
+    """
+    # Group by (start, end) span
+    span_to_entities = {}
+    for ent in entities:
+        span = (ent["start"], ent["end"])
+        if span not in span_to_entities:
+            span_to_entities[span] = []
+        span_to_entities[span].append(ent)
+
+    deduplicated = []
+    for span, ents in span_to_entities.items():
+        if len(ents) == 1:
+            deduplicated.append(ents[0])
+        else:
+            # Multiple entities for same span - prefer regex source
+            regex_ents = [e for e in ents if e["source"] == "regex"]
+            spacy_ents = [e for e in ents if e["source"] == "spacy"]
+
+            if regex_ents:
+                # Take the first regex match (they should be the same)
+                deduplicated.append(regex_ents[0])
+            else:
+                # No regex match, take first spaCy
+                deduplicated.append(spacy_ents[0])
+
+    # Sort by start position for consistent output
+    deduplicated.sort(key=lambda x: x["start"])
+    return deduplicated
+
+
 def extract_pii(text: str) -> str:
     """
     Combine spaCy entities + regex matches.
@@ -182,12 +301,13 @@ def extract_pii(text: str) -> str:
     if not isinstance(text, str):
         text = "" if text is None else str(text)
 
-    entities = []
+    spacy_entities = []
+    regex_entities = []
 
     # 1) spaCy NER
     doc = nlp(text)
     for ent in doc.ents:
-        entities.append(
+        spacy_entities.append(
             {
                 "text": ent.text,
                 "label": ent.label_,        # e.g. PERSON, ORG, GPE
@@ -198,10 +318,17 @@ def extract_pii(text: str) -> str:
         )
 
     # 2) Regex-based PII
-    entities.extend(extract_regex_pii(text))
+    regex_entities = extract_regex_pii(text)
 
-    # 3) Return as JSON string
-    return json.dumps(entities, ensure_ascii=False)
+    # 3) Filter spaCy false positives
+    filtered_spacy = filter_spacy_false_positives(spacy_entities, regex_entities)
+
+    # 4) Combine and deduplicate
+    all_entities = filtered_spacy + regex_entities
+    deduplicated = deduplicate_entities(all_entities)
+
+    # 5) Return as JSON string
+    return json.dumps(deduplicated, ensure_ascii=False)
 
 
 def main():
