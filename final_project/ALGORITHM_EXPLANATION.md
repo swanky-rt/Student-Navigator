@@ -495,6 +495,183 @@ After collecting batch_size experiences (e.g., 64):
 
 ---
 
+##  How Weights Are Trained: Gradient Descent
+
+### Overview
+All algorithms use **gradient descent** (specifically **Adam optimizer**) to update neural network weights. The process follows these steps:
+
+1. **Forward Pass**: Compute predictions and loss
+2. **Backward Pass**: Compute gradients via backpropagation
+3. **Gradient Clipping**: Prevent exploding gradients
+4. **Weight Update**: Update weights using optimizer
+
+### Step-by-Step Gradient Descent Process
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ STEP 1: FORWARD PASS                                         │
+└─────────────────────────────────────────────────────────────┘
+├─ Input: batch of states (shape: [batch_size, 13])
+├─ Policy network forward:
+│   ├─ state → encoder layers → hidden features
+│   └─ hidden → policy_head → logits (shape: [batch_size, 11])
+│
+├─ Convert logits to probabilities:
+│   └─ probs = sigmoid(logits)  # Each PII type gets a probability
+│
+├─ Sample actions from Bernoulli distribution:
+│   └─ actions ~ Bernoulli(probs)  # Binary vector [0,1,1,0,...]
+│
+└─ Compute log probabilities:
+    └─ log_probs = sum(log_prob(action_i | prob_i) for all 11 PII types)
+
+┌─────────────────────────────────────────────────────────────┐
+│ STEP 2: COMPUTE LOSS                                         │
+└─────────────────────────────────────────────────────────────┘
+├─ Calculate advantages (how good was this action?):
+│   ├─ GRPO/GroupedPPO: advantage = reward - value_baseline
+│   └─ VanillaRL: advantage = (reward - mean(rewards)) / std(rewards)
+│
+├─ Compute policy loss:
+│   ├─ GRPO: loss = -mean(ratio * advantage) + KL_penalty + value_loss
+│   ├─ GroupedPPO: loss = -mean(clipped_ratio * advantage) + value_loss + entropy
+│   └─ VanillaRL: loss = -mean(log_prob * advantage)
+│
+└─ Total loss combines:
+    ├─ Policy loss (main objective)
+    ├─ Value loss (for GRPO/GroupedPPO)
+    ├─ KL divergence penalty (for GRPO/GroupedPPO)
+    └─ Entropy bonus (for GroupedPPO)
+
+┌─────────────────────────────────────────────────────────────┐
+│ STEP 3: BACKWARD PASS (Gradient Computation)                │
+└─────────────────────────────────────────────────────────────┘
+├─ optimizer.zero_grad()  # Clear previous gradients
+│
+├─ loss.backward()  # Backpropagation:
+│   ├─ Computes ∂loss/∂weight for ALL weights in network
+│   ├─ Uses chain rule to propagate gradients backward
+│   └─ Stores gradients in weight.grad for each parameter
+│
+└─ torch.nn.utils.clip_grad_norm_(policy.parameters(), 1.0)
+    └─ Clips gradients to max norm of 1.0 (prevents exploding gradients)
+
+┌─────────────────────────────────────────────────────────────┐
+│ STEP 4: WEIGHT UPDATE (Gradient Descent)                     │
+└─────────────────────────────────────────────────────────────┘
+├─ optimizer.step()  # Adam optimizer update:
+│   ├─ For each weight w:
+│   │   ├─ Compute momentum: m_t = β₁·m_{t-1} + (1-β₁)·grad
+│   │   ├─ Compute adaptive learning rate: v_t = β₂·v_{t-1} + (1-β₂)·grad²
+│   │   ├─ Bias correction: m̂ = m_t / (1-β₁^t), v̂ = v_t / (1-β₂^t)
+│   │   └─ Update: w = w - (learning_rate / (√v̂ + ε)) · m̂
+│   │
+│   └─ Adam adapts learning rate per parameter
+│
+└─ Weights are now updated! Network learned from this batch.
+```
+
+### Code Implementation
+
+#### GRPO Weight Update (from `algorithms/grpo/grpo_train.py`):
+```python
+def policy_gradient_update(policy, optimizer, batch, epochs=4, ...):
+    # Convert batch to tensors
+    states, actions, rewards, old_log_probs, old_values, old_probs = batch.to_tensors(device)
+    
+    # Compute advantages
+    advantages = rewards - old_values
+    advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+    
+    for _ in range(epochs):  # Multiple epochs per batch
+        # Forward pass
+        logits, values = policy(states)
+        probs = torch.sigmoid(logits)
+        dist = torch.distributions.Bernoulli(probs=probs)
+        log_probs = dist.log_prob(actions).sum(dim=1)
+        
+        # Compute loss
+        ratio = torch.exp(log_probs - old_log_probs)
+        policy_loss = -(ratio * advantages).mean()
+        value_loss = F.mse_loss(values, rewards)
+        kl_loss = compute_kl_divergence(old_probs, probs)
+        entropy = dist.entropy().sum(dim=1).mean()
+        
+        total_loss = policy_loss + value_coef * value_loss + kl_coef * kl_loss - entropy_coef * entropy
+        
+        # GRADIENT DESCENT:
+        optimizer.zero_grad()      # 1. Clear gradients
+        total_loss.backward()      # 2. Compute gradients (backpropagation)
+        torch.nn.utils.clip_grad_norm_(policy.parameters(), 1.0)  # 3. Clip gradients
+        optimizer.step()            # 4. Update weights (Adam optimizer)
+```
+
+#### VanillaRL Weight Update (from `algorithms/vanillarl/train.py`):
+```python
+def policy_gradient_update(policy, optimizer, transitions, epochs=3):
+    # Compute normalized advantages
+    rewards = torch.tensor(transitions.rewards, dtype=torch.float32)
+    advantages = (rewards - rewards.mean()) / (rewards.std() + 1e-8)
+    
+    for _ in range(epochs):
+        # GRADIENT DESCENT:
+        optimizer.zero_grad()      # 1. Clear gradients
+        
+        # Forward pass
+        states = torch.tensor(transitions.states, dtype=torch.float32)
+        logits = policy(states)
+        probs = torch.sigmoid(logits)
+        dist = torch.distributions.Bernoulli(probs=probs)
+        log_probs = dist.log_prob(actions).sum(dim=1)
+        
+        # Compute loss (REINFORCE)
+        loss = -(log_probs * advantages).mean()
+        
+        loss.backward()            # 2. Compute gradients (backpropagation)
+        torch.nn.utils.clip_grad_norm_(policy.parameters(), 1.0)  # 3. Clip gradients
+        optimizer.step()           # 4. Update weights (Adam optimizer)
+```
+
+### Optimizer Details
+
+**Adam Optimizer** (used by all algorithms):
+- **Learning Rate**: Default `3e-4` (0.0003)
+- **Adaptive**: Adjusts learning rate per parameter
+- **Momentum**: Uses exponential moving averages of gradients
+- **Benefits**: 
+  - Faster convergence than SGD
+  - Handles sparse gradients well
+  - Less sensitive to hyperparameters
+
+**Gradient Clipping**:
+- **Purpose**: Prevents exploding gradients that can destabilize training
+- **Method**: Clips gradient norm to max value of 1.0
+- **Formula**: `grad = grad * min(1.0, max_norm / grad_norm)`
+
+### Training Loop Summary
+
+```
+For each iteration:
+    1. Rollout batch (collect experiences)
+    2. For each epoch (multiple updates per batch):
+        a. Forward pass → compute loss
+        b. Backward pass → compute gradients
+        c. Clip gradients
+        d. Optimizer.step() → update weights
+    3. Evaluate (every N iterations)
+    4. Check convergence
+```
+
+### Key Points
+
+1. **Batch Processing**: Updates use entire batch (e.g., 64 samples) simultaneously
+2. **Multiple Epochs**: Each batch is used for multiple gradient updates (2-4 epochs)
+3. **Gradient Clipping**: Prevents gradient explosion
+4. **Adam Optimizer**: Adaptive learning rate per parameter
+5. **Backpropagation**: Automatically computes gradients for all weights via chain rule
+
+---
+
 ##  Training Comparison
 
 | Aspect | GRPO | GroupedPPO | VanillaRL |
