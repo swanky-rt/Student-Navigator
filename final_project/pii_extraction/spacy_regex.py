@@ -69,6 +69,14 @@ COMPANY_DOMAIN_RE = re.compile(
     re.IGNORECASE
 )
 
+# Explicit name pattern: matches "my name is First Last" or "name is First Last"
+# Captures names that spaCy's NER misses (e.g., South Asian names like "Amit Sharma", "Ivy Singh")
+# Examples: "my name is Amit Sharma", "name is Ivy Desai", "and my name is Ananya Kumar"
+NAME_EXPLICIT_RE = re.compile(
+    r"(?:my\s+)?name\s+is\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)",
+    re.IGNORECASE
+)
+
 # -------------------------
 # False positive filters
 # -------------------------
@@ -266,6 +274,23 @@ def extract_regex_pii(text: str):
             {
                 "text": m.group(1),
                 "label": "COMPANY_DOMAIN",
+                "start": m.start(1),
+                "end": m.end(1),
+                "source": "regex",
+            }
+        )
+
+    # Explicit name pattern (e.g., "my name is Amit Sharma")
+    # This catches names that spaCy's NER misses
+    for m in NAME_EXPLICIT_RE.finditer(text):
+        # group(1) captures just the name (First Last)
+        name_text = m.group(1)
+        # Normalize capitalization: "amit sharma" -> "Amit Sharma"
+        name_text = " ".join(word.capitalize() for word in name_text.split())
+        results.append(
+            {
+                "text": name_text,
+                "label": "PERSON",
                 "start": m.start(1),
                 "end": m.end(1),
                 "source": "regex",
