@@ -2,6 +2,25 @@
 
 This guide covers all scripts and pipelines in the project.
 
+##  Quick Setup
+
+**First time setup**:
+```bash
+# 1. Create and activate environment
+conda create -n overthink python=3.10
+conda activate overthink
+
+# 2. Install dependencies
+cd final_project
+pip install -r requirements.txt
+
+# 3. Install spaCy model
+python -m spacy download en_core_web_sm
+
+# 4. (Optional) Install MLX for Apple Silicon baseline
+pip install mlx mlx-lm
+```
+
 ##  Quick Start Commands
 
 **Train a single algorithm**:
@@ -26,14 +45,50 @@ python scripts/compare_all.py --algorithms grpo groupedppo vanillarl --dataset 6
 
 ##  Prerequisites
 
-1. **Python Environment**: Python 3.7+
-2. **Dependencies**: 
+### Environment Setup
+
+1. **Python Environment**: Python 3.7+ (Python 3.10 recommended)
+   - Using conda (recommended):
+     ```bash
+     conda create -n overthink python=3.10
+     conda activate overthink
+     ```
+   - Or using venv:
+     ```bash
+     python3 -m venv venv
+     source venv/bin/activate  # On Windows: venv\Scripts\activate
+     ```
+
+2. **Install Core Dependencies**:
    ```bash
-   pip install torch pandas numpy matplotlib
+   cd final_project
+   pip install -r requirements.txt
    ```
-3. **Dataset**: `690-Project-Dataset-final.csv` (finalized dataset) in the `final_project/` 
-   - **Model Path**: `models/{algorithm}_model.pt` (after training)
-   - **Training Settings**: `--num_iters 300 --batch_size 64` (recommended)
+
+3. **Install spaCy Language Model** (required for PII extraction):
+   ```bash
+   python -m spacy download en_core_web_sm
+   ```
+
+4. **Optional: MLX for Apple Silicon** (for baseline minimizer comparison):
+   ```bash
+   pip install mlx mlx-lm
+   ```
+   - This enables the MLX baseline minimizer which works on Apple Silicon without a GPU
+   - If you skip this, the comparison script will run with RL pipeline only
+
+5. **Optional: GPU Support** (for GPU-based baseline minimizer):
+   ```bash
+   pip install bitsandbytes
+   ```
+   - Requires CUDA-capable GPU
+   - Only needed if you want to use GPU baseline instead of MLX
+
+### Dataset and Models
+
+- **Dataset**: `690-Project-Dataset-final.csv` (finalized dataset) in the `final_project/` directory
+- **Model Path**: `models/{algorithm}_model.pt` (created after training)
+- **Training Settings**: `--num_iters 300 --batch_size 64` (recommended)
 
 ##  1. Training Algorithms
 
