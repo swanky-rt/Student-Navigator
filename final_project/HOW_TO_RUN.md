@@ -515,8 +515,13 @@ Comparison:
 ### 7.6 Requirements
 
 **Baseline LLM Minimizer**:
-- GPU/CUDA (recommended) or CPU
-- Large language model (default: `Qwen/Qwen2.5-7B-Instruct`)
+- **Apple Silicon / CPU (recommended)**: install MLX baseline
+  ```bash
+  conda activate overthink
+  pip install mlx mlx-lm
+  ```
+- **GPU fallback**: CUDA-capable GPU + `bitsandbytes`
+- Large language model (default MLX model: `mlx-community/Qwen2.5-7B-Instruct-4bit`)
 - `transformers` library
 
 **RL Integration Pipeline**:
@@ -524,7 +529,10 @@ Comparison:
 - Context classifier (`MLP/context_agent_mlp.pth`)
 - `spacy` and `en_core_web_sm` model
 
-**Note**: The baseline requires significant GPU memory. If you don't have GPU, consider using a smaller model or modify the baseline script for CPU usage.
+**Note**:
+- The comparison script automatically tries the MLX baseline first (works on Apple Silicon without a discrete GPU).  
+- If `mlx` is missing you will see “Baseline skipped – not available”; install it with the command above.  
+- Use `--use-gpu` to force the GPU baseline if you have CUDA and `bitsandbytes` installed.
 
 ---
 
