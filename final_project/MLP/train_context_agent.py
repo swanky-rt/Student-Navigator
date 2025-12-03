@@ -10,7 +10,7 @@
 # from context_agent_classifier import ContextAgentClassifier
 
 # # Configuration
-# CSV_FILE = "/Users/aringarg/Downloads/690F_FP/final_project/690-Project-Dataset-balanced.csv"
+# CSV_FILE = "/Users/aringarg/Downloads/690F_FP/final_project/690-Project-Dataset-imbalanced.csv"
 # MODEL_SAVE_PATH = "context_agent_mlp.pth"
 # BATCH_SIZE = 16
 # EPOCHS = 10

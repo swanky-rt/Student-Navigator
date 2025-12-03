@@ -121,8 +121,8 @@ EXTRACTED_PII_DIR = os.path.join(SCRIPT_DIR, "extracted_pii")
 # Datasets to process: (input_filename, output_name)
 DATASETS = [
     ("690-Project-Dataset-final.csv", "dataset_final"),
-    ("690-Project-Dataset-balanced.csv", "dataset_balanced"),
-    ("690-Project-Dataset-1500-bank-balanced-55-50-57.csv", "dataset_1500_bank_balanced"),
+    ("690-Project-Dataset-imbalanced.csv", "dataset_balanced"),
+    ("690-Project-Dataset-bank-balanced.csv", "dataset_1500_bank_balanced"),
 ]
 
 

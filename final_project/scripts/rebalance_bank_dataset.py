@@ -7,7 +7,7 @@ script_dir = Path(__file__).resolve().parent
 root = script_dir.parent
 
 INPUT_PATH = root/ "690-Project-Dataset-final.csv"      # current CSV
-OUTPUT_PATH = root/ "690-Project-Dataset-balanced.csv"  # balanced CSV
+OUTPUT_PATH = root/ "690-Project-Dataset-imbalanced.csv"  # balanced CSV
 
 BANK_TOKENS = ["EMAIL", "PHONE", "DATE/DOB", "SSN", "CREDIT_CARD"]
 
