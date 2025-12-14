@@ -23,8 +23,7 @@ This repository contains the implementation for **Phase 3: Context Agent**, the 
 ├── inference.py                 # Clean Interface for Phase 4 Integration
 ├── train_context_agent.py       # Training Loop & Hyperparameter Optimization
 ├── benchmark_latency.py         # Performance Benchmarking Script
-├── restbankbig.csv     # The engineered synthetic dataset (450+ samples) # moved to final_project folder
-└── requirements.txt             # Project dependencies
+└── restbankbig.csv     # The engineered synthetic dataset (450+ samples) # moved to final_project folder
 ```
 
 -----
@@ -33,12 +32,12 @@ This repository contains the implementation for **Phase 3: Context Agent**, the 
 Our architecture was carefully designed to balance two competing objectives: **high semantic understanding** (usually requiring large models) and **ultra-low latency** (required for the "AirGapLite" real-time constraint).
 
 ### 1. The Encoder: `all-MiniLM-L6-v2`
-Instead of using a standard BERT base model (~110M parameters) which is computationally expensive, we selected **MiniLM-L6-v2** as our backbone.
+Instead of using a standard BERT base model (~110M parameters) which is computationally expensive, we selected **MiniLM-L6-v2**.
 
 * **Why this choice?**
     * **Efficiency:** It uses a 6-layer distilled transformer architecture, which is significantly faster than full-scale models while retaining 90%+ of the performance for sentence-similarity tasks.
     * **Dimensionality:** It produces dense vector embeddings of size **384**. This is half the size of standard BERT (768), directly reducing the computational load for the downstream classifier by 50%.
-    * **Paper Reference:** This choice leverages the self-attention distillation techniques proposed by Wang et al. in *"MiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of Pre-Trained Transformers"*.
+    * **Paper Reference:** We utilize the Sentence-BERT (SBERT) framework [2] to derive semantically meaningful sentence embeddings. Specifically, we selected the all-MiniLM-L6-v2 checkpoint, which uses distillation [1] to retain high performance while reducing the model size.
 
 ### 2. The Classifier: Custom Tuned MLP
 We implemented a custom **Multi-Layer Perceptron (MLP)** head rather than a simple linear probe to capture non-linear semantic boundaries between "Banking" and "Restaurant" contexts.
@@ -64,7 +63,7 @@ Initial attempts to train the classifier using standard, small-scale datasets re
 
 ### The Solution: Synthetic Data Pipeline
 
-To resolve this, we engineered a **Synthetic Data Augmentation Pipeline**:
+To resolve this, we implemented a **Synthetic Data Augmentation Pipeline**:
 
 1.  **Template Generation:** Created robust templates for high-risk (Banking) and low-risk (Restaurant) scenarios, including ambiguous edge cases (e.g., asking for "hours" or "reservations" in different contexts).
 2.  **Lexical Expansion:** Programmatically expanded the dataset by **400%** using synonym replacement (e.g., swapping "transfer" with "wire," "send," "move funds").
@@ -92,7 +91,7 @@ python train_context_agent.py
 
 ### 3\. Running the Demo
 
-We provide a full pipeline demo that detects the context and applies the corresponding mock privacy rules.
+Here is the full pipeline demo that detects the context and applies the corresponding mock privacy rules.
 
 ```bash
 python demo_pipeline.py
@@ -100,7 +99,7 @@ python demo_pipeline.py
 
 ### 4\. Integration (For Phase 4)
 
-The Integration team directly uses `inference.py` file to get predictions without worrying about the underlying model logic:
+To itegrate, we directly use `inference.py` file to get predictions without worrying about the underlying model logic:
 
 ```python
 from inference import predict_context
@@ -149,13 +148,11 @@ We benchmarked the inference speed on standard CPU hardware:
 *Highlights the massive speed advantage of our lightweight approach compared to a monolithic LLM.*
 
 **4. Live Demo Output:**
-*(Add a screenshot of your terminal running `demo_pipeline.py`)*
-*Proof of end-to-end functionality, showing the classifier successfully steering the downstream PII extraction task.*
+<img width="542" height="233" alt="image" src="https://github.com/user-attachments/assets/691695b9-3327-4a7f-b408-46e2dcd90c1a" />
+The Context Agent correctly identifies a high-risk "Banking" intent (Conf: 1.00) and routes the request to the banking privacy controls. The mock response confirms the successful handover of the domain context.
 
+### References
 
+> **[1] MiniLM:** Wang, W., Wei, F., Dong, L., Bao, H., Yang, N., & Zhou, M. (2020). *MiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of Pre-Trained Transformers*. arXiv:2002.10957.
 
-### 📄 References to Include
-
-> **[1] MiniLM:** Wang, W., Wei, F., Dong, L., Bao, H., Yang, N., & Zhou, M. (2020). *MiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of Pre-Trained Transformers*. arXiv preprint arXiv:2002.10957.
-
-> **[2] Sentence-Transformers:** Reimers, N., & Gurevych, I. (2019). *Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks*. arXiv preprint arXiv:1908.10084.
+> **[2] Sentence-Transformers:** Reimers, N., & Gurevych, I. (2019). *Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks*. arXiv:1908.10084.
