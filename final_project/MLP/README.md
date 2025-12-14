@@ -29,18 +29,32 @@ This repository contains the implementation for **Phase 3: Context Agent**, the 
 
 -----
 
-## System Architecture
+## 🧠 System Architecture & Design Rationale
+Our architecture was carefully designed to balance two competing objectives: **high semantic understanding** (usually requiring large models) and **ultra-low latency** (required for the "AirGapLite" real-time constraint).
 
-We implemented the architecture proposed in the project plan:
+### 1. The Encoder: `all-MiniLM-L6-v2`
+Instead of using a standard BERT base model (~110M parameters) which is computationally expensive, we selected **MiniLM-L6-v2** as our backbone.
 
-1.  **Encoder:** We utilized `sentence-transformers/all-MiniLM-L6-v2` to convert text into high-dimensional semantic embeddings (384-dim). We chose this model because it has an optimal balance of speed and semantic understanding.
-2.  **Classifier:** A custom **Multi-Layer Perceptron (MLP)** acts as the decision head.
-      * **Input:** 384 dimensions
-      * **Hidden Layer:** 64 units with ReLU activation
-      * **Regularization:** Dropout (p=0.1) to prevent overfitting
-      * **Output:** 2 classes (Bank / Restaurant)
+* **Why this choice?**
+    * **Efficiency:** It uses a 6-layer distilled transformer architecture, which is significantly faster than full-scale models while retaining 90%+ of the performance for sentence-similarity tasks.
+    * **Dimensionality:** It produces dense vector embeddings of size **384**. This is half the size of standard BERT (768), directly reducing the computational load for the downstream classifier by 50%.
+    * **Paper Reference:** This choice leverages the self-attention distillation techniques proposed by Wang et al. in *"MiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of Pre-Trained Transformers"*.
 
------
+### 2. The Classifier: Custom Tuned MLP
+We implemented a custom **Multi-Layer Perceptron (MLP)** head rather than a simple linear probe to capture non-linear semantic boundaries between "Banking" and "Restaurant" contexts.
+
+* **Input Layer (384 neurons):** Matches the output dimension of the MiniLM encoder.
+* **Hidden Layer (64 neurons):**
+    * *Design Decision:* We chose a bottleneck size of 64 (a reduction ratio of 6:1). Through experimentation, we found this was optimal: large enough to capture feature complexity but small enough to prevent overfitting on our synthetic dataset.
+    * *Activation:* **ReLU** was applied to introduce non-linearity, allowing the model to understand complex phrasing beyond simple keyword matching.
+* **Regularization (Dropout p=0.1):**
+    * *Design Decision:* Given the risk of memorization with small datasets, we injected a Dropout layer with `p=0.1`. This forces the network to learn robust, distributed features rather than relying on specific neurons, directly contributing to our high validation stability (96.8%).
+* **Output Layer (2 neurons):** Outputs the logits for the binary classification (Bank vs. Restaurant).
+
+### 3. Hyperparameter Optimization
+We utilized the **Adam optimizer** with a learning rate of **1e-3**. We found that standard learning rates (e.g., 2e-5 used for BERT fine-tuning) were too slow for this lightweight architecture, while 1e-3 allowed for rapid convergence within 5 epochs without overshooting the loss minima.
+
+---
 
 ## Implementation & Data Engineering
 
@@ -86,14 +100,14 @@ python demo_pipeline.py
 
 ### 4\. Integration (For Phase 4)
 
-For the Integration team, use `inference.py` to get predictions without worrying about the underlying model logic:
+The Integration team directly uses `inference.py` file to get predictions without worrying about the underlying model logic:
 
 ```python
 from inference import predict_context
 
-result = predict_context("I need to transfer $500")
+result = predict_context("I need to transfer money")
 print(result) 
-# Output: {'label': 'bank', 'confidence': 0.99, 'probabilities': [...]}
+# Output: {'label': 'bank', 'confidence': 0.9999487400054932, 'probabilities': [5.1275885198265314e-05, 0.9999487400054932], 'is_confident': True}
 ```
 
 -----
@@ -122,17 +136,26 @@ We benchmarked the inference speed on standard CPU hardware:
 ## Visuals & Screenshots
 
 **1. Training Dynamics:**
-*(Add `training_dynamics.png` here)*
+<img width="1423" height="867" alt="image" src="https://github.com/user-attachments/assets/6461b33e-473d-4a6f-b0ff-d41a6de46960" />
+
 *Demonstrates the rapid learning curve and stability of the loss function, proving the efficiency of the hybrid architecture.*
 
 **2. Confusion Matrix:**
-*(Add `confusion_matrix.png` here)*
+<img width="1104" height="908" alt="image" src="https://github.com/user-attachments/assets/26303085-384f-44bb-8ced-9aba13fe4d22" />
 *Visualizes the model's reliability, showing near-perfect separation between sensitive (Bank) and non-sensitive (Restaurant) contexts.*
 
 **3. Latency Comparison:**
-*(Add `latency_comparison_v2.png` here)*
+<img width="1645" height="790" alt="image" src="https://github.com/user-attachments/assets/1d02d7ca-dd20-42fc-b6df-672f90bd02f9" />
 *Highlights the massive speed advantage of our lightweight approach compared to a monolithic LLM.*
 
 **4. Live Demo Output:**
 *(Add a screenshot of your terminal running `demo_pipeline.py`)*
 *Proof of end-to-end functionality, showing the classifier successfully steering the downstream PII extraction task.*
+
+
+
+### 📄 References to Include
+
+> **[1] MiniLM:** Wang, W., Wei, F., Dong, L., Bao, H., Yang, N., & Zhou, M. (2020). *MiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of Pre-Trained Transformers*. arXiv preprint arXiv:2002.10957.
+
+> **[2] Sentence-Transformers:** Reimers, N., & Gurevych, I. (2019). *Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks*. arXiv preprint arXiv:1908.10084.
