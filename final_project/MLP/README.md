@@ -14,7 +14,7 @@ This repository contains the implementation for **Phase 3: Context Agent**, the 
 
 -----
 
-## 📂 Repository Structure
+## Repository Structure
 
 ```text
 ├── context_agent_classifier.py  # Model Architecture (MiniLM + MLP)
@@ -31,9 +31,9 @@ This repository contains the implementation for **Phase 3: Context Agent**, the 
 
 ## System Architecture
 
-We implemented the architecture proposed in the project plan[cite: 32, 131]:
+We implemented the architecture proposed in the project plan:
 
-1.  **Encoder:** We utilized `sentence-transformers/all-MiniLM-L6-v2` to convert text into high-dimensional semantic embeddings (384-dim). This model was chosen for its optimal balance of speed and semantic understanding.
+1.  **Encoder:** We utilized `sentence-transformers/all-MiniLM-L6-v2` to convert text into high-dimensional semantic embeddings (384-dim). We chose this model because it has an optimal balance of speed and semantic understanding.
 2.  **Classifier:** A custom **Multi-Layer Perceptron (MLP)** acts as the decision head.
       * **Input:** 384 dimensions
       * **Hidden Layer:** 64 units with ReLU activation
