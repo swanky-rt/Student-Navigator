@@ -1,6 +1,6 @@
 # AirGapLite: Phase 3 Context Agent (Encoder/Classifier)
 
-## 📌 Project Overview
+## Project Overview
 **AirGapLite** is a hybridized, lightweight privacy preservation system designed to minimize user data exposure before it reaches conversational LLMs[cite: 15].
 
 This repository contains the implementation for **Phase 3: Context Agent**, the "brain" of the system. This module is responsible for analyzing user prompts in real-time and classifying the semantic context (e.g., **"Banking"** vs. **"Restaurant"**) to trigger the appropriate privacy rules[cite: 22, 132].
@@ -29,7 +29,7 @@ This repository contains the implementation for **Phase 3: Context Agent**, the 
 
 -----
 
-## 🧠 System Architecture
+## System Architecture
 
 We implemented the architecture proposed in the project plan[cite: 32, 131]:
 
@@ -42,7 +42,7 @@ We implemented the architecture proposed in the project plan[cite: 32, 131]:
 
 -----
 
-## 🛠️ Implementation & Data Engineering
+## Implementation & Data Engineering
 
 ### The Challenge: Data Scarcity
 
@@ -58,7 +58,7 @@ To resolve this, we engineered a **Synthetic Data Augmentation Pipeline**:
 
 -----
 
-## 🚀 Setup & Usage
+## Setup & Usage
 
 ### 1\. Prerequisites
 
@@ -98,7 +98,7 @@ print(result)
 
 -----
 
-## 📊 Performance & Results
+## Performance & Results
 
 ### Training Metrics
 
@@ -119,7 +119,7 @@ We benchmarked the inference speed on standard CPU hardware to ensure it meets t
 
 -----
 
-## 📸 Visuals & Screenshots
+## Visuals & Screenshots
 
 **1. Training Dynamics:**
 *(Add `training_dynamics.png` here)*
@@ -136,18 +136,3 @@ We benchmarked the inference speed on standard CPU hardware to ensure it meets t
 **4. Live Demo Output:**
 *(Add a screenshot of your terminal running `demo_pipeline.py`)*
 *Proof of end-to-end functionality, showing the classifier successfully steering the downstream PII extraction task.*
-
------
-
-### 📷 Recommended Screenshots to Add
-
-To make your submission look even more impressive, take these specific screenshots and place them in the README where indicated above:
-
-1.  **Terminal Screenshot of `train_context_agent.py`:**
-      * *Why:* Shows the "Epoch 15/15 | Loss: 0.0201 | Val Acc: 95.74%" line. It proves you actually ran the code and got those numbers.
-2.  **Terminal Screenshot of `demo_pipeline.py`:**
-      * *Why:* Shows the colorful output: `→ 🧠 Context Agent Detected: [BANK]`. It looks very polished and functional.
-3.  **The 3 Plots:**
-      * `training_dynamics.png`
-      * `confusion_matrix.png`
-      * `latency_comparison_v2.png`
