@@ -1,13 +1,13 @@
 # AirGapLite: Phase 3 Context Agent (Encoder/Classifier)
 
 ## Project Overview
-**AirGapLite** is a hybridized, lightweight privacy preservation system designed to minimize user data exposure before it reaches conversational LLMs[cite: 15].
+**AirGapLite** is a hybridized, lightweight privacy preservation system designed to minimize user data exposure before it reaches conversational LLMs.
 
-This repository contains the implementation for **Phase 3: Context Agent**, the "brain" of the system. This module is responsible for analyzing user prompts in real-time and classifying the semantic context (e.g., **"Banking"** vs. **"Restaurant"**) to trigger the appropriate privacy rules[cite: 22, 132].
+This repository contains the implementation for **Phase 3: Context Agent**, the "brain" of the system. This module is responsible for analyzing user prompts in real-time and classifying the semantic context (e.g., **"Banking"** vs. **"Restaurant"**) to trigger the appropriate privacy rules.
 
 ### Key Objectives Achieved
 
-  * [cite_start]**Lightweight Architecture:** Implemented a neuro-symbolic hybrid model using **MiniLM-L6-v2** and a custom **MLP**[cite: 32].
+  * **Lightweight Architecture:** Implemented a neuro-symbolic hybrid model using **MiniLM-L6-v2** and a custom **MLP**.
   * **High Accuracy:** Achieved **96.8%** validation accuracy with robust domain separation.
   * **Ultra-Low Latency:** Optimized inference speed to **\~7.32 ms** per request (60x faster than standard LLMs).
   * **Data Engineering:** Engineered a synthetic dataset generation pipeline to overcome data scarcity and prevent overfitting.
@@ -110,7 +110,7 @@ After optimizing hyperparameters (Batch Size: 8, Learning Rate: 1e-3), the model
 
 ### Latency Benchmark
 
-We benchmarked the inference speed on standard CPU hardware to ensure it meets the "AirGapLite" requirements.
+We benchmarked the inference speed on standard CPU hardware:
 
 | Model Type | Average Latency | Speedup Factor |
 | :--- | :--- | :--- |
