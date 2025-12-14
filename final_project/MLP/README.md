@@ -150,6 +150,7 @@ We benchmarked the inference speed on standard CPU hardware:
 *Highlights the massive speed advantage of our lightweight approach compared to a monolithic LLM.*
 
 **4. Live Demo Output:**
+
 <img width="542" height="233" alt="image" src="https://github.com/user-attachments/assets/691695b9-3327-4a7f-b408-46e2dcd90c1a" />
 
 *The Context Agent correctly identifies a high-risk "Banking" intent (Conf: 1.00) and routes the request to the banking privacy controls. The mock response confirms the successful handover of the domain context.*
