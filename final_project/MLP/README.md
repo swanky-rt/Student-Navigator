@@ -28,7 +28,7 @@ This repository contains the implementation for **Phase 3: Context Agent**, the 
 
 -----
 
-## 🧠 System Architecture & Design Rationale
+## System Architecture & Design Rationale
 Our architecture was carefully designed to balance two competing objectives: **high semantic understanding** (usually requiring large models) and **ultra-low latency** (required for the "AirGapLite" real-time constraint).
 
 ### 1. The Encoder: `all-MiniLM-L6-v2`
