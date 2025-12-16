@@ -48,9 +48,6 @@ class ManualInput:
 @dataclass
 class DecisionOutput:
     scenario_name: str
-    # For backwards compatibility with your existing demo script, we still
-    # expose group-level actions (0=share none, 1=share all present,
-    # 2=share subset), even though internally the policy acts per-PII.
     actions_by_group: Dict[str, int]
     shared_fields_by_group: Dict[str, List[str]]
     present_fields: List[str]
@@ -142,11 +139,6 @@ def decide_sharing_for_manual_input(
         shared_fields_by_group=shared_fields_by_group,
         present_fields=manual.present_fields,
     )
-
-
-# ---------------------------------------------------------------------------
-# Helper functions for group-based approaches (GroupedPPO, VanillaRL)
-# ---------------------------------------------------------------------------
 
 def apply_group_action(
     type_indices: List[int],

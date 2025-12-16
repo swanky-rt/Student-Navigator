@@ -30,10 +30,6 @@ PII_TYPES: List[str] = [
 TYPE2IDX: Dict[str, int] = {t: i for i, t in enumerate(PII_TYPES)}
 NUM_PII: int = len(PII_TYPES)
 
-# ---------------------------------------------------------------------------
-# Grouping (used only for pretty-printing / analysis)
-# ---------------------------------------------------------------------------
-
 # Logical groupings of PII types – the agent acts per-PII, but we still
 # use these groups when printing decisions so the output is easier to read.
 # DATE/DOB is added to identity group as it's often used for identity verification.
@@ -51,10 +47,6 @@ GROUP2TYPEIDX: Dict[str, List[int]] = {
     for g, types in GROUPS.items()
 }
 
-# ---------------------------------------------------------------------------
-# Scenarios / domains (restaurant vs bank)
-# ---------------------------------------------------------------------------
-
 SCENARIOS = {
     0: "restaurant",
     1: "bank",
@@ -62,8 +54,6 @@ SCENARIOS = {
 SCENARIO_NAME2ID: Dict[str, int] = {v: k for k, v in SCENARIOS.items()}
 NUM_SCENARIOS: int = len(SCENARIOS)
 
-# Per-scenario trade-off between utility and privacy.
-#   reward = alpha * utility + beta * privacy - complexity_penalty
 SCENARIO_WEIGHTS = {
     "restaurant": {"alpha": 0.6, "beta": 0.4},  # more privacy-leaning
     "bank": {"alpha": 0.7, "beta": 0.3},        # more utility-leaning
