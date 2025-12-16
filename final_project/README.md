@@ -1,6 +1,12 @@
 # AirGapLite: RL Pipeline for PII Sharing Decisions
 
+###  **Group Number:** 4 <br>
+> #### **Authors**: Swetha Saseendran,  Aryan Sajith, Sriram Kannan, Richard Watson Stepthen Amudha, Aarti Kumari, Arin Garg
+
+
 A comprehensive reinforcement learning pipeline for intelligent PII (Personally Identifiable Information) sharing decisions using policy gradient methods. The system learns domain-specific patterns to minimize PII exposure while maintaining utility.
+
+
 
 ## Project Poster
 
@@ -183,7 +189,9 @@ All algorithms use **per-PII binary actions** (0=don't share, 1=share) for each 
   - Restaurant: α=0.6, β=0.4 (more privacy-leaning)
   - Bank: α=0.7, β=0.3 (more utility-leaning)
 
-## Training Options
+## Training Pipeline
+
+Unified training pipeline for all RL algorithms with convergence detection:
 
 ### Convergence Detection (Recommended)
 
@@ -210,7 +218,7 @@ python pipeline/train.py \
     --output_dir models
 ```
 
-## Testing & Evaluation
+**Outputs**: `{algorithm}_model.pt` and `{algorithm}_history.json`
 
 ### Directive System
 
@@ -220,18 +228,21 @@ Control utility-privacy tradeoff with `--directive`:
 - **balanced**: Default threshold (0.5), balanced tradeoff
 - **accurately**: Low threshold (≤0.3), higher utility, lower privacy
 
-### Testing Commands
+## Testing & Evaluation Pipeline
+
+Evaluate trained models and extract learned patterns:
 
 ```bash
 # Basic evaluation
-python pipeline/test.py --algorithm grpo --model models/grpo_model.pt
-
-# With directive
-python pipeline/test.py --algorithm grpo --model models/grpo_model.pt --directive strictly
+python pipeline/test.py --algorithm grpo --model models/grpo_model.pt --directive balanced
 
 # Extract learned regex patterns
 python pipeline/test.py --algorithm grpo --model models/grpo_model.pt --get-regex
 ```
+
+**Directives**: `strictly` (high privacy), `balanced` (default), `accurately` (high utility)
+
+**Outputs**: `evaluation_results.json` with utility, privacy, and domain-specific metrics
 
 ## Integration Pipeline
 
@@ -327,6 +338,26 @@ Metrics compared:
 - **Utility**: % of allowed PII correctly shared
 - **Privacy**: % of disallowed PII correctly NOT shared
 - **Quickness**: Inference time (seconds)
+
+### Baseline LLM Minimizer
+
+The `baseline/` directory contains implementations of the original AirGap agent minimizer using LLMs:
+
+- **`baseline_minimizer.py`**: GPU-based (CUDA) baseline with 5 models
+- **`mlx_baseline_minimizer.py`**: MLX-optimized for Apple Silicon
+- **`plot_baseline_results.py`**: Visualization of baseline results
+
+**Usage**:
+```bash
+# GPU baseline (CUDA)
+cd baseline
+python baseline_minimizer.py
+
+# MLX baseline (Apple Silicon)
+python mlx_baseline_minimizer.py --mode sample --dataset data/Dataset.csv
+```
+
+Tests 5 models: Qwen2.5-7B, Mistral-7B, Llama-3.1-8B, Qwen2.5-3B, Phi-3-mini
 
 ## Outputs
 
@@ -439,4 +470,4 @@ Optional:
 
 ## License
 
-This project is part of the CS 690F Trustworthy and Responsible AI course at UMass Amherst.
+This project is part of the CS 690F Security in AI course at UMass Amherst.
