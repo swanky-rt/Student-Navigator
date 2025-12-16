@@ -40,7 +40,7 @@ python pipeline/test.py --algorithm grpo --model models/grpo_model.pt --directiv
 cd final_project
 python scripts/compare_all.py --algorithms grpo groupedppo vanillarl --dataset 690-Project-Dataset-final.csv --num_iters 300 --batch_size 64 --output_dir results
 ```
-Note: For balanced dataset use "690-Project-Dataset-bank-balanced.csv" & for imbalanced/realistic use "690-Project-Dataset-imbalanced.csv" in above commands
+Note: For balanced dataset use "690-Project-Dataset-bank-balanced.csv" & for imbalanced/realistic dataset use "690-Project-Dataset-imbalanced.csv" in above commands in place of 690-Project-Dataset-final.csv.
 ---
 
 ##  Prerequisites
