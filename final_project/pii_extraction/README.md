@@ -53,6 +53,27 @@ entities = extract_pii("My SSN is 123-45-6789", domain="bank")
 2. **spacy_regex extracts PII** — Uses spaCy NER + regex patterns to find all PII in text, with false positive filtering
 3. **pii_extractor filters results** — Maps spaCy labels to GRPO format and filters to only return PII types allowed for the domain
 
+### Why Hybrid Approach? (spaCy + Regex)
+
+The extraction uses a **hybrid approach** combining spaCy NER and regex patterns because each method excels at different types of PII:
+
+**Regex for Structured Patterns:**
+- **Works best for**: Well-defined formats with predictable patterns
+- **Examples**: Phone numbers (`555-123-4567`), emails (`user@domain.com`), SSN (`123-45-6789`), credit cards (`4111-1111-1111-1111`)
+- **Why regex**: These follow strict structural rules (digits, separators, formats) that regex can match precisely
+- **Advantage**: High precision for structured data, catches variations in formatting
+
+**spaCy NER for Named Entities:**
+- **Works best for**: Contextual entities that require understanding language structure
+- **Examples**: Person names (`John Smith`, `Amit Sharma`), organizations (`Acme Corp`, `Google`), locations (`New York`, `California`)
+- **Why spaCy**: Uses pre-trained models that understand context, capitalization patterns, and linguistic features
+- **Advantage**: Handles diverse name formats, recognizes entities even without explicit patterns
+
+**Complementary Strengths:**
+- Regex catches structured PII that spaCy might miss (e.g., SSN, credit cards)
+- spaCy catches contextual entities that regex can't pattern-match (e.g., names, organizations)
+- Together they provide comprehensive coverage of all 11 PII types
+
 ### Extraction Engine (`spacy_regex.py`)
 
 The core extraction combines two methods:
@@ -60,19 +81,21 @@ The core extraction combines two methods:
 **spaCy NER:**
 - Detects: `PERSON`, `ORG`, `GPE`, `LOC`, `FAC` (facilities)
 - Uses pre-trained `en_core_web_sm` model
+- **Best for**: Contextual entities like names, organizations, and locations
 
 **Regex Patterns:**
-- `EMAIL` - Email addresses
-- `PHONE` - Phone numbers (US-style)
-- `IP_ADDRESS` - IPv4 addresses
-- `SSN` - Social Security Numbers (123-45-6789)
-- `CREDIT_CARD_16` - Full 16-digit credit cards
+- `EMAIL` - Email addresses (structured format: `user@domain.com`)
+- `PHONE` - Phone numbers (US-style: `555-123-4567`, `(555) 123-4567`)
+- `IP_ADDRESS` - IPv4 addresses (structured: `192.168.1.1`)
+- `SSN` - Social Security Numbers (fixed format: `123-45-6789`)
+- `CREDIT_CARD_16` - Full 16-digit credit cards (structured: `4111-1111-1111-1111`)
 - `CREDIT_CARD_4` - Last 4 digits (from "ending in 1234" patterns)
 - `DATE` - Dates in various formats (MM/DD/YYYY, YYYY-MM-DD, etc.)
 - `AGE` - Age mentions ("age 25", "25 years old")
 - `SEX` - Gender mentions ("male", "female")
 - `COMPANY_DOMAIN` - Company domain names ("my company xyz.com")
-- `PERSON` - Explicit name patterns ("my name is First Last")
+- `PERSON` - Explicit name patterns ("my name is First Last") - fallback for names spaCy misses
+- **Best for**: Structured data with predictable formats and patterns
 
 **False Positive Filtering:**
 - Removes spaCy entities that overlap with regex matches (prefers regex)
@@ -272,7 +295,7 @@ python pii_extraction/spacy_regex.py
 
 **What it does:**
 - Processes CSV files from `final_project/` root directory
-- Extracts PII using spaCy NER + regex patterns
+- Extracts PII using hybrid approach: spaCy NER (for names, organizations, locations) + regex patterns (for structured data like emails, phones, SSN)
 - Applies false positive filtering (removes incorrect spaCy labels)
 - Saves results with `pii_entities` column (JSON format)
 

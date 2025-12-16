@@ -47,10 +47,11 @@ final_project/
 │   └── context_agent_mlp.pth       # Trained model
 │
 ├── pii_extraction/          # PII extraction module
-│   ├── pii_extractor.py     # Main extraction interface
-│   ├── spacy_regex.py       # spaCy + regex patterns
-│   ├── compute_pii_metrics.py  # Evaluation metrics
-│   └── analyze_errors.py    # Error analysis
+│   ├── pii_extractor.py     # Main extraction interface (domain-aware filtering)
+│   ├── spacy_regex.py       # Core extraction engine (spaCy NER + regex patterns)
+│   ├── compute_pii_metrics.py  # Evaluation metrics (precision, recall, F1)
+│   ├── analyze_errors.py    # Error analysis (false positives/negatives)
+│   └── README.md            # Complete module documentation
 │
 ├── baseline/                 # Baseline LLM minimizers
 │   ├── baseline_minimizer.py    # GPU-based baseline (CUDA)
@@ -249,6 +250,69 @@ print(result['domain'])          # 'restaurant'
 print(result['shared_pii'])       # ['EMAIL', 'PHONE']
 ```
 
+The integration pipeline uses the `pii_extraction` module to extract PII from text, then filters it based on GRPO-learned domain patterns.
+
+## PII Extraction
+
+The `pii_extraction` module extracts PII from text using spaCy NER and regex patterns, then filters results based on domain-specific GRPO patterns.
+
+### Quick Usage
+
+```python
+from pii_extraction.pii_extractor import extract_pii
+
+# Extract PII for a domain (GRPO determines allowed types)
+entities = extract_pii("My SSN is 123-45-6789, email: john@example.com", domain="bank")
+# Returns: [{"text": "123-45-6789", "label": "SSN", ...}, {"text": "john@example.com", "label": "EMAIL", ...}]
+
+# Restaurant domain filters out financial PII
+entities = extract_pii("My SSN is 123-45-6789, email: john@example.com", domain="restaurant")
+# Returns: [{"text": "john@example.com", "label": "EMAIL", ...}]  ← SSN filtered out
+```
+
+### Key Features
+
+- **Domain-aware filtering**: Only extracts PII types allowed by GRPO for the domain
+  - Bank: `PHONE`, `EMAIL`, `DATE/DOB`, `SSN`, `CREDIT_CARD`
+  - Restaurant: `PHONE`, `EMAIL`
+
+- **Hybrid extraction**: Combines spaCy NER (names, organizations, locations) with regex patterns (emails, phones, SSN, etc.)
+  - **Regex** excels at structured patterns with predictable formats (phone numbers, emails, SSN, credit cards)
+  - **spaCy NER** excels at contextual entities requiring language understanding (person names, organizations, locations)
+  - Together they provide comprehensive coverage of all 11 PII types
+
+- **False positive filtering**: Removes incorrect detections from spaCy NER:
+  - **Credit card brands** (Visa, Mastercard): These are context words, not actual PII - spaCy incorrectly labels them as organizations
+  - **Street names** (e.g., "Broad St", "Main Ave"): spaCy incorrectly labels street addresses as person names (PERSON) when they're actually locations
+  - **Temporal phrases** ("last week", "yesterday"): Not actual dates of birth, just relative time references
+  - **Short numbers**: Area codes or partial phone numbers incorrectly detected as standalone entities
+  - **Overlapping matches**: Prefers more accurate regex patterns over spaCy when both detect the same text
+
+- **Directive support**: Respects privacy/utility tradeoff (`strictly`, `balanced`, `accurately`)
+
+### Evaluation Pipeline
+
+Process datasets and evaluate extraction performance:
+
+```bash
+# Step 1: Extract PII from datasets
+python pii_extraction/spacy_regex.py
+
+# Step 2: Compute metrics (precision, recall, F1)
+python pii_extraction/compute_pii_metrics.py
+
+# Step 3: Analyze errors (false positives/negatives)
+python pii_extraction/analyze_errors.py
+```
+
+**For complete documentation**, see [`pii_extraction/README.md`](pii_extraction/README.md) which includes:
+- Full API reference
+- Command-line interface
+- Supported PII types (all 11 types)
+- Extraction engine details
+- Pipeline workflow
+- Output structure
+
 ## Baseline Comparison
 
 Compare RL-based approach with LLM baseline minimizers:
@@ -358,6 +422,7 @@ All algorithms share:
 - **Domain-Specific Metrics**: Separate evaluation for restaurant and bank domains
 - **Baseline Comparison**: Compare with LLM-based minimizers
 - **Regex Extraction**: Extract learned patterns as regex rules
+- **PII Extraction Evaluation**: Full pipeline for extraction metrics and error analysis
 
 ## Requirements
 
