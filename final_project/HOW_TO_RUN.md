@@ -40,7 +40,7 @@ python pipeline/test.py --algorithm grpo --model models/grpo_model.pt --directiv
 cd final_project
 python scripts/compare_all.py --algorithms grpo groupedppo vanillarl --dataset 690-Project-Dataset-final.csv --num_iters 300 --batch_size 64 --output_dir results
 ```
-Note: For balanced dataset use "690-Project-Dataset-bank-balanced.csv" & for imbalanced/realistic dataset use "690-Project-Dataset-imbalanced.csv" in above commands in place of 690-Project-Dataset-final.csv.
+
 ---
 
 ##  Prerequisites
@@ -158,6 +158,99 @@ python pipeline/train.py \
 | `--log_every` | Log every N iterations | `10` |
 | `--output_dir` | Output directory for models | `models` |
 
+### 1.5 Training Pipeline Architecture
+
+The training pipeline (`pipeline/train.py`) uses a unified `TrainingPipeline` class that works with any registered algorithm through the Algorithm Registry.
+
+**Training Process**:
+1. **Initialize Pipeline**: Creates policy network and optimizer for selected algorithm
+2. **Load Dataset**: Parses CSV and converts to MDP format (state, action, reward)
+3. **Training Loop**:
+   - Rollout batch of trajectories using algorithm-specific rollout function
+   - Compute rewards using shared reward function (`common/mdp.py`)
+   - Update policy using algorithm-specific update function
+   - Evaluate average reward every `log_every` iterations
+   - Check convergence (if enabled)
+4. **Save Model**: Saves trained weights and training history
+
+**Convergence Detection**:
+- Monitors average reward improvement over evaluations
+- Stops when no improvement > threshold for `patience` consecutive evaluations
+- Prevents overfitting and saves training time
+
+**Algorithm-Specific Components** (via registry):
+- `load_dataset`: Dataset parsing and MDP conversion
+- `rollout`: Batch trajectory generation
+- `update`: Policy gradient update (GRPO/PPO/REINFORCE)
+- `evaluate`: Average reward computation
+- `update_kwargs`: Algorithm-specific hyperparameters
+
+### 1.6 Algorithm Registry
+
+The training and testing pipelines use a unified **Algorithm Registry** (`pipeline/algorithm_registry.py`) that provides a plug-and-play interface for all RL algorithms.
+
+**How it works**:
+- All algorithms are registered with their policy class and configuration
+- The registry handles policy creation, optimizer setup, and algorithm-specific functions
+- Same training/test commands work for all algorithms: `--algorithm grpo|groupedppo|vanillarl`
+
+**Registered Algorithms**:
+- **GRPO**: Uses KL regularization, 2 update epochs
+- **GroupedPPO**: Uses PPO clipping (ε=0.2), 4 update epochs, value/entropy/KL coefficients
+- **VanillaRL**: Simple REINFORCE, 3 update epochs
+
+**Registry Structure**:
+Each algorithm is registered with:
+```python
+{
+    'policy_class': PolicyNetwork,      # Policy architecture
+    'config': {
+        'load_dataset': function,       # Dataset loading
+        'rollout': function,            # Trajectory generation
+        'update': function,             # Policy update
+        'evaluate': function,           # Evaluation
+        'update_kwargs': {...}          # Hyperparameters
+    }
+}
+```
+
+**Adding a New Algorithm**:
+1. Create algorithm directory: `algorithms/my_algorithm/` with:
+   - `policy.py`: Policy network class (inherits `nn.Module`)
+   - `train.py`: Functions (rollout, update, evaluate, load_dataset)
+   - `__init__.py`: Exports
+2. Register in `algorithm_registry.py`:
+   ```python
+   from algorithms.my_algorithm import RulePolicy as MyPolicy
+   from algorithms.my_algorithm import (
+       load_dataset_from_excel as load_my_algo,
+       rollout_batch as rollout_my_algo,
+       policy_gradient_update as update_my_algo,
+       evaluate_average_reward as eval_my_algo,
+   )
+   
+   AlgorithmRegistry.register('my_algorithm', MyPolicy, {
+       'init_kwargs': {},
+       'load_dataset': load_my_algo,
+       'rollout': rollout_my_algo,
+       'update': update_my_algo,
+       'evaluate': eval_my_algo,
+       'update_kwargs': {'epochs': 2},
+   })
+   ```
+3. Use: `python pipeline/train.py --algorithm my_algorithm`
+
+**Registry API**:
+- `AlgorithmRegistry.list_algorithms()`: List all registered algorithms
+- `AlgorithmRegistry.get(name)`: Get algorithm configuration
+- `AlgorithmRegistry.create_policy(name)`: Create policy instance
+- `AlgorithmRegistry.create_optimizer(name, policy)`: Create optimizer (Adam, lr=3e-4)
+
+**Benefits**:
+- **Modularity**: Add new algorithms without changing pipeline code
+- **Unified Interface**: Same commands for all algorithms
+- **Shared Components**: All algorithms use `common/config.py` and `common/mdp.py`
+
 ---
 
 ##  2. Testing/Evaluation
@@ -227,6 +320,47 @@ python pipeline/test.py \
 | `--directive` | Directive for regex (strictly/balanced/accurately) | `balanced` |
 | `--get-regex` | Flag to extract regex patterns only | `False` |
 | `--output` | Output file for results | `evaluation_results.json` |
+
+### 2.4 Testing Pipeline Details
+
+**Evaluation Pipeline Architecture**:
+- Uses `EvaluationPipeline` class that works with any registered algorithm
+- Loads trained model weights into policy network
+- Evaluates on dataset (if provided) for average reward
+- Computes utility-privacy metrics based on learned regex patterns
+
+**Evaluation Process**:
+1. **Load Model**: Loads trained policy weights from `.pt` file
+2. **Load Dataset** (optional): For computing average reward
+3. **Evaluate Average Reward**: Uses algorithm-specific evaluation function
+4. **Evaluate Utility-Privacy**: 
+   - Gets model's learned regex pattern (which PII types to share)
+   - Compares against expected patterns (restaurant: EMAIL+PHONE, bank: 5 types)
+   - Computes utility (% of expected shared) and privacy (% of disallowed NOT shared)
+5. **Directive-Based Evaluation**: Tests all directives (strictly/balanced/accurately) to show tradeoff
+
+**Key Features**:
+- **No dataset needed for utility-privacy**: Uses fixed expected patterns, not dataset labels
+- **Directive system**: Adjusts threshold to control tradeoff (strictly=≥0.7, balanced=0.5, accurately=≤0.3)
+- **Regex extraction**: `--get-regex` shows learned patterns per domain
+- **Domain-specific**: Separate evaluation for restaurant and bank domains
+
+**Output Format**:
+- Console: Real-time metrics and summary table
+- JSON: Structured results with all metrics
+  ```json
+  {
+    "algorithm": "grpo",
+    "average_reward": 0.8234,
+    "restaurant_metrics": {
+      "utility": 1.0,
+      "privacy": 1.0,
+      "avg_shared": 2.0,
+      "privacy_breach_rate": 0.0
+    },
+    "bank_metrics": {...}
+  }
+  ```
 
 ---
 
@@ -467,11 +601,57 @@ print(result['minimized_data_structured'])  # Structured format
 
 ---
 
-## 7. Comparison: Baseline LLM Minimizer vs RL Integration Pipeline
+## 7. Baseline LLM Minimizer
+
+The baseline directory contains implementations of the original AirGap agent minimizer using LLMs for comparison.
+
+### 7.1 GPU Baseline (CUDA)
+
+```bash
+cd baseline
+python baseline_minimizer.py
+```
+
+Tests 5 models: Qwen2.5-7B, Mistral-7B, Llama-3.1-8B, Qwen2.5-3B, Phi-3-mini
+
+**Requirements**: CUDA GPU, `bitsandbytes`, `transformers`
+
+### 7.2 MLX Baseline (Apple Silicon)
+
+```bash
+cd baseline
+python mlx_baseline_minimizer.py --mode sample --dataset data/Dataset.csv
+```
+
+**Options**:
+- `--mode`: `sample` (10 samples) or `full` (all samples)
+- `--dataset`: Path to dataset CSV
+- `--output`: Output directory (default: `output/results`)
+- `--debug`: Enable debug output
+
+**Requirements**: `mlx`, `mlx-lm` (works on Apple Silicon without GPU)
+
+### 7.3 Baseline Results
+
+Results saved to `output/results/`:
+- Individual model results: `results_{model_name}.csv`
+- Combined results: `results_all_models_combined.csv`
+- Summary: `results_summary_comparison.csv`
+
+**Visualization**:
+```bash
+python baseline/plot_baseline_results.py
+```
+
+Generates plots in `output/plots/` showing privacy-utility tradeoffs and model rankings.
+
+---
+
+## 8. Comparison: Baseline LLM Minimizer vs RL Integration Pipeline
 
 Compare the original AirGap LLM-based minimizer with the RL-based integration pipeline on utility, privacy, and inference speed.
 
-### 7.1 Basic Comparison
+### 8.1 Basic Comparison
 
 **Restaurant Domain**:
 ```bash
@@ -490,7 +670,7 @@ python pipeline/compare_baseline_vs_rl.py \
   --output bank_comparison.csv
 ```
 
-### 7.2 Using Custom Test Cases
+### 8.2 Using Custom Test Cases
 
 Create a JSON file `test_cases.json`:
 ```json
@@ -515,7 +695,7 @@ Then run:
 python pipeline/compare_baseline_vs_rl.py --test-cases test_cases.json
 ```
 
-### 7.3 Comparison Parameters
+### 8.3 Comparison Parameters
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
@@ -527,7 +707,7 @@ python pipeline/compare_baseline_vs_rl.py --test-cases test_cases.json
 | `--rl-directive` | Privacy directive (strictly/balanced/accurately) | `balanced` |
 | `--output` | Output CSV file | `comparison_results.csv` |
 
-### 7.4 Comparison Metrics
+### 8.4 Comparison Metrics
 
 The script compares:
 
@@ -535,7 +715,7 @@ The script compares:
 2. **Privacy**: % of disallowed PII correctly NOT shared (higher is better)
 3. **Quickness**: Inference time in seconds (lower is better)
 
-### 7.5 Output
+### 8.5 Output
 
 **Console Output**: Real-time comparison for each test case and overall summary:
 ```
@@ -567,7 +747,7 @@ Comparison:
 - `rl_utility`, `rl_privacy`, `rl_time`
 - `utility_diff`, `privacy_diff`, `time_speedup`
 
-### 7.6 Requirements
+### 8.6 Requirements
 
 **Baseline LLM Minimizer**:
 - **Apple Silicon / CPU (recommended)**: install MLX baseline
@@ -591,7 +771,7 @@ Comparison:
 
 ---
 
-## 8. Endpoint for the RL model
+## 9. Endpoint for the RL model
 
 ```bash
 # Command line - plain output
