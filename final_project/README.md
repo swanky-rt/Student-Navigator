@@ -374,4 +374,4 @@ Optional:
 
 ## License
 
-This project is part of the CS 690F Security in AI course at UMass Amherst.
+This project is part of the CS 690F Trustworthy and Responsible AI course at UMass Amherst.
