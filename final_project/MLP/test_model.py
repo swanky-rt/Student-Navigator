@@ -12,11 +12,11 @@ def load_prediction_model():
 
 def main():
     # Load the trained brain
-    print(f"Loading model from {MODEL_PATH}...")
+    print(f"Loading model from {MODEL_PATH}")
     model = load_prediction_model()
     
     print("\n" + "="*50)
-    print(" 🧠 CONTEXT AGENT LIVE TEST")
+    print(" CONTEXT AGENT LIVE TEST")
     print(" Type a sentence to see if it predicts BANK or RESTAURANT.")
     print(" (Type 'quit' to exit)")
     print("="*50 + "\n")
