@@ -81,7 +81,7 @@ def train():
     optimizer = optim.Adam(model.classifier.parameters(), lr=LEARNING_RATE)
     criterion = nn.CrossEntropyLoss()
     
-    print("\nStarting Training...")
+    print("\nStarting Training")
     print("-" * 40)
     
     # Training Loop
