@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import torch
 import torch.nn as nn
@@ -10,7 +11,7 @@ from pathlib import Path
 from context_agent_classifier import ContextAgentClassifier
 
 # Configuration
-CSV_FILE = "/Users/aringarg/Downloads/690F_FP/final_project/restbankbig.csv"
+CSV_FILE = os.path.join(os.path.dirname(__file__), "restbankbig.csv")
 MODEL_SAVE_PATH = "context_agent_mlp.pth"
 BATCH_SIZE = 8  # Reduced batch size for small dataset
 EPOCHS = 15     # Increased epochs slightly since data is small
