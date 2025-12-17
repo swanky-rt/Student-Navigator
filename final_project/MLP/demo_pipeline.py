@@ -30,20 +30,20 @@ def run_pipeline():
     for text in test_cases:
         print(f"User Input: \"{text}\"")
         
-        # A. CLASSIFY (The 'Brain')
+        # A. Classify
         prediction = classifier.predict(text, LABELS)
         detected_domain = prediction['label']
         confidence = prediction['confidence']
         
         print(f"Context Agent Detected: [{detected_domain.upper()}] (Conf: {confidence:.2f})")
         
-        # B. EXTRACT (The 'Hands')
+        # B. Extract
         # We automatically pass the detected domain to the extractor
         print(f"Applying {detected_domain} privacy rules...")
         
         pii_results = extract_pii(text, domain=detected_domain)
         
-        # C. REPORT
+        # C. Report
         if pii_results:
             print(f"PII Extracted: {json.dumps(pii_results)}")
         else:
