@@ -42,23 +42,20 @@ def predict_context(prompt: str, threshold: float = 0.0) -> dict:
             "is_confident": bool
         }
     """
-    # 1. Ensure model is loaded
+    # Ensuring that the model is loaded
     model = load_model()
     
-    # 2. Run Prediction
-    # The model.predict method you wrote already handles tokenization
+    # Running Prediction
+    # The model.predict method that we wrote already handles tokenization
     result = model.predict(prompt, _LABELS)
     
-    # 3. Add "Tunable" Logic (Thresholding)
-    # The proposal mentions "Final inclusion confidence combines rule-based scores and classifier probabilities"[cite: 33].
-    # So returning the raw probabilities is crucial for Phase 4.
-    
+    # Thresholding
     is_confident = result['confidence'] >= threshold
-    
+
     return {
         "label": result['label'],
         "confidence": result['confidence'],
-        "probabilities": result['probabilities'], # Critical for Fusion Layer 
+        "probabilities": result['probabilities'], # Returning the raw probabilities as they are crucial for Phase 4(Fusion Layer)
         "is_confident": is_confident
     }
 
