@@ -3,7 +3,7 @@ import json
 from context_agent_classifier import ContextAgentClassifier
 
 try:
-    from pii_extractor import extract_pii
+    from pii_extraction.pii_extractor import extract_pii
 except ImportError:
     
     def extract_pii(text, domain, **kwargs):
