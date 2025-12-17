@@ -33,8 +33,8 @@ This repository focuses on **Phase 3: the Context Agent**, which acts as the “
 ├── inference.py                 # Clean Interface for Phase 4 Integration
 ├── train_context_agent.py       # Training Loop & Hyperparameter Optimization
 ├── benchmark_latency.py         # Performance Benchmarking Script'
-├── graphs.py
-├── test_model.py
+├── graphs.py                    # Visualization script to generate training curves & confusion matrices
+├── test_model.py                # Interactive CLI tool for manual model verification
 └── restbankbig.csv              # The engineered synthetic dataset (450+ samples) # moved to final_project folder
 ```
 
