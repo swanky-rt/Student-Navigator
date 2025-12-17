@@ -2,12 +2,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-# --- DATA FROM YOUR TERMINAL OUTPUT ---
 epochs = list(range(1, 16))
 loss = [0.6186, 0.3461, 0.1928, 0.1426, 0.1089, 0.0939, 0.0749, 0.0621, 0.0525, 0.0466, 0.0352, 0.0308, 0.0262, 0.0249, 0.0201]
 acc = [94.68, 94.68, 95.74, 96.81, 96.81, 96.81, 95.74, 96.81, 95.74, 95.74, 95.74, 95.74, 95.74, 95.74, 95.74]
 
-# --- PLOT 1: TRAINING DYNAMICS ---
+# Plot 1: Training Dynamics
 sns.set_style("whitegrid")
 fig, ax1 = plt.subplots(figsize=(8, 5))
 
@@ -30,7 +29,7 @@ plt.title('Context Agent Training Dynamics', fontweight='bold')
 plt.tight_layout()
 plt.show()
 
-# --- PLOT 2: CONFUSION MATRIX ---
+# Plot 2: Confusion Matrix
 # Constructed from 96% accuracy on ~94 validation samples
 cm = np.array([[46, 1], 
                [1, 46]]) 
