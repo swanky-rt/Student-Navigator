@@ -59,6 +59,9 @@ final_project/
 │   ├── analyze_errors.py    # Error analysis (false positives/negatives)
 │   └── README.md            # Complete module documentation
 │
+├── Regex/                   # Regex-only PII detection baseline
+│   └── PII_regex.py         # Lightweight regex-only detector (EMAIL, PHONE, SSN, DATE, NAME)
+│
 ├── baseline/                 # Baseline LLM minimizers
 │   ├── baseline_minimizer.py    # GPU-based baseline (CUDA)
 │   ├── mlx_baseline_minimizer.py # MLX baseline (Apple Silicon)
@@ -288,6 +291,11 @@ entities = extract_pii("My SSN is 123-45-6789, email: john@example.com", domain=
   - **Regex** excels at structured patterns with predictable formats (phone numbers, emails, SSN, credit cards)
   - **spaCy NER** excels at contextual entities requiring language understanding (person names, organizations, locations)
   - Together they provide comprehensive coverage of all 11 PII types
+
+- **Regex-only baseline**: A lightweight regex-only detector (`Regex/PII_regex.py`) is available for ablation studies and constrained deployment settings
+  - Detects: EMAIL, PHONE, SSN, DATE/DOB, and limited NAME patterns
+  - Fast, fully interpretable, and useful for debugging and controlled experimentation
+  - Less expressive than the hybrid approach but provides a simple baseline for comparison
 
 - **False positive filtering**: Removes incorrect detections from spaCy NER:
   - **Credit card brands** (Visa, Mastercard): These are context words, not actual PII - spaCy incorrectly labels them as organizations
