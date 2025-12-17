@@ -32,8 +32,10 @@ This repository focuses on **Phase 3: the Context Agent**, which acts as the “
 ├── demo_pipeline.py             # End-to-End Demo integrating PII extraction
 ├── inference.py                 # Clean Interface for Phase 4 Integration
 ├── train_context_agent.py       # Training Loop & Hyperparameter Optimization
-├── benchmark_latency.py         # Performance Benchmarking Script
-└── restbankbig.csv     # The engineered synthetic dataset (450+ samples) # moved to final_project folder
+├── benchmark_latency.py         # Performance Benchmarking Script'
+├── graphs.py
+├── test_model.py
+└── restbankbig.csv              # The engineered synthetic dataset (450+ samples) # moved to final_project folder
 ```
 
 -----
@@ -169,5 +171,5 @@ We benchmarked the inference speed on standard CPU hardware:
 
 > **[1] Wang, W., Wei, F., Dong, L., Bao, H., Yang, N., & Zhou, M. (2020). MiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of Pre-Trained Transformers. arXiv preprint arXiv:2002.10957.
 > **[2] Reimers, N., & Gurevych, I. (2019). Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks. arXiv preprint arXiv:1908.10084.
-> [3] Srivastava, N., Hinton, G., Krizhevsky, A., Sutskever, I., & Salakhutdinov, R. (2014). Dropout: A Simple Way to Prevent Neural Networks from Overfitting. Journal of Machine Learning Research, 15(1), 1929-1958.
-> [4] Kingma, D. P., & Ba, J. (2014). Adam: A Method for Stochastic Optimization. arXiv preprint arXiv:1412.6980.
+> **[3] Srivastava, N., Hinton, G., Krizhevsky, A., Sutskever, I., & Salakhutdinov, R. (2014). Dropout: A Simple Way to Prevent Neural Networks from Overfitting. Journal of Machine Learning Research, 15(1), 1929-1958.
+> **[4] Kingma, D. P., & Ba, J. (2014). Adam: A Method for Stochastic Optimization. arXiv preprint arXiv:1412.6980.
