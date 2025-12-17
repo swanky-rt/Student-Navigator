@@ -1,18 +1,28 @@
-# AirGapLite: Phase 3 Context Agent (Encoder/Classifier)
+# **AirGapLite: Phase 3 — Context Agent (Encoder/Classifier)**
 
-## Project Overview
-**AirGapLite** is a hybridized, lightweight privacy preservation system designed to minimize user data exposure before it reaches conversational LLMs.
+## **Project Overview**
 
-This repository contains the implementation for **Phase 3: Context Agent**, the "brain" of the system. This module is responsible for analyzing user prompts in real-time and classifying the semantic context (e.g., **"Banking"** vs. **"Restaurant"**) to trigger the appropriate privacy rules.
+**AirGapLite** is a lightweight privacy-preserving system designed to reduce how much user data is shared with conversational large language models (LLMs). The idea is to analyze and minimize sensitive information *before* it is sent to a model.
 
-### Key Objectives Achieved
+This repository focuses on **Phase 3: the Context Agent**, which acts as the “brain” of the system. The Context Agent processes user prompts in real time and identifies the underlying semantic domain (for example, distinguishing between **Banking** and **Restaurant** requests). Based on this classification, the system applies the appropriate privacy rules.
 
-  * **Lightweight Architecture:** Implemented a neuro-symbolic hybrid model using **MiniLM-L6-v2** and a custom **MLP**.
-  * **High Accuracy:** Achieved **96.8%** validation accuracy with robust domain separation.
-  * **Ultra-Low Latency:** Optimized inference speed to **\~7.32 ms** per request (60x faster than standard LLMs).
-  * **Data Engineering:** Engineered a synthetic dataset generation pipeline to overcome data scarcity and prevent overfitting.
+---
 
------
+## **Key Objectives Achieved**
+
+* **Lightweight Architecture:**
+  Built a hybrid encoder–classifier model using **MiniLM-L6-v2** for embeddings and a custom **MLP** for classification, keeping the system fast and easy to audit.
+
+* **High Accuracy:**
+  Achieved **96.8% validation accuracy**, with clear separation between sensitive and non-sensitive domains.
+
+* **Ultra-Low Latency:**
+  Optimized the model to run in about **7.32 ms per request**, which is over **60× faster** than using standard LLM-based context detection.
+
+* **Data Engineering:**
+  Designed a synthetic data generation pipeline to address limited labeled data and reduce overfitting during training.
+
+---
 
 ## Repository Structure
 
