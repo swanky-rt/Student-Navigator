@@ -47,11 +47,11 @@ We implemented a custom **Multi-Layer Perceptron (MLP)** head rather than a simp
     * *Design Decision:* We chose a bottleneck size of 64 (a reduction ratio of 6:1). Through experimentation, we found this was optimal: large enough to capture feature complexity but small enough to prevent overfitting on our synthetic dataset.
     * *Activation:* **ReLU** was applied to introduce non-linearity, allowing the model to understand complex phrasing beyond simple keyword matching.
 * **Regularization (Dropout p=0.1):**
-    * *Design Decision:* Given the risk of memorization with small datasets, we injected a Dropout layer with `p=0.1`. This forces the network to learn robust, distributed features rather than relying on specific neurons, directly contributing to our high validation stability (96.8%).
+    * *Design Decision:* Given the risk of memorization with small datasets, we injected a Dropout layer [3] with `p=0.1`. This forces the network to learn robust, distributed features rather than relying on specific neurons, directly contributing to our high validation stability (96.8%).
 * **Output Layer (2 neurons):** Outputs the logits for the binary classification (Bank vs. Restaurant).
 
 ### 3. Hyperparameter Optimization
-We utilized the **Adam optimizer** with a learning rate of **1e-3**. We found that standard learning rates (e.g., 2e-5 used for BERT fine-tuning) were too slow for this lightweight architecture, while 1e-3 allowed for rapid convergence within 5 epochs without overshooting the loss minima.
+We utilized the **Adam optimizer** [4] with a learning rate of **1e-3**. We found that standard learning rates (e.g., 2e-5 used for BERT fine-tuning) were too slow for this lightweight architecture, while 1e-3 allowed for rapid convergence within 5 epochs without overshooting the loss minima.
 
 ---
 
@@ -157,6 +157,7 @@ We benchmarked the inference speed on standard CPU hardware:
 
 ### References
 
-> **[1] MiniLM:** Wang, W., Wei, F., Dong, L., Bao, H., Yang, N., & Zhou, M. (2020). *MiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of Pre-Trained Transformers*. arXiv:2002.10957.
-
-> **[2] Sentence-Transformers:** Reimers, N., & Gurevych, I. (2019). *Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks*. arXiv:1908.10084.
+> **[1] Wang, W., Wei, F., Dong, L., Bao, H., Yang, N., & Zhou, M. (2020). MiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of Pre-Trained Transformers. arXiv preprint arXiv:2002.10957.
+> **[2] Reimers, N., & Gurevych, I. (2019). Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks. arXiv preprint arXiv:1908.10084.
+> [3] Srivastava, N., Hinton, G., Krizhevsky, A., Sutskever, I., & Salakhutdinov, R. (2014). Dropout: A Simple Way to Prevent Neural Networks from Overfitting. Journal of Machine Learning Research, 15(1), 1929-1958.
+> [4] Kingma, D. P., & Ba, J. (2014). Adam: A Method for Stochastic Optimization. arXiv preprint arXiv:1412.6980.
