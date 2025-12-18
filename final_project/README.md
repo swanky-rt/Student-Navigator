@@ -541,11 +541,7 @@ While AI tools streamlined our workflow, every line of code, test case, and docu
 ### **Key Human-Driven Architectural Decisions Include:**
 
 * **RL Strategy (Rule Agent):**
-  We specifically chose **GRPO** and **GroupedPPO** over Vanilla RL to stabilize training on rare-but-allowed PII (e.g., SSN) and manually designed the group-based reward function
-  [
-  R = \alpha \cdot \text{utility} + \beta \cdot \text{privacy}
-  ]
-  to prevent degenerate policies.
+  We specifically chose **GRPO** and **GroupedPPO** over Vanilla RL to stabilize training on rare-but-allowed PII (e.g., SSN) and manually designed the group-based reward function **R = α·utility + β·privacy** to prevent degenerate policies.
 
 * **Classifier Design (Context Agent):**
   We rejected standard BERT/LLM approaches in favor of a **Neuro-Symbolic architecture (MiniLM + custom MLP)**, a deliberate trade-off to meet the **<10 ms latency** requirement while maintaining **96% accuracy**.
