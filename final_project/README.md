@@ -487,6 +487,7 @@ All algorithms share:
 - **`HOW_TO_RUN.md`**: Complete guide on running all code, scripts, and workflows
 - **`ALGORITHM_EXPLANATION.md`**: Detailed explanation of MDP, algorithms, and training flow
 - **`FLOW_DIAGRAM.md`**: System architecture and flow diagrams
+- **`MLP/README.md`**: Phase 3 Context Classifier documentation
 - **`pii_extraction/README.md`**: PII extraction module documentation
 
 ## Key Features
