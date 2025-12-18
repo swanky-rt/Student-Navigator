@@ -540,7 +540,7 @@ While AI tools streamlined our workflow, every line of code, test case, and docu
 
 ### **Key Human-Driven Architectural Decisions Include:**
 
-* **RL Strategy (Rule Agent):** We explicitly chose an offline-trained RL approach over online LLM reasoning to replace costly per-request inference, achieving an 11–14× speedup. Within this framework, we explored GRPO and GroupedPPO and Vanilla RL to stabilize training on rare-but-allowed PII, manually designing the group reward function "R = α·utility + β·privacy + complexity" to prevent degenerate policies.
+* **RL Strategy (Rule Agent):** We explicitly chose an offline-trained RL approach over online LLM reasoning to replace costly per-request inference, achieving an 11–14× speedup. Within this framework, we explored GRPO and GroupedPPO and Vanilla RL to stabilize training on rare-but-allowed PII, manually designing the group reward function R(s, a)= "α·utility + β·privacy - complexity_penalty" to prevent degenerate policies.
 
 * **Classifier Design (Context Agent):**
   We rejected standard BERT/LLM approaches in favor of a Neuro-Symbolic architecture (MiniLM + custom MLP), a deliberate trade-off to meet the <10 ms latency requirement while maintaining 96% accuracy.
