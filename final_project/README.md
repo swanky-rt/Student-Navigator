@@ -540,16 +540,16 @@ While AI tools streamlined our workflow, every line of code, test case, and docu
 
 ### **Key Human-Driven Architectural Decisions Include:**
 
-* **RL Strategy (Rule Agent):** We explicitly chose an **offline-trained RL approach** over online LLM reasoning to replace costly per-request inference, achieving an **11–14× speedup**. Within this framework, we selected **GRPO** and **GroupedPPO** over Vanilla RL to stabilize training on rare-but-allowed PII, manually designing the reward function **R = α·utility + β·privacy** to prevent degenerate policies.
+* **RL Strategy (Rule Agent):** We explicitly chose an offline-trained RL approach over online LLM reasoning to replace costly per-request inference, achieving an 11–14× speedup. Within this framework, we explored GRPO and GroupedPPO and Vanilla RL to stabilize training on rare-but-allowed PII, manually designing the group reward function "R = α·utility + β·privacy + complexity" to prevent degenerate policies.
 
 * **Classifier Design (Context Agent):**
-  We rejected standard BERT/LLM approaches in favor of a **Neuro-Symbolic architecture (MiniLM + custom MLP)**, a deliberate trade-off to meet the **<10 ms latency** requirement while maintaining **96% accuracy**.
+  We rejected standard BERT/LLM approaches in favor of a Neuro-Symbolic architecture (MiniLM + custom MLP), a deliberate trade-off to meet the <10 ms latency requirement while maintaining 96% accuracy.
 
 * **Sensing Strategy (PII Extraction):**
-  We enforced a **recall-first hybrid strategy** (combining spaCy NER with rigid Regex), explicitly prioritizing **100% recall over precision** to ensure no high-risk PII is ever missed, regardless of AI model confidence.
+  We enforced a recall-first hybrid strategy (combining spaCy NER with rigid Regex), explicitly prioritizing 100% recall over precision to ensure no high-risk PII is ever missed, regardless of AI model confidence.
 
 * **Synthetic Data Engineering:**
-  We manually engineered the synthetic data pipeline using template shuffling and lexical substitution to resolve the **semantic collapse** observed in early experiments, ensuring the model learned intent rather than relying solely on keywords.
+  We manually engineered the synthetic data pipeline using template shuffling and lexical substitution to resolve the semantic collapse observed in early experiments, ensuring the model learned intent rather than relying solely on keywords.
 
 ---
 
