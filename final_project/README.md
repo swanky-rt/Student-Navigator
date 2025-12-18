@@ -46,11 +46,16 @@ final_project/
 │   ├── integration_pipeline.py  # End-to-end integration (classifier → RL → extraction)
 │   └── compare_baseline_vs_rl.py # Baseline vs RL comparison
 │
-├── MLP/                      # Context-aware domain classifier
-│   ├── context_agent_classifier.py  # MLP classifier architecture
-│   ├── train_context_agent.py      # Training script
-│   ├── inference.py                 # Inference utilities
-│   └── context_agent_mlp.pth       # Trained model
+├── MLP/                      # Phase 3: Context-aware domain classifier
+│   ├── context_agent_classifier.py  # Model Architecture (MiniLM + MLP)
+│   ├── train_context_agent.py      # Training Loop & Hyperparameter Optimization
+│   ├── inference.py                # Clean Interface for Phase 4 Integration
+│   ├── demo_pipeline.py            # End-to-End Demo integrating PII extraction
+│   ├── benchmark_latency.py        # Performance Benchmarking Script
+│   ├── graphs.py                   # Visualization script (curves & confusion matrices)
+│   ├── test_model.py               # Interactive CLI tool for manual verification
+│   ├── test_model.py               # Interactive CLI tool for manual verification
+│   └── context_agent_mlp.pth       # Trained Model Weights
 │
 ├── pii_extraction/          # PII extraction module
 │   ├── pii_extractor.py     # Main extraction interface (domain-aware filtering)
