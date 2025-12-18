@@ -177,7 +177,6 @@ All algorithms use **per-PII binary actions** (0=don't share, 1=share) for each 
 
 The **Context Agent** acts as the "brain" of the system, identifying the semantic domain (e.g., Banking vs. Restaurant) in real-time to trigger the correct RL privacy policy.
 
----
 
 ## **Architecture**
 
@@ -186,7 +185,6 @@ We utilize a **Neuro-Symbolic** approach combining a lightweight Transformer enc
 * **Encoder:** `all-MiniLM-L6-v2` (384-dim embeddings) — chosen for its speed/performance ratio over BERT-base.
 * **Classifier:** Custom MLP (`384 -> 64 -> 2`) with ReLU activation and Dropout (`p=0.1`).
 
----
 
 ## **Key Performance Metrics**
 
@@ -194,7 +192,6 @@ We utilize a **Neuro-Symbolic** approach combining a lightweight Transformer enc
 * **Latency:** 7.32 ms per request (~60× faster than standard LLM detection).
 * **Data Engineering:** Implemented a **Synthetic Data Pipeline** that expanded the training manifold by **400%** using template shuffling and lexical substitution to prevent semantic collapse.
 
----
 
 ## **Usage**
 
