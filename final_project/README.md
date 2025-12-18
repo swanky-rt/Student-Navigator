@@ -54,7 +54,7 @@ final_project/
 │   ├── benchmark_latency.py        # Performance Benchmarking Script
 │   ├── graphs.py                   # Visualization script (curves & confusion matrices)
 │   ├── test_model.py               # Interactive CLI tool for manual verification
-│   ├── restbankbig.csv              # The engineered synthetic dataset (450+ samples) # moved to final_project folder
+│   ├── restbankbig.csv             # The engineered synthetic dataset (450+ samples) # moved to final_project folder
 │   └── context_agent_mlp.pth       # Trained Model Weights
 │
 ├── pii_extraction/          # PII extraction module
@@ -95,7 +95,8 @@ final_project/
 └── datasets/                 # Dataset files
     ├── 690-Project-Dataset-final.csv  # Main dataset (recommended)
     ├── 690-Project-Dataset-balanced.csv
-    └── 690-Project-Dataset-bank-balanced.csv
+    ├── 690-Project-Dataset-bank-balanced.csv
+    └── restbankbig.csv        # Phase 3 Synthetic Dataset
 ```
 
 ## Quick Start
