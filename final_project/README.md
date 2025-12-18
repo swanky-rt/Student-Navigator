@@ -520,3 +520,41 @@ Optional:
 ## License
 
 This project is part of the CS 690F Security in AI course at UMass Amherst.
+
+---
+
+## **AI Disclosure**
+
+In the development of **AirGapLite**, we utilized AI tools (e.g., ChatGPT, GitHub Copilot) to accelerate implementation and ensure code quality. Specifically, AI assistance was used for:
+
+* **Code Generation:** Generating boilerplate for standard training loops, PyTorch dataset loaders, and unit test scaffolds.
+* **Debugging:** Analyzing stack traces and suggesting fixes for syntax errors and shape mismatches in tensor operations.
+* **Documentation:** Assisting in refining the clarity, grammar, and tone of technical reports and README files.
+* **Data Augmentation:** Generating initial seed templates for the synthetic dataset expansion pipeline.
+
+
+### **Human Oversight Statement**
+
+While AI tools streamlined our workflow, every line of code, test case, and document was manually validated, adapted, and integrated by the team. All core architectural decisions, algorithm selections, and system designs were driven exclusively by our research and experimental requirements.
+
+
+### **Key Human-Driven Architectural Decisions Include:**
+
+* **RL Strategy (Rule Agent):**
+  We specifically chose **GRPO** and **GroupedPPO** over Vanilla RL to stabilize training on rare-but-allowed PII (e.g., SSN) and manually designed the group-based reward function
+  [
+  R = \alpha \cdot \text{utility} + \beta \cdot \text{privacy}
+  ]
+  to prevent degenerate policies.
+
+* **Classifier Design (Context Agent):**
+  We rejected standard BERT/LLM approaches in favor of a **Neuro-Symbolic architecture (MiniLM + custom MLP)**, a deliberate trade-off to meet the **<10 ms latency** requirement while maintaining **96% accuracy**.
+
+* **Sensing Strategy (PII Extraction):**
+  We enforced a **recall-first hybrid strategy** (combining spaCy NER with rigid Regex), explicitly prioritizing **100% recall over precision** to ensure no high-risk PII is ever missed, regardless of AI model confidence.
+
+* **Synthetic Data Engineering:**
+  We manually engineered the synthetic data pipeline using template shuffling and lexical substitution to resolve the **semantic collapse** observed in early experiments, ensuring the model learned intent rather than relying solely on keywords.
+
+---
+
